@@ -1,0 +1,344 @@
+from django.shortcuts import render,redirect,get_object_or_404
+from .models import Post,BlogComment,Like,Bookmark
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import json
+import random
+from django.conf import settings
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.utils.text import slugify
+from . import sanitizer
+from django.utils.html import strip_tags
+from textwrap import shorten
+import re
+
+
+def blogHome(request):
+    allPosts=Post.objects.filter(draft=False)
+    authors=Post.objects.filter(draft=False).values('author').distinct()
+    categories=Post.objects.filter(draft=False).values('category').distinct()
+    if request.user.is_authenticated:
+        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
+    else:
+        bookmarked = set()
+    context={'allPosts':allPosts,'filter':'all','authors':authors,'selectedAuthor':'all','selectedCategory':'all','categories':categories,'bookmarked':bookmarked}
+    return render(request,'blog/blogHome.html',context)
+
+def filteredBlogs(request):
+    allPosts=Post.objects.filter(draft=False)
+    authors=Post.objects.filter(draft=False).values('author').distinct()
+    categories=Post.objects.filter(draft=False).values('category').distinct()
+    filtered=request.GET.get("filter")
+    authorsFilter=request.GET.get("authors")
+    categoryFilter=request.GET.get("category")
+    if request.user.is_authenticated:
+        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
+    else:
+        bookmarked = set()
+    if filtered=="all" and authorsFilter=="all" and categoryFilter=="all":
+        return redirect('blogHome')
+    elif filtered=="liked":
+        allPosts=allPosts.order_by('-likes')
+    elif filtered=="unliked":
+        allPosts=allPosts.order_by('likes')
+    elif filtered=="viewed":
+        allPosts=allPosts.order_by('-views')
+    elif filtered=="unviewed":
+        allPosts=allPosts.order_by('views')
+    elif filtered=="latest":
+        allPosts=allPosts.order_by('-timestamp')
+    elif filtered=="old":
+        allPosts=allPosts.order_by('timestamp')
+
+    if authorsFilter!="all":
+        allPosts=allPosts.filter(author=authorsFilter)
+    if categoryFilter!="all":
+        allPosts=allPosts.filter(category=categoryFilter)
+    return render(request,'blog/blogHome.html',{'allPosts':allPosts,'filter':filtered,'authors':authors,'selectedAuthor':authorsFilter,'selectedCategory':categoryFilter,'categories':categories,'bookmarked':bookmarked})
+
+def bookmarks(request):
+    if request.user.is_authenticated:
+        savedPost = Post.objects.filter(bookmark__user=request.user).distinct() 
+        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
+        return render(request,'blog/bookmarkBlog.html',{'allPosts':savedPost,'bookmarked':bookmarked})
+    else:
+        return redirect('blogHome')
+
+def blogPost(request,slug):
+    post=Post.objects.filter(slug=slug,draft=False).first()
+    interestedPosts=Post.objects.filter(draft=False,category=post.category).exclude(sno=post.sno)[:4]
+    viewed_posts = request.session.get("viewed_posts", [])
+    if post.sno not in viewed_posts:
+        post.views += 1
+        post.save(update_fields=["views"])
+
+        viewed_posts.append(post.sno)
+        request.session["viewed_posts"] = viewed_posts
+        request.session.modified = True
+    post.save()
+    comments=BlogComment.objects.filter(post=post,parent=None)
+    replies=BlogComment.objects.filter(post=post).exclude(parent=None)
+    repDict={}
+    for reply in replies:
+        if reply.parent.sno not in repDict.keys():
+            repDict[reply.parent.sno]=[reply]
+        else:
+            repDict[reply.parent.sno].append(reply)
+    if request.user.is_authenticated:
+        context={'post':post,"comments":comments,"user":request.user,'repDict':repDict,'liked':Like.objects.filter(post=post.sno,user=request.user).exists(),'bookmarked':Bookmark.objects.filter(post=post.sno,user=request.user).exists(),'interestedPosts':interestedPosts}
+    else:
+        context={'post':post,"comments":comments,'repDict':repDict,'liked':False,'interestedPosts':interestedPosts}
+    return render(request,'blog/blogPost.html',context)
+
+def generate_unique_slug(model, base_text):
+    base_slug = slugify(base_text)
+    slug = base_slug
+    counter = 1
+
+    while model.objects.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return slug
+
+def generate_summary(html, length=200):
+   
+    text = strip_tags(html)
+
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return shorten(text, width=length, placeholder='…')
+
+def writeBlog(request):
+    if not request.user.is_authenticated:
+        messages.warning(request,"Login To Post Blog...")
+        return redirect('blogHome')
+    else:
+        if request.user.role != 'author':
+            messages.error(request,"Only Authors can Post Blogs ! ")
+            return redirect('blogHome')
+        elif request.user.verified==False:
+            messages.warning(request,"Please Verify Your Account To Post Blogs !")
+            return redirect('emailVerification')
+        else:
+            if request.method=="POST":
+                title=request.POST.get('title')
+                category=request.POST.get('category')
+                content=request.POST.get('content')
+                if title=="" or category=="" or content=="":
+                    messages.error(request,"All Fields Are Required !")
+                    return redirect('writeBlog')
+                content=sanitizer.sanitize_html(content)
+                content=sanitizer.normalize_links(content)
+                summary = generate_summary(content)
+                slug = generate_unique_slug(Post, title)
+                author=request.user.name
+                draft = request.POST.get('draftVal') == "true"
+                existedSlug=request.POST.get('slug','')
+                if existedSlug!="":
+                    post=Post.objects.filter(slug=existedSlug).first()
+                    post.title=title
+                    post.category=category
+                    post.content=content
+                    post.summary=summary
+                    post.author=author
+                    post.slug=slug
+                    post.draft=draft
+                    post.save()
+                else:
+                    post=Post(title=title,category=category,content=content,summary=summary,author=author,slug=slug,draft=draft)
+                    post.save()
+                if draft:
+                    messages.success(request,"Draft Saved Successfully")
+                else:
+                    messages.success(request,"Blog Posted Successfully")
+                return redirect('myBlogs')
+    return render(request,'blog/writeBlog.html')
+
+def myBlogs(request):
+    if request.user.is_authenticated:
+        if request.user.role != 'author':
+            messages.error(request,"Only Authors can Post Blogs ! ")
+            return redirect('blogHome')
+        elif request.user.verified==False:
+            messages.error(request,"Please Verify Your Account First !")
+            return redirect('blogHome')
+        draftBlogs=Post.objects.filter(author=request.user.name,draft=True).order_by('-updated_at')
+        postedBlogs=Post.objects.filter(author=request.user.name,draft=False).order_by('-updated_at')
+        return render(request,'blog/myBlogs.html',{'draftBlogs':draftBlogs,'postedBlogs':postedBlogs})
+    else:
+        return redirect('blogHome')
+
+def editBlogPost(request,slug): 
+    if request.method=="POST":
+        post=Post.objects.filter(slug=slug,author=request.user.name).first()
+        context={'post':post}
+        return render(request,'blog/writeBlog.html',context)
+    else:
+        return redirect('blogHome')
+
+@require_POST
+def deleteBlogPost(request, slug):
+    blog = get_object_or_404(Post, slug=slug, author=request.user.name)
+    blog.delete()
+    messages.success(request, "Blog Deleted Successfully")
+    return redirect("myBlogs")
+
+
+@require_POST
+def toggle_like(request):
+    data = json.loads(request.body)
+    post_id = data.get("post_id")
+    post = Post.objects.get(sno=post_id)
+    if request.user.is_authenticated:
+        user = request.user
+
+        liked = Like.objects.filter(post=post, user=user).exists()
+
+        if liked:
+            Like.objects.filter(post=post, user=user).delete()
+            post.likes -= 1
+            status = "unliked"
+        else:
+            Like.objects.create(post=post, user=user)
+            post.likes += 1
+            status = "liked"
+
+        post.save()
+
+        return JsonResponse({
+            "status": status,
+            "likes": post.likes
+        })
+    else:
+        status="unknown"
+        return JsonResponse({
+            "status": status,
+            "likes": post.likes
+        })
+    
+@require_POST
+def toggle_bookmark(request):
+    data = json.loads(request.body)
+    post_id = data.get("post_id")
+    post = Post.objects.get(sno=post_id)
+    print(post.title)
+    if request.user.is_authenticated:
+        user = request.user
+
+        bookmarked = Bookmark.objects.filter(post=post, user=user)
+        flag=bookmarked.exists()
+
+        if flag:
+            bookmarked.delete()
+            status = "unsave"
+        else:
+            Bookmark.objects.create(post=post, user=user)
+            status = "save"
+
+        return JsonResponse({
+            "status": status,
+        })
+    else:
+        return JsonResponse({
+            "status": "unsave",
+        })
+    
+def postComment(request):
+    if request.method=="POST":
+        comment=request.POST.get("comment")
+        if comment=="":
+            messages.error(request,"Comment Field Is Required !")
+            return redirect(f'/blog/{post.slug}')
+        comment=sanitizer.sanitize_comment(comment)
+        user=request.user
+        postSno=request.POST.get("postSno")
+        post=Post.objects.get(sno=postSno)
+        parentSno=request.POST.get("parentSno")
+        if parentSno=="":
+            comments=BlogComment(comment=comment,user=user,post=post)
+            comments.save()
+            messages.success(request,"Comment Posted Successfully")
+        else:
+            parent=BlogComment.objects.get(sno=parentSno)
+            comments=BlogComment(comment=comment,user=user,post=post,parent=parent)
+            comments.save()
+            messages.success(request,"Reply Posted Successfully")
+    return redirect(f'/blog/{post.slug}')
+
+
+def emailVerification(request):
+    
+    next_url = request.POST.get('next') or request.GET.get('next')
+    if not request.user.is_authenticated:
+        messages.error(request, "You must be logged in to verify your email.")
+        return redirect(next_url or 'home')
+    
+    if request.user.verified and request.user.role == "author":
+        messages.success(request, "Your email is already verified.")
+        return redirect(next_url or 'home')
+
+    if request.user.role != "author":
+        messages.error(request, "No verification required for readers.")
+        return redirect(next_url or 'home')
+
+    if request.method == "GET":
+        return render(request, 'blog/emailVerification.html', {
+            "step": "send",
+            "next": next_url
+        })
+
+    if request.method == "POST":
+
+        if 'emailcode' not in request.POST:
+
+            verification_code = str(random.randint(100000, 999999))
+
+            request.session['email_verification_code'] = verification_code
+            request.session['email_verification_email'] = request.user.email
+            request.session.modified = True
+
+            send_mail(
+                subject="Articlio Email Verification Code",
+                message=f"Your verification code is: {verification_code}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[request.user.email],
+                fail_silently=False,
+            )
+
+            messages.success(request, "Verification code sent to your email")
+
+            return render(request, 'blog/emailVerification.html', {
+                "step": "verify",
+                "next": next_url
+            })
+        entered_code = request.POST.get('emailcode')
+        stored_code = request.session.get('email_verification_code')
+        stored_email = request.session.get('email_verification_email')
+
+        if not stored_code or stored_email != request.user.email:
+            messages.error(request, "Verification session expired. Please try again.")
+            redirect_url = reverse('emailVerification')
+            if next_url:
+                redirect_url += f"?next={next_url}"
+            return redirect(redirect_url)
+
+        if entered_code != stored_code:
+            messages.error(request, "Invalid verification code")
+            return render(request, 'blog/emailVerification.html', {
+                "step": "verify",
+                "next": next_url
+            })
+
+        request.user.verified = True
+        request.user.save(update_fields=['verified'])
+
+        request.session.pop('email_verification_code', None)
+        request.session.pop('email_verification_email', None)
+        request.session.modified = True
+
+        messages.success(request, "Email verified successfully")
+
+        return redirect(next_url or 'home')

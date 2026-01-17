@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}About{% endblock title %}
+{% block aboutactive %}active-link font-semibold{% endblock aboutactive %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto px-4 py-12 " style="margin-top: 140px;">
+
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-color-darkest">
+            About Articlio Blog
+        </h1>
+        <p class="text-color-darkest mt-4 text-lg">
+            Sharing ideas, stories, and insights that matter.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+        <div>
+            <h2 class="text-2xl font-semibold text-color-darkest mb-4">
+                What is Articlio?
+            </h2>
+            <p class="text-color-darkest leading-relaxed mb-4">
+                Articlio is a personal blogging platform created to share knowledge, thoughts,
+                and experiences related to technology, programming, and everyday learning.
+                The goal is simple: make complex things easy to understand.
+            </p>
+
+            <p class="text-color-darkest leading-relaxed mb-4">
+                Whether it's web development, backend concepts, or small ideas that spark
+                curiosity, Articlio focuses on clarity, simplicity, and consistency.
+            </p>
+
+            <p class="text-color-darkest leading-relaxed">
+                This blog is built using Django and styled with Tailwind CSS to keep it
+                fast, clean, and user-friendly across all devices.
+            </p>
+        </div>
+
+        <div class="theme-dark rounded-xl p-8 hover-card-shadow all-border">
+            <h3 class="text-xl font-semibold text-color-light mb-4">
+                Why Articlio Blog?
+            </h3>
+
+            <ul class="space-y-3 text-color-light">
+                <li class="flex items-start gap-2">
+                    <span class="text-color-lightest font-bold">✓</span>
+                    Simple explanations with practical examples
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-color-lightest font-bold">✓</span>
+                    Focus on learning by building real projects
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-color-lightest font-bold">✓</span>
+                    Clean design with modern technologies
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-color-lightest font-bold">✓</span>
+                    Content written from a learner's perspective
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-16">
+        <p class="text-color-darkest">
+            Thanks for visiting Articlio Blog.  
+            Keep learning, keep building 🚀
+        </p>
+    </div>
+
+</div>
+
+{% endblock body %}

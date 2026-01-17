@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@source "../../templates";
+@source "../../static";
+
+/* ============================
+   THEME VARIABLES
+============================ */
+
+@layer base {
+
+:root {
+    --theme-base: hsl(200, 60%, 45%);
+
+    --theme-darkest: hsl(from var(--theme-base) h s calc(l - 30));
+    --theme-dark: hsl(from var(--theme-base) h s calc(l - 20));
+    --theme-medium: hsl(from var(--theme-base) h s calc(l - 10));
+
+    --theme-base-faded: hsl(from var(--theme-base) h s l / 0.6);
+
+    --theme-light: hsl(from var(--theme-base) h s calc(l + 30));
+    --theme-lightest: hsl(from var(--theme-base) h s calc(l + 40));
+}
+
+}
+
+
+/* ============================
+   COMPONENT CLASSES
+============================ */
+
+@layer components {
+
+.theme-darkest {
+  background-color: var(--theme-darkest);
+}
+
+.theme-dark {
+  background-color: var(--theme-dark);
+}
+
+.theme-base {
+  background-color: var(--theme-base);
+}
+
+.theme-base-faded {
+  background-color: var(--theme-base-faded);
+}
+
+.theme-medium {
+  background-color: var(--theme-medium);
+}
+
+.theme-light {
+  background-color: var(--theme-light);
+}
+
+.theme-lightest {
+  background-color: var(--theme-lightest);
+}
+
+.theme-medium-btn:hover {
+  background-color: var(--theme-dark);
+}
+
+
+/* Text Colors */
+
+.text-color-light {
+  color: var(--theme-light);
+}
+
+.text-color-lightest {
+  color: var(--theme-lightest);
+}
+
+.text-color-darkest {
+  color: var(--theme-darkest);
+}
+
+
+/* Links */
+
+.link-hover-medium:hover {
+  text-decoration: underline;
+}
+
+.author-link-hover-medium:hover {
+  color: var(--theme-medium);
+}
+
+.active-link {
+  text-decoration: underline;
+}
+
+
+/* Borders */
+
+.all-border {
+  border: 2px solid var(--theme-light);
+}
+
+
+/* Cards */
+
+.card-shadow {
+  box-shadow: 0 10px 12px -6px var(--theme-light);
+}
+
+.hover-card-shadow:hover {
+  box-shadow: 0 8px 12px -6px var(--theme-light);
+}
+
+
+/* Inputs */
+
+.input-box:focus {
+  border: 2px solid var(--theme-lightest);
+}
+
+}

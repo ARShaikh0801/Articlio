@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Articlio Blog - Login to access your account and explore our content.">
+    <title>Articlio-Login</title>
+    <link rel="stylesheet" href="{% static '/css/output.css' %}">
+</head>
+
+<body class="theme-base-faded">
+    <div class="max-w-xl mx-auto px-4 py-12">
+        {% for message in messages %}
+        <div class="max-w-4xl mx-auto mt-4 px-4">
+            <div class="p-4 rounded-lg flex justify-between {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
+            {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
+            {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
+                {{ message }}
+                <button type="button" class="close-msg text-xl">&times;</button>
+            </div>
+        </div>
+        {% endfor %}
+<main>
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-color-darkest">
+                Login
+            </h2>
+            <p class="text-color-darkest mt-3">
+                Don't have an account? <a href="/signup" class="text-color-darkest underline">Sign Up</a>
+            </p>
+        </div>
+
+        <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+            <form action="/login" method="post" class="space-y-6" id="loginForm">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+                <div>
+                    <label for="loginusername" class="block text-color-lightest font-medium mb-1">
+                        Username
+                    </label>
+                    <input type="text" id="loginusername" name="loginusername"
+                        class="w-full theme-dark all-border text-color-lightest rounded-lg px-4 py-2 focus:outline-none input-box"
+                        placeholder="Enter Username" required>
+                </div>
+
+                <div>
+                    <label for="loginpass" class="block text-color-lightest font-medium mb-1">
+                        Password
+                    </label>
+                    <input type="password" id="loginpass" name="loginpass"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="Enter Password" required>
+                </div>
+                <div class="text-center"><a href="{% url 'resetPassword' %}" class="text-color-lightest underline">Forgot Password?</a></div>
+                <div class="text-center">
+                    <button type="submit"
+                        class="theme-medium theme-medium-btn all-border flex items-center text-white px-8 py-3 rounded-lg font-medium transition" id="loginBtn">
+                        <span id="login-text" class="text-color-lightest font-semibold">Login</span>
+                        <svg id="login-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    </div>
+</body>
+<script nonce="{{ request.csp_nonce }}">
+        window.CURRENT_USER = "{{ request.user.username }}";
+    </script>
+    <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}">
+    document.querySelectorAll('.close-msg').forEach(button => {
+        button.addEventListener('click', () => {
+            button.parentElement.remove();
+        });
+    });
+    const loginBtn=document.getElementById('loginBtn')
+    const loginText=document.getElementById('login-text')
+    const loginSpinner=document.getElementById('login-spinner')
+
+    document.getElementById("loginForm").addEventListener("submit", function () {
+        loginBtn.disabled = true;
+        loginBtn.classList.add("opacity-80", "cursor-not-allowed");
+        loginText.innerHTML = "Logging In...&nbsp;";
+        loginSpinner.classList.remove("hidden");
+    })
+    
+</script>
+</html>

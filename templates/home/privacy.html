@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Policy{% endblock title %}
+{% block homeactive %}active-link font-semibold{% endblock homeactive %}
+
+
+{% block body %}
+
+<div class="max-w-4xl mx-auto px-4 py-12" style="margin-top: 140px;">
+
+    <div class="theme-dark text-color-lightest hover-card-shadow rounded-xl p-8 all-border">
+        <h1 class="text-2xl font-bold mb-4">Privacy Policy for Articlio Blog</h1>
+        <p class="text-sm italic mb-4">Last updated: {% now "F j, Y" %}</p>
+        <p>Welcome to <strong>Articlio Blog</strong>. Your privacy matters to us. This Privacy Policy explains what information we collect, how we use it, and how we protect it when you use our website.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">1. Information We Collect</h2>
+
+        <p>We collect only the information necessary to provide our blogging services.</p>
+
+        <h3 class="font-semibold mt-4">a) Account Information</h3>
+        <p>When you register an account, we may collect:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Username</li>
+            <li>Email address</li>
+            <li>User role (reader or author)</li>
+        </ul>
+        <p>Authors are required to verify their email address before publishing posts.</p>
+
+        <h3 class="font-semibold mt-4">b) Content You Provide</h3>
+        <p>When you use Articlio Blog, we store:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Blog posts you write</li>
+            <li>Drafts saved by authors</li>
+            <li>Comments and replies you post</li>
+            <li>Bookmarks and likes associated with your account</li>
+            <li>Messages sent via the contact form</li>
+        </ul>
+
+        <h3 class="font-semibold mt-4">c) Usage &amp; Interaction Data</h3>
+        <p>We collect limited, non-personal data to improve the site:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Post view counts (tracked per session, not per user)</li>
+            <li>Pages visited and interactions such as likes or bookmarks</li>
+            <li>Theme color preferences (stored locally in your browser)</li>
+        </ul>
+
+        <h3 class="font-semibold mt-4">d) Cookies &amp; Local Storage</h3>
+        <p>Articlio Blog uses:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Session cookies for authentication and security</li>
+            <li>LocalStorage to remember theme color preferences</li>
+        </ul>
+        <p>We do <strong>not</strong> use cookies for profiling or invasive tracking.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">2. How We Use Your Information</h2>
+        <p>Your data is used to:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Authenticate users and manage accounts</li>
+            <li>Allow authors to publish and manage posts</li>
+            <li>Enable comments, replies, likes, and bookmarks</li>
+            <li>Display personalized features such as saved posts and theme colors</li>
+            <li>Improve search, discovery, and site performance</li>
+            <li>Prevent abuse and ensure platform security</li>
+        </ul>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">3. Email Communication</h2>
+        <p>We send emails only when necessary, such as:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Email verification for authors</li>
+            <li>Important account-related messages</li>
+        </ul>
+        <p>We do <strong>not</strong> send promotional or spam emails.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">4. Advertising (Google AdSense)</h2>
+        <p>Articlio Blog may display ads served by <strong>Google AdSense</strong>.</p>
+        <p>Google may use cookies or similar technologies to:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Show relevant ads</li>
+            <li>Measure ad performance</li>
+        </ul>
+        <p>You can learn more about how Google uses data here: <a href="https://policies.google.com/privacy" class="underline" target="_blank" rel="noopener noreferrer">https://policies.google.com/privacy</a></p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">5. Data Security</h2>
+        <p>We take reasonable steps to protect your information:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Sanitized blog content using security filters</li>
+            <li>Secure authentication mechanisms</li>
+            <li>Protection against unauthorized access</li>
+        </ul>
+        <p>However, no method of transmission over the internet is 100% secure.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">6. Data Sharing</h2>
+        <p>We do <strong>not</strong> sell, trade, or rent your personal data to third parties.</p>
+        <p>Data may only be shared if required by law or to protect the rights and safety of Articlio Blog and its users.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">7. Your Rights</h2>
+        <p>You have the right to:</p>
+        <ul class="list-disc list-inside mb-2">
+            <li>Access your account information</li>
+            <li>Edit or delete your posts and comments</li>
+            <li>Delete your account (subject to platform rules)</li>
+        </ul>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">8. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page.</p>
+
+        <hr class="my-6" />
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">9. Contact Us</h2>
+        <p>If you have questions about this Privacy Policy, contact us at: <a href="mailto:ArticlioOfficialBlog2026@gmail.com" class="underline">ArticlioOfficialBlog2026@gmail.com</a></p>
+    </div>
+
+</div>
+
+{% endblock %}

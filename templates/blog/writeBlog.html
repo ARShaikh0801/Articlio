@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post Blog{% endblock title %}
+{% block blogactive %}active-link font-semibold{% endblock blogactive %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto px-4 py-12 mt-36">
+
+    <h2 class="text-3xl font-bold mb-6 text-color-darkest">
+        Write a Blog Post
+    </h2>
+
+    <form method="post" action="/blog/writeBlog" id="blogForm">
+        {% csrf_token %}
+
+        <div class="mb-6">
+            <label class="block text-color-darkest font-bold font-medium mb-2">
+                Title
+            </label>
+            <input type="text" name="title" required
+                class="w-full px-4 py-2 theme-dark text-color-lightest all-border rounded-lg input-box focus:outline-none"
+                placeholder="Enter blog title" {% if post %} value="{{post.title}}" {% endif %}>
+        </div>
+        <div class="mb-6">
+            <label class="block text-color-darkest font-bold font-medium mb-2">
+                Category
+            </label>
+            <input type="text" name="category" required
+                class="w-full px-4 py-2 theme-dark text-color-lightest all-border rounded-lg input-box focus:outline-none"
+                placeholder="Enter blog Category" {% if post %} value="{{post.category}}" {% endif %}>
+                <p class="text-lg text-color-darkest mt-2">ex: Technology, News, Sports</p>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-color-darkest font-bold font-medium mb-2">
+                Content
+            </label>
+            <div id="editor-overlay" class="bg-white rounded-b-lg" style="border:2px solid var(--theme-darkest)">
+                <div id="editor" class="bg-white rounded-b-lg" style="min-height: 300px; max-height: 500px; overflow-y: auto;" {% if post %}
+                    data-content="{{post.content}}" {% endif %}>
+                </div>
+            </div>
+            <input type="hidden" name="content" id="content">
+        </div>
+        <input type="hidden" name="slug" id="slug" value="{% if post %}{{post.slug}}{% endif %}">
+        <input type="hidden" name="draftVal" id="draftVal">
+        <div class="flex gap-4 mt-4">
+        <button type="button" aria-label="Publish Blog button"
+            class="bg-gray-400 all-border text-white flex font-bold items-center px-6 py-3 rounded-lg hover:bg-gray-500 cursor-not-allowed transition"
+            id="publish" disabled>
+            <span id="publish-text">Publish Blog</span>
+            <svg id="publish-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+        </button>
+        <button type="button" aria-label="Save Draft button"
+            class="bg-gray-400 all-border text-white flex font-bold items-center px-6 py-3 rounded-lg hover:bg-gray-500 cursor-not-allowed transition"
+            id="draft" disabled>
+            <span id="draft-text">Save Draft</span>
+            <svg id="draft-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+        </button>
+        </div>
+    </form>
+
+</div>
+{% endblock body %}
+
+
+{% block js %}
+<script nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+
+<script nonce="{{ request.csp_nonce }}">
+    document.addEventListener("DOMContentLoaded", function () {
+
+        if (!window.Quill) {
+            console.error("Quill not loaded");
+            return;
+        }
+
+        if (window.ImageResize?.default && !Quill.__imageResizeRegistered) {
+            Quill.register("modules/imageResize", window.ImageResize.default);
+            Quill.__imageResizeRegistered = true;
+        }
+
+        const editor = document.getElementById("editor");
+        const submitBtn = document.getElementById("publish");
+        const draftBtn = document.getElementById("draft");
+        const titleInput = document.querySelector('input[name="title"]');
+        const categoryInput = document.querySelector('input[name="category"]');
+        const submitSpinner = document.getElementById("publish-spinner");
+        const draftSpinner = document.getElementById("draft-spinner");
+
+        const toolbar = [
+            [{ font: [] }, { size: [] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ header: 1 }, { header: 2 }, 'blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }, { align: [] }],
+            ['link', 'image', 'video', 'formula'],
+            ['clean']
+        ];
+
+        const quill = new Quill(editor, {
+            theme: "snow",
+            placeholder: "Write your blog content here...",
+            modules: {
+                toolbar: toolbar,
+                syntax: true,
+                imageResize: { displaySize: true }
+            }
+        });
+        const editorEl = document.getElementById("editor");
+        const existingContent = editorEl.dataset.content;
+
+        if (existingContent) {
+            quill.root.innerHTML = existingContent;
+        }
+
+        function togglePublish() {
+            const hasContent = quill.getText().trim().length > 0;
+            const hasTitle = titleInput.value.trim().length > 0;
+            const hasCategory = categoryInput.value.trim().length > 0;
+            submitBtn.disabled = !(hasContent && hasTitle && hasCategory);
+            draftBtn.disabled = !(hasContent && hasTitle && hasCategory);
+
+            if (submitBtn.disabled) {
+                submitBtn.classList.remove("theme-medium", "theme-medium-btn", "text-color-lightest");
+                submitBtn.classList.add("bg-gray-400", "hover:bg-gray-500", "cursor-not-allowed","text-white");
+                draftBtn.classList.remove("theme-medium", "theme-medium-btn", "text-color-lightest");
+                draftBtn.classList.add("bg-gray-400", "hover:bg-gray-500", "cursor-not-allowed","text-white");
+            }
+            else {
+                submitBtn.classList.remove("bg-gray-400", "hover:bg-gray-500", "cursor-not-allowed","text-white");
+                submitBtn.classList.add("theme-medium", "theme-medium-btn", "text-color-lightest");
+                draftBtn.classList.remove("bg-gray-400", "hover:bg-gray-500", "cursor-not-allowed","text-white");
+                draftBtn.classList.add("theme-medium", "theme-medium-btn", "text-color-lightest");
+            }
+        }
+
+        quill.on("text-change", togglePublish);
+        titleInput.addEventListener("input", togglePublish);
+        categoryInput.addEventListener("input", togglePublish);
+        togglePublish();
+
+        submitBtn.addEventListener("click", function () {
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-80");
+            document.getElementById("publish-text").innerHTML = "Publishing...&nbsp;";
+            submitSpinner.classList.remove("hidden");
+            document.getElementById("draftVal").value = "false";
+            document.getElementById("content").value = quill.root.innerHTML;
+            document.getElementById("blogForm").submit();
+        });
+
+        draftBtn.addEventListener("click", function () {
+            draftBtn.disabled = true;
+            draftBtn.classList.add("opacity-80");
+            document.getElementById("draft-text").innerHTML = "Saving...&nbsp;";
+            draftSpinner.classList.remove("hidden");
+            document.getElementById("draftVal").value = "true";
+            document.getElementById("content").value = quill.root.innerHTML;
+            document.getElementById("blogForm").submit();
+        });
+    });
+
+</script>
+
+{% endblock js %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Search Results{% endblock title %}
+{% block meta_robots %}noindex,follow{% endblock meta_robots %}
+
+{% block js %}
+<script nonce="{{ request.csp_nonce }}">
+    let searchBar=document.getElementById('query');
+    if(searchBar){
+        searchBar.value='{{ query }}';
+    }
+</script>
+{% endblock js %}
+
+{% block blogactive %}active-link font-semibold{% endblock blogactive %}
+
+{% block body %}
+
+<div class="max-w-7xl mx-auto px-4 py-10" style="margin-top: 130px;">
+    <a class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg" href="/blog">&#x2190; Go Back</a>
+    <h2 class="text-3xl font-bold text-color-darkest mt-5 mb-6">
+        Search Results...
+    </h2>
+
+    {% if allPosts|length < 1 %}
+        <p class="text-color-darkest font-semibold">
+            No such results for "{{ query|truncatechars:50 }}..."
+        </p>
+    {% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for post in allPosts %}
+    <div class="theme-dark rounded-xl hover-card-shadow transition relative">
+            <div class="p-6 flex rounded-xl flex-col h-full all-border">
+                {% if request.user.is_authenticated %}
+                <div class="absolute top-4 right-4">
+                    {% if post.sno in bookmarked %}
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-lightest w-6 h-6' viewBox='0 0 16 16'>
+                        <path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    </svg>
+                    {% endif %}
+                </div>
+                {% else %}
+                <a class="absolute top-4 right-4" href="{% url 'handleLogin' %}?next={{ request.get_full_path }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    </svg>
+                </a>
+                {% endif %}
+
+            <strong class="text-color-lightest mb-2">
+                    Article by <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.author|urlencode }}">{{ post.author }}</a> · {{ post.views }} views · {{ post.likes }} likes
+                </strong>
+
+             <h3 class="text-xl font-semibold mb-1">
+                    <a href="/blog/{{ post.slug }}"
+                       class="text-color-lightest link-hover-medium transition">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+            <div class="text-sm text-color-lightest mb-3">
+                Category: <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.category|urlencode }}">{{ post.category }}</a>
+            </div>
+            <div class="text-sm text-color-lightest mb-3">
+                    {{ post.timestamp }}
+                </div>
+
+            <div class="prose max-w-lg mb-4">
+                {{ post.content|striptags|truncatechars:200 }}
+            </div>
+
+            <div class="mt-auto">
+                <a href="/blog/{{ post.slug }}" aria-label="Continue reading {{ post.title }}"
+                   class="inline-block theme-medium all-border theme-medium-btn text-color-lightest px-5 py-2 rounded-lg transition">
+                    Continue reading
+                </a>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+
+{% endblock body %}

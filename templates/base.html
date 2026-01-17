@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}{% endblock title %}</title>
+    <meta name="description" content="{% block meta_description %}Articlio — Thoughtful articles and tutorials.{% endblock meta_description %}">
+    <meta name="robots" content="{% block meta_robots %}index,follow{% endblock meta_robots %}">
+    <link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock canonical %}">
+    <meta property="og:site_name" content="Articlio">
+    <meta property="og:title" content="{% block og_title %}Articlio{% endblock og_title %}">
+    <meta property="og:description" content="{% block og_description %}Articlio — Thoughtful articles and tutorials.{% endblock og_description %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock og_type %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'img/user.webp' %}{% endblock og_image %}">
+    <meta name="twitter:card" content="summary_large_image">
+
+
+    {% load static %}
+
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <style>
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--theme-base-faded);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-family: system-ui, sans-serif;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--theme-lightest);
+            border-top-color: var(--theme-dark);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+       @media (max-width: 1200px) {
+            #main-body {
+                display: none;
+            }
+            #mobile-blocked-message {
+                display: block;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Segoe UI", sans-serif;
+            }
+
+            body {
+                height: 100vh;
+                background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container {
+                background: white;
+                padding: 35px 30px;
+                border-radius: 16px;
+                max-width: 420px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                animation: pop 0.5s ease;
+            }
+
+            @keyframes pop {
+                from {
+                    transform: scale(0.8);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+
+            .icon {
+                font-size: 60px;
+                margin-bottom: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+                color: #222;
+            }
+
+            p {
+                font-size: 15px;
+                color: #555;
+                line-height: 1.6;
+                margin-bottom: 20px;
+            }
+
+            .tip {
+                background: #f1f5ff;
+                padding: 12px;
+                border-radius: 10px;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .footer {
+                margin-top: 18px;
+                font-size: 12px;
+                color: #777;
+            }
+        }
+
+        @media (min-width: 1201px) {
+            #main-body {
+                display: block;
+            }
+            #mobile-blocked-message {
+                display: none;
+            }
+        }
+
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+    
+    {% block css %}{% endblock css %}
+</head>
+
+<body class="theme-base" >
+    <div class="container" id="mobile-blocked-message" >
+
+        <div class="icon">🖥️</div>
+
+        <h1>Desktop Access Required</h1>
+
+        <p>
+            This website is optimized for desktop devices only.
+            Please open it on a laptop or computer for the best experience.
+        </p>
+
+        <div class="tip">
+            💡 Tip: Switch to "Desktop Site" mode or use a PC browser.
+        </div>
+
+        <div class="footer">
+            Thank you for understanding
+        </div>
+
+
+    </div>
+    <div id="main-body" >
+    <div id="page-loader">
+        <div class="spinner"></div>
+        <p class="text-color-darkest">Loading…</p>
+    </div>
+
+    <nav class="theme-darkest fixed top-0 w-full bb"
+        style="z-index: 1000; border-bottom: 2px solid var(--theme-light);">
+        <div class="max-w-8xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+
+                <a href="/" class="text-4xl font-bold text-color-lightest link-hover-medium mr-7">
+                    Articlio
+                </a>
+
+                <div class="hidden md:flex space-x-12 text-lg ml-7">
+                    <a href="/"
+                        class="{% block homeactive %}{% endblock homeactive %} text-color-lightest pl-14 link-hover-medium">
+                        Home
+                    </a>
+                    <a href="/about"
+                        class="{% block aboutactive %}{% endblock aboutactive %} text-color-lightest link-hover-medium">
+                        About Us
+                    </a>
+                    <a href="/contact"
+                        class="{% block contactactive %}{% endblock contactactive %} text-color-lightest link-hover-medium">
+                        Contact Us
+                    </a>
+                    <a href="/blog"
+                        class="{% block blogactive %}{% endblock blogactive %} text-color-lightest link-hover-medium">
+                        Blogs
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="/blog/bookmarks"
+                        class="{% block bookmarkactive %}{% endblock bookmarkactive %} text-color-lightest link-hover-medium">
+                        Bookmarks
+                    </a>
+                    {% if request.user.role == "author" %}
+                    {% if request.user.verified == False %}
+                    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}"
+                        class="text-color-lightest link-hover-medium transition">
+                        Verify
+                    </a>
+                    {% else %}
+                    <a href="/blog/myBlogs"
+                        class="{% block manageactive %}{% endblock manageactive %} text-color-lightest link-hover-medium">
+                        My Blogs
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+
+                </div>
+
+
+                <div class="flex items-center gap-4 mt-3">
+                    {% if user.is_authenticated %}
+                    <span class="text-sm text-color-lightest">
+                        Welcome back! {{ request.user }}
+                    </span>
+                    <form action="{% url 'handleLogout' %}" method="get" id="logoutForm">
+                        <input type="hidden" value="{{ request.get_full_path }}" name="next">
+                        <button
+                            class="theme-medium all-border theme-medium-btn flex items-center px-4 py-3 rounded-lg transition"
+                            id="logoutBtn">
+                            <span id="logout-text" class="text-color-lightest font-semibold">Log Out</span>
+                            <svg id="logout-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24"
+                                fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}"
+                        class="theme-medium font-semibold all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition">
+                        Log In
+                    </a>
+                    <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}"
+                        class="theme-medium font-semibold all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition">
+                        Sign Up
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+        <div class="flex justify-between w-full mb-3">
+            <form method="get" action="/search" class="flex max-w-2xl w-full items-center mx-auto">
+
+                <input type="search" name="query" id="query" placeholder="Search" class="px-3 py-3 w-full rounded-l-lg
+               focus:outline-none text-center theme-lightest" style="color:var(--theme-darkest);">
+
+                <button type="submit" name="search" title="Search" id="search-btn" class="theme-light theme-medium-btn text-color-lightest mr-2 p-3 rounded-r-lg
+            transition
+           flex items-center justify-center gap-2">
+
+                    <svg id="search-icon" class="w-6 h-6 text-color-darkest" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+
+                    <svg id="search-loader" class="w-6 h-6 text-color-darkest animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                </button>
+
+            </form>
+        </div>
+        <div class="fixed top-20 right-6 z-50">
+            <div class="flex items-center gap-2">
+            <label for="colorPicker" class="w-11 h-9 flex items-center justify-center theme-light border all-border
+               rounded-full shadow cursor-pointer hover:shadow-md transition z-50" title="Change theme color">
+                🎨
+                <input id="colorPicker" type="color" class="absolute opacity-0 w-50 h-full cursor-pointer">
+            </label>
+            <button type="button" id="colorReseter" class="theme-medium theme-medium-btn all-border text-color-lightest hidden font-semibold flex items-center px-1 py-1 rounded-lg transition">Reset Theme</button>
+            </div>
+        </div>
+
+
+    </nav>
+    {% if request.user.is_authenticated and request.user.role == 'author'%}
+    {% if request.user.verified %}
+    <a href="/blog/writeBlog" class="fixed bottom-14 right-10 z-50
+                h-16 px-6
+                theme-medium font-semibold text-color-lightest all-border theme-medium-btn text-xl
+                rounded-lg  transition
+                flex items-center justify-center">
+        + Post Blog
+    </a>
+    {% else %}
+    <a class="fixed bottom-10 right-10 all-border z-50
+                h-16 px-6
+                bg-gray-400 font-semibold text-white text-xl
+                rounded-lg hover:bg-gray-600 transition
+                flex items-center justify-center" href="{% url 'emailVerification' %}?next={{ request.get_full_path }}">
+        + Post Blog
+    </a>
+    {% endif %}
+    {% endif %}
+
+    {% for message in messages %}
+    <div class="fixed inset-x-0 flex justify-center px-4 z-50" style="top: 125px;">
+        <div class="w-full max-w-4xl p-4 rounded-lg flex justify-between
+        {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
+        {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
+        {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
+            {{ message }}
+            <button type="button" class="close-msg text-xl">&times;</button>
+        </div>
+    </div>
+
+    {% endfor %}
+    <main>
+    {% block body %}{% endblock body %}
+</main>
+<hr class="mt-8 all-border">
+<footer class="my-3 font-semibold text-lg">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <p class="text-color-darkest mb-4 md:mb-0 text-center">&copy; 2026 Articlio. All rights reserved.</p>
+        <div class="mt-4 flex space-x-4 flex-column md:flex-row justify-center items-center">
+            <a href="/about" class="text-color-darkest hover:underline">About Us</a>
+            <a href="/contact" class="text-color-darkest hover:underline">Contact Us</a>
+            <a href="/privacy" class="text-color-darkest hover:underline">Privacy Policy</a>
+            <a href="/terms" class="text-color-darkest hover:underline">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+    <script nonce="{{ request.csp_nonce }}">
+        window.CURRENT_USER = "{{ request.user.username }}";
+    </script>
+    <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        const logoutBtn = document.getElementById('logoutBtn')
+        const logoutText = document.getElementById('logout-text')
+        const logoutSpinner = document.getElementById('logout-spinner')
+        if (document.getElementById("logoutForm")) {
+
+            document.getElementById("logoutForm").addEventListener("submit", function () {
+                logoutBtn.disabled = true;
+                logoutBtn.classList.add("opacity-80", "cursor-not-allowed");
+                logoutText.innerHTML = "Logging out...&nbsp;";
+                logoutSpinner.classList.remove("hidden");
+            })
+        }
+
+        window.addEventListener("load", () => {
+            document.getElementById("page-loader").remove();
+        });
+
+        const searchForm = document.querySelector('form[action="/search"]');
+
+        document.addEventListener("click", function (e) {
+            const link = e.target.closest("a");
+
+            if (!link) return;
+
+            const href = link.getAttribute("href");
+
+            if (href && href.startsWith("/search")) {
+                const btn = document.getElementById("search-btn");
+                const icon = document.getElementById("search-icon");
+                const loader = document.getElementById("search-loader");
+
+                icon.classList.add("hidden");
+                loader.classList.remove("hidden");
+
+                btn.disabled = true;
+                btn.classList.add("opacity-70", "cursor-not-allowed");
+            }
+        });
+
+
+
+        if (searchForm) {
+            searchForm.addEventListener("submit", () => {
+                const btn = document.getElementById("search-btn");
+                const icon = document.getElementById("search-icon");
+                const loader = document.getElementById("search-loader");
+
+                icon.classList.add("hidden");
+                loader.classList.remove("hidden");
+
+                btn.disabled = true;
+                btn.classList.add("opacity-70", "cursor-not-allowed");
+            });
+        }
+        document.querySelectorAll('.close-msg').forEach(button => {
+            button.addEventListener('click', () => {
+                button.parentElement.remove();
+            });
+        });
+    </script>
+    {% block js %}{% endblock js %}
+    </div>
+</body>
+
+</html>

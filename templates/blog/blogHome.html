@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Blog Home{% endblock title %}
+
+{% block js %}
+<script nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}">
+    let filterSelect = document.getElementById('filter');
+    let authorsSelect = document.getElementById('authors');
+    let categorySelect = document.getElementById('category');
+    document.addEventListener('DOMContentLoaded', ()=>{
+        filterSelect.value = "{{ filter }}";
+        authorsSelect.value = "{{ selectedAuthor }}";
+        categorySelect.value = "{{ selectedCategory }}";
+    })
+    filterSelect.addEventListener('change', () => {
+        filterSelect.form.submit();
+    })
+    authorsSelect.addEventListener('change', () => {
+        authorsSelect.form.submit();
+    })
+    categorySelect.addEventListener('change', () => {
+        categorySelect.form.submit();
+    })
+    let ResetBtn=document.getElementById('reset-btn')
+    if(ResetBtn){
+        ResetBtn.addEventListener('click', () => {
+            filterSelect.value = "all";
+            authorsSelect.value = "all";
+            categorySelect.value = "all";
+            ResetBtn.form.submit();
+        })
+    }
+</script>
+{% endblock js %}
+
+{% block blogactive %}active-link font-semibold{% endblock blogactive %}
+
+{% block body %}
+
+<div class="max-w-7xl mx-auto px-4 py-10" style="margin-top: 130px;">
+
+    <form action="/blog/filteredBlogs" class="mb-3">
+        <select aria-label="filter" name="filter" id="filter" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Posts</option>
+            <option value="liked">Most Liked Posts First</option>
+            <option value="unliked">Least Liked Posts First</option>
+            <option value="viewed">Most viewed Posts First</option>
+            <option value="unviewed">Least viewed Posts First</option>
+            <option value="latest">Latest First</option>
+            <option value="old">Oldest First</option>
+        </select>
+        <select aria-label="authors Filter" name="authors" id="authors" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Authors</option>
+            {% for author in authors %}
+            <option value="{{ author.author }}">{{ author.author }}</option>
+            {% endfor %}
+        </select>
+        <select aria-label="category Filter" name="category" id="category" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Categories</option>
+            {% for category in categories %}
+            <option value="{{ category.category }}">{{ category.category }}</option>
+            {% endfor %}
+        </select>
+        {% if selectedAuthor != "all" or filter != "all" or selectedCategory != "all" %}
+            <button title="Reset Filter button" class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg" id="reset-btn" type="button">Reset</button>
+        {% endif %}
+    </form>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for post in allPosts %}
+        <div class="theme-dark rounded-xl hover-card-shadow transition relative">
+            <div class="p-6 flex rounded-xl flex-col h-full all-border">
+                {% if request.user.is_authenticated %}
+                <div class="absolute top-4 right-4 saveSVG" id="save-btn-{{post.sno}}" data-sno="{{post.sno}}" data-url="{% url 'toggleBookmark' %}" data-csrf="{{csrf_token}}">
+                    {% if post.sno in bookmarked %}
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-lightest w-6 h-6 cursor-pointer' viewBox='0 0 16 16'>
+                        <path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest bi bi-bookmark cursor-pointer"  fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    </svg>
+                    {% endif %}
+                </div>
+                {% else %}
+                <a class="absolute top-4 right-4" aria-label="save button" href="{% url 'handleLogin' %}?next={{ request.get_full_path }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                <strong class="text-color-lightest mb-2">
+                    Article by <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.author|urlencode }}">{{ post.author }}</a> · {{ post.views }} views · {{ post.likes }} likes
+                </strong>
+
+                <h3 class="text-xl font-semibold mb-1">
+                    <a href="/blog/{{ post.slug }}"
+                       class="text-color-lightest link-hover-medium transition">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                <div class="text-sm text-color-lightest mb-3">
+                    Category: <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.category|urlencode }}">{{ post.category }}</a>
+                </div>
+
+                <div class="text-sm text-color-lightest mb-3">
+                    {{ post.timestamp }}
+                </div>
+
+                <div class="text-color-light max-w-lg mb-4">
+                    {{ post.summary }}
+                </div>
+
+                <div class="mt-auto">
+                    <a href="/blog/{{ post.slug }}" aria-label="Continue reading {{ post.title }}"
+                       class="inline-block theme-medium all-border theme-medium-btn text-color-lightest px-5 py-2 rounded-lg transition">
+                        Continue reading
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock body %}

@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Articlio Blog - Sign up to create an account and join our community.">
+    <title>Articlio-SignUp</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+
+<body class="theme-base-faded">
+    <div class="max-w-xl mx-auto px-4 py-12">
+
+        {% for message in messages %}
+        <div class="max-w-4xl mx-auto my-3 px-4">
+            <div class="p-4 rounded-lg flex justify-between
+            {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
+            {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
+            {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
+                {{ message }}
+                <button type="button" class="close-msg text-xl">&times;</button>
+            </div>
+        </div>
+
+        {% endfor %}
+        <main>
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-color-darkest">
+                Sign Up
+            </h2>
+            <p class="text-color-darkest mt-3">
+                Already have an account? <a href="/login" class="underline">Log In</a>
+            </p>
+        </div>
+
+        <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+            <form action="/signup" method="post" id="signupForm" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+                <input type="hidden" name="verified" id="verified">
+                <div>
+                    <label for="username" class="block text-color-lightest font-medium mb-1">
+                        Username
+                    </label>
+                    <input type="text" id="username" name="username"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="Enter Username" required>
+                </div>
+                <div>
+                    <label for="name" class="block text-color-lightest font-medium mb-1">
+                        Name
+                    </label>
+                    <input type="text" id="name" name="name"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="Enter Your Name" required>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-color-lightest font-medium mb-1">
+                        Email address
+                    </label>
+                    <input type="email" id="email" name="email"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="you@example.com" required>
+                </div>
+                <div>
+                    <label for="role" class="block text-color-lightest font-medium mb-1">Role</label>
+                    <select id="role" name="role"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box">
+                        <option value="reader" selected>Reader</option>
+                        <option value="author">Author</option>
+                    </select>
+                    <p class="text-color-lightest mt-3 note"></p>
+                </div>
+                <div>
+                    <label for="pass1" class="block text-color-lightest font-medium mb-1">
+                        Password
+                    </label>
+                    <input type="password" id="pass1" name="pass1"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="Select Strong Password" required>
+                    <div class="mt-2 py-3 px-2 rounded-lg" id="strength" style="display: none;">
+
+                    </div>
+                </div>
+                <div>
+                    <label for="pass2" class="block text-color-lightest font-medium mb-1">
+                        Again Enter Your Password
+                    </label>
+                    <input type="password" id="pass2" name="pass2"
+                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                        placeholder="Re-enter Password" required>
+                    <ul style="display: none;" class="my-2 bg-red-100 p-2 rounded-lg" id="confpass">
+                    </ul>
+                </div>
+                <div class="text-center">
+                    <label class="inline-flex items-center text-color-lightest">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" name="terms" value="true" required>
+                        <span class="ml-2">I agree to the <a href="/terms" class="underline">Terms and Conditions</a></span>
+                    </label>
+                </div>
+                <div class="text-center">
+                    <label class="inline-flex items-center text-color-lightest">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" name="privacy" value="true" required>
+                        <span class="ml-2">I agree with <a href="/privacy" class="underline">Privacy Policy</a></span>
+                    </label>
+                </div>
+                <div class="text-center">
+                    <button disabled type="submit" class="px-8 py-3 all-border flex items-center rounded-lg font-medium transition bg-gray-400 hover:bg-gray-500 text-gray-200 cursor-not-allowed opacity-60" id="signup-btn">
+                        <span id="signup-text">Sign Up</span>
+                        <svg id="signup-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+        </main>
+
+    </div>
+    <script nonce="{{ request.csp_nonce }}">
+        window.CURRENT_USER = "{{ request.user.username }}";
+    </script>
+    <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        document.querySelectorAll('.close-msg').forEach(button => {
+            button.addEventListener('click', () => {
+                button.parentElement.remove();
+            });
+        });
+
+        let selectedRole = document.getElementById('role')
+        document.getElementById('verified').value='True'
+        selectedRole.addEventListener('change', () => {
+            const selectedRoleValue = selectedRole.value;
+            const note = document.querySelector('.note');
+            if (selectedRoleValue === 'author') {
+                note.textContent = "Note: Author Needs Email verification before posting blogs";
+                document.getElementById('verified').value='False'
+            }
+            else {
+                note.textContent = "";
+                document.getElementById('verified').value='True'
+            }
+        });
+
+        const passInput = document.getElementById('pass1')
+        const passInput2 = document.getElementById('pass2')
+        const strength = document.getElementById('strength')
+        const signupBtn=document.getElementById('signup-btn')
+
+        passInput.addEventListener("input", function () {
+            const value = passInput.value;
+            const onlyLettersLower = /^[a-z]+$/;
+            const onlyLettersUpper = /^[A-Z]+$/;
+            const onlyNumbers = /^\d+$/;
+            const onlySpecial = /^[\W_]+$/;
+            const hasLower = /[a-z]/;
+            const hasUpper = /[A-Z]/;
+            const hasNumber = /\d/;
+            const hasSpecial = /[\W_]/;
+
+            if (value.length === 0) {
+                strength.style.display = "none";
+                strength.textContent = "";
+                strength.classList.remove("bg-red-100", "text-red-700", "bg-yellow-100", "text-yellow-700", "bg-green-100", "text-green-700");
+                return;
+            }
+            strength.style.display = "block";
+            strength.classList.remove("bg-red-100", "text-red-700", "bg-yellow-100", "text-yellow-700", "bg-green-100", "text-green-700");
+
+            const hasLowerCase = hasLower.test(value);
+            const hasUpperCase = hasUpper.test(value);
+            const hasNumeric = hasNumber.test(value);
+            const hasSpecialChar = hasSpecial.test(value);
+            const charTypeCount = hasLowerCase + hasUpperCase + hasNumeric + hasSpecialChar;
+
+            if (
+                onlyLettersLower.test(value) ||
+                onlyLettersUpper.test(value) ||
+                onlyNumbers.test(value) ||
+                onlySpecial.test(value)
+            ) {
+                strength.textContent = "Weak Password";
+                strength.classList.add("bg-red-100");
+                strength.classList.add("text-red-700");
+            }
+            else if (hasLowerCase && hasUpperCase && hasNumeric && hasSpecialChar) {
+                strength.textContent = "Strong Password";
+                strength.classList.add("bg-green-100");
+                strength.classList.add("text-green-700");
+            }
+            else if (charTypeCount >= 2) {
+                strength.textContent = "Medium Password";
+                strength.classList.add("bg-yellow-100");
+                strength.classList.add("text-yellow-700");
+            }
+            else {
+                strength.style.display = "none";
+                strength.textContent = "";
+                strength.classList.remove("bg-red-100", "text-red-700", "bg-yellow-100", "text-yellow-700", "bg-green-100", "text-green-700");
+            }
+        });
+        const confpass = document.getElementById('confpass')
+
+        passInput2.addEventListener("input", function () {
+            if (passInput2.value.length === 0) {
+                confpass.style.display = "none";
+                confpass.innerHTML = "";
+                return;
+            }
+            confpass.style.display = "block";
+            if (passInput2.value !== passInput.value) {
+                confpass.style.color = "red"
+                confpass.innerHTML = "<li><b>Password Is Not Matching</b></li>"
+                signupBtn.disabled = true
+                signupBtn.classList.add("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60","hover:bg-gray-500")
+                signupBtn.classList.remove("theme-medium", "theme-medium-btn", "text-color-lightest")
+            }
+            else {
+                confpass.style.display = "none";
+                confpass.innerHTML = "";
+                signupBtn.disabled = false
+                signupBtn.classList.remove("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60","hover:bg-gray-500")
+                signupBtn.classList.add("theme-medium", "theme-medium-btn", "text-color-lightest")
+            }
+        })
+
+        const signupText=document.getElementById('signup-text')
+        const signupSpinner=document.getElementById('signup-spinner')
+
+        document.getElementById("signupForm").addEventListener("submit", function () {
+            signupBtn.disabled = true;
+            signupBtn.classList.add("opacity-80", "cursor-not-allowed");
+            signupText.innerHTML = "Signing In...&nbsp;";
+            signupSpinner.classList.remove("hidden");
+        })
+    </script>
+</body>
+
+</html>

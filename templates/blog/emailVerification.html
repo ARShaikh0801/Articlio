@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Articlio Blog - Verify your email to complete the registration process and access all features.">
+    <title>Articlio | Email Verification</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+
+<body class="theme-base-faded">
+
+<div class="max-w-xl mx-auto px-4 py-12">
+
+    {% for message in messages %}
+    <div class="mb-4 p-4 rounded-lg flex justify-between
+        {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
+        {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
+        {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
+        {{ message }}
+        <button type="button" class="close-msg text-xl">&times;</button>
+    </div>
+    {% endfor %}
+<main>
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-color-darkest">
+            Verify Your Email
+        </h2>
+        <p class="text-color-darkest mt-2">
+            We will send a verification code to your email
+        </p>
+    </div>
+
+    <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+
+        <form method="post" action="{% url 'emailVerification' %}" class="space-y-6">
+            {% csrf_token %}
+
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <div>
+                <label class="block text-color-lightest font-medium mb-1">
+                    Email
+                </label>
+                <input type="email" aria-label="email"
+                       class="w-full rounded-lg theme-dark all-border text-color-lightest input-box px-4 py-2 "
+                       value="{{ request.user.email }}"
+                       readonly>
+            </div>
+
+            {% if step == "verify" %}
+            <div>
+                <label for="emailcode" class="block text-color-lightest font-medium mb-1">
+                    Verification Code
+                </label>
+                <input type="text" aria-label="emailcode"
+                       id="emailcode"
+                       name="emailcode"
+                       class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 input-box focus:outline-none"
+                       placeholder="Enter the code sent to your email"
+                       required>
+            </div>
+            {% endif %}
+
+            <div class="text-center">
+                {% if step == "verify" %}
+                    <button type="submit" aria-label="verify email button"
+                        class="theme-medium theme-medium-btn all-border text-color-lightest px-8 py-3 rounded-lg font-medium transition">
+                        Verify Email
+                    </button>
+                {% else %}
+                    <button type="submit" aria-label="send verification code button"
+                        class="theme-medium theme-medium-btn all-border text-color-lightest px-8 py-3 rounded-lg font-medium transition">
+                        Send Verification Code
+                    </button>
+                {% endif %}
+            </div>
+
+        </form>
+
+    </div>
+    </main>
+</div>
+<script nonce="{{ request.csp_nonce }}">
+        window.CURRENT_USER = "{{ request.user.username }}";
+    </script>
+    <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}">
+    document.querySelectorAll('.close-msg').forEach(button => {
+        button.addEventListener('click', () => {
+            button.parentElement.remove();
+        });
+    });
+</script>
+</body>
+</html>

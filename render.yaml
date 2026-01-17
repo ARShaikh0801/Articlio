@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: articlio-blog
+    env: python
+    pythonVersion: 3.11
+    buildCommand: ./build.sh
+    startCommand: gunicorn Articlio.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    staticPublicPath: /static
