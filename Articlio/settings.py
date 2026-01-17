@@ -35,7 +35,18 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-placeholder-replace-m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = str(os.environ.get('DEBUG', 'True')).lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+allowed_hosts = os.environ.get('ALLOWED_HOSTS')
+
+if allowed_hosts:
+    ALLOWED_HOSTS = allowed_hosts.split(',')
+else:
+    ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://articlio-nb11.onrender.com",
+    "https://*.onrender.com"
+]
+
 
 AUTH_USER_MODEL = 'home.CustomUser'
 # Application definition
