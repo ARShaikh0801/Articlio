@@ -6,8 +6,8 @@ __pycache__/
 # Environments
 env/
 venv/
-.itvproject/
-itvproject/
+.articlioEnv/
+articlioEnv/
 
 # Django
 *.log
