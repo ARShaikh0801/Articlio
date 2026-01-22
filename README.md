@@ -1,5 +1,8 @@
 # Articlio Blog
 
+Live on : https://articlio-nb11.onrender.com/
+Note : Render Takes time to awake site 
+
 A Django-based blogging platform with user authentication, blog management, and interactive features.
 
 ## Features
@@ -15,7 +18,7 @@ A Django-based blogging platform with user authentication, blog management, and 
 
 - **Backend**: Django 5.2
 - **Frontend**: HTML, CSS (Tailwind), JavaScript
-- **Database**: SQLite
+- **Database**: SQLite (Development) , postgresql (Production)
 - **CSS Framework**: Tailwind CSS
 - **Build Tool**: npm
 
