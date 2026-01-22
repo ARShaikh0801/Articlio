@@ -76,6 +76,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",
+    "https:",
+)
+
 ROOT_URLCONF = 'Articlio.urls'
 
 TEMPLATES = [

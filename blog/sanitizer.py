@@ -33,6 +33,7 @@ ALLOWED_STYLES = [
     'width',
     'height'
 ]
+ALLOWED_PROTOCOLS = ["http", "https", "data"]
 
 css_sanitizer = CSSSanitizer(
     allowed_css_properties=ALLOWED_STYLES
@@ -44,6 +45,7 @@ def sanitize_html(html):
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
         css_sanitizer=css_sanitizer,
+        protocols=ALLOWED_PROTOCOLS,
         strip=True
     )
 
