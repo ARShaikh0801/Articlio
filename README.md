@@ -1,7 +1,8 @@
 # Articlio Blog
 
 Live on : https://articlio-nb11.onrender.com/
-Note : Render Takes time to awake site 
+
+Note : Render Takes time to awake site (This Site is only utilized for big screens)
 
 A Django-based blogging platform with user authentication, blog management, and interactive features.
 
