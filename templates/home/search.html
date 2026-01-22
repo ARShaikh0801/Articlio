@@ -69,9 +69,9 @@
                     {{ post.timestamp }}
                 </div>
 
-            <div class="prose max-w-lg mb-4">
-                {{ post.content|striptags|truncatechars:200 }}
-            </div>
+            <div class="text-color-light max-w-lg mb-4">
+                    {{ post.summary }}
+                </div>
 
             <div class="mt-auto">
                 <a href="/blog/{{ post.slug }}" aria-label="Continue reading {{ post.title }}"
