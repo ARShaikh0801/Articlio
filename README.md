@@ -9,6 +9,7 @@ A Django-based blogging platform with user authentication, blog management, and 
 ## Features
 
 - User authentication and profile management
+- User Can select Its own theme
 - Create, edit, and publish blog posts
 - Category and tag system for blog organization
 - Bookmarking functionality for readers
@@ -99,6 +100,7 @@ Visit `http://localhost:8000` in your browser.
 <img width="1920" height="930" alt="11" src="https://github.com/user-attachments/assets/51f9d7b5-80a2-4369-a9dc-8481285d45a8" />
 <img width="1920" height="931" alt="12" src="https://github.com/user-attachments/assets/4820b23e-fcab-4c66-b614-509f0c8ce7d8" />
 <img width="1890" height="1039" alt="13" src="https://github.com/user-attachments/assets/e8daf271-85e3-4f61-b73c-c5998aafd84f" />
+<img width="1917" height="928" alt="t" src="https://github.com/user-attachments/assets/8d7343e1-215c-4df1-ac89-9f92f0252850" />
 
 
 ## Contributing
