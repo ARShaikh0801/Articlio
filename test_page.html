@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Blog Home</title>
+    <meta name="description" content="Articlio — Thoughtful articles and tutorials.">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="http://127.0.0.1:8000/blog/">
+    <meta property="og:site_name" content="Articlio">
+    <meta property="og:title" content="Articlio">
+    <meta property="og:description" content="Articlio — Thoughtful articles and tutorials.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://127.0.0.1:8000/blog/">
+    <meta property="og:image" content="/static/img/user.webp">
+    <meta name="twitter:card" content="summary_large_image">
+
+
+    
+
+    <link href="/static/css/output.css" rel="stylesheet">
+    <style>
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--theme-base-faded);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-family: system-ui, sans-serif;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--theme-lightest);
+            border-top-color: var(--theme-dark);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Nav link styles ── */
+        .nav-link {
+            color: var(--theme-lightest);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            padding: 8px 18px;
+            position: relative;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .nav-link.active-link {
+            text-decoration: none;
+            background: rgba(255,255,255,0.12);
+        }
+        .nav-link.active-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background: var(--theme-lightest);
+            border-radius: 1px;
+        }
+       @media (max-width: 1200px) {
+            #main-body {
+                display: none;
+            }
+            #mobile-blocked-message {
+                display: block;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Segoe UI", sans-serif;
+            }
+
+            body {
+                height: 100vh;
+                background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container {
+                background: white;
+                padding: 35px 30px;
+                border-radius: 16px;
+                max-width: 420px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                animation: pop 0.5s ease;
+            }
+
+            @keyframes pop {
+                from {
+                    transform: scale(0.8);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+
+            .icon {
+                font-size: 60px;
+                margin-bottom: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+                color: #222;
+            }
+
+            p {
+                font-size: 15px;
+                color: #555;
+                line-height: 1.6;
+                margin-bottom: 20px;
+            }
+
+            .tip {
+                background: #f1f5ff;
+                padding: 12px;
+                border-radius: 10px;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .footer {
+                margin-top: 18px;
+                font-size: 12px;
+                color: #777;
+            }
+        }
+
+        @media (min-width: 1201px) {
+            #main-body {
+                display: block;
+            }
+            #mobile-blocked-message {
+                display: none;
+            }
+        }
+
+        .color-picker-label:hover {
+            border-color: var(--theme-light) !important;
+            transform: scale(1.1) !important;
+        }
+        .search-input:focus {
+            border-color: var(--theme-light) !important;
+            box-shadow: 0 0 0 3px hsla(from var(--theme-base) h s l / 0.25) !important;
+        }
+        .logout-btn:hover {
+            background: var(--theme-medium) !important;
+        }
+        .login-link:hover {
+            opacity: 0.7 !important;
+        }
+        .signup-link:hover {
+            background: var(--theme-dark) !important;
+        }
+
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+    
+    
+</head>
+
+<body class="theme-base" >
+    <div class="container" id="mobile-blocked-message" >
+
+        <div class="icon">🖥️</div>
+
+        <h1>Desktop Access Required</h1>
+
+        <p>
+            This website is optimized for desktop devices only.
+            Please open it on a laptop or computer for the best experience.
+        </p>
+
+        <div class="tip">
+            💡 Tip: Switch to "Desktop Site" mode or use a PC browser.
+        </div>
+
+        <div class="footer">
+            Thank you for understanding
+        </div>
+
+
+    </div>
+    <div id="main-body" style="display: flex; flex-direction: column; min-height: 100vh;">
+    <div id="page-loader">
+        <div class="spinner"></div>
+        <p class="text-color-darkest">Loading…</p>
+    </div>
+
+    <!-- ═══════════════ MODERN NAVBAR ═══════════════ -->
+    <nav class="fixed top-0 w-full z-[100]" id="main-nav">
+
+        <!-- ── TOP BAR: Logo · Search · Auth ── -->
+        <div class="theme-darkest" style="border-bottom: 1px solid var(--theme-medium);">
+            <div class="max-w-7xl mx-auto px-6 flex items-center" style="height: 56px; overflow: visible;">
+
+                <!-- Logo (flex:1, left-aligned) -->
+                <div style="flex: 1; display: flex; align-items: center;">
+                    <a href="/" class="flex items-center gap-2 text-color-lightest" style="text-decoration:none;">
+                        <span style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px; font-family: Georgia, 'Times New Roman', serif;">Articlio</span>
+                    </a>
+                </div>
+
+                <!-- Search (flex:1, centered) -->
+                <div style="flex: 1; display: flex; justify-content: center;">
+                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 360px;" id="nav-search-form">
+                        <input type="search" name="query" id="query" class="search-input" placeholder="Search articles…"
+                        style="width:100%; padding: 7px 40px 7px 16px; border-radius: 999px; border: 1px solid var(--theme-medium); background: var(--theme-dark); color: var(--theme-lightest); font-size: 0.85rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;">
+                        <button type="submit" name="search" id="search-btn" title="Search"
+                            style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
+                            <svg id="search-icon" style="width:16px; height:16px; color:var(--theme-light);" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            <svg id="search-loader" class="animate-spin hidden" style="width:16px; height:16px; color:var(--theme-light);" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Auth + Color Picker (flex:1, right-aligned) -->
+                <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+                    
+                        <a href="/login?next=/blog/" class="login-link"
+                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 12px; transition: opacity 0.2s;">
+                            Log In
+                        </a>
+                        <a href="/signup?next=/blog/" class="signup-link"
+                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 18px; border-radius: 999px; background: var(--theme-medium); border: 1px solid var(--theme-light); transition: all 0.2s;">
+                            Sign Up
+                        </a>
+                    
+
+                    <!-- Theme Color Picker -->
+                    <div style="position:relative; margin-left:4px; z-index:10;">
+                        <label for="colorPicker" class="color-picker-label" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%; border: 1px solid var(--theme-medium); background: var(--theme-dark); cursor:pointer; transition: all 0.2s; font-size: 14px; position:relative;"
+                            title="Change theme color">
+                            🎨
+                            <input id="colorPicker" type="color" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer;">
+                        </label>
+                        <button type="button" id="colorReseter"
+                            style="display:none; position:absolute; top:40px; right:0; white-space:nowrap; padding: 3px 10px; font-size: 0.7rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--theme-light); background: var(--theme-medium); color: var(--theme-lightest); cursor:pointer; transition: all 0.2s;">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── BOTTOM BAR: Navigation Links ── -->
+        <div class="theme-dark" style="border-bottom: 2px solid var(--theme-light);">
+            <div class="max-w-7xl mx-auto px-6 flex items-center justify-center" style="height: 42px; gap: 2px;">
+                <a href="/" class=" nav-link">Home</a>
+                <a href="/blog" class="active-link font-semibold nav-link">Blogs</a>
+                
+                <a href="/about" class=" nav-link">About</a>
+                <a href="/contact" class=" nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Action Button for Authors -->
+    
+
+    <!-- Flash Messages -->
+    <div class="fixed inset-x-0 flex flex-col items-center px-4 z-[95] pointer-events-none" style="top: 104px;">
+        
+    </div>
+
+    <!-- Main Content -->
+    <main style="flex-grow: 1; padding-top: 115px; padding-bottom: 4rem;">
+        
+
+<div class="max-w-7xl mx-auto px-4 py-10" >
+
+    <form action="/blog/filteredBlogs" class="mb-3">
+        <select aria-label="filter" name="filter" id="filter" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Posts</option>
+            <option value="liked">Most Liked Posts First</option>
+            <option value="unliked">Least Liked Posts First</option>
+            <option value="viewed">Most viewed Posts First</option>
+            <option value="unviewed">Least viewed Posts First</option>
+            <option value="latest">Latest First</option>
+            <option value="old">Oldest First</option>
+        </select>
+        <select aria-label="authors Filter" name="authors" id="authors" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Authors</option>
+            
+            <option value="Articlio">Articlio</option>
+            
+        </select>
+        <select aria-label="category Filter" name="category" id="category" class="rounded-lg all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 focus:outline-none input-box">
+            <option value="all">All Categories</option>
+            
+            <option value="About Site">About Site</option>
+            
+        </select>
+        
+    </form>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="theme-dark rounded-xl hover-card-shadow transition relative">
+            <div class="p-6 flex rounded-xl flex-col h-full all-border">
+                
+                <a class="absolute top-4 right-4" aria-label="save button" href="/login?next=/blog/">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    </svg>
+                </a>
+                
+                <strong class="text-color-lightest mb-2">
+                    Article by <a class="text-color-lightest author-link-hover-medium underline" href="/search?query=Articlio">Articlio</a> · 4 views · 0 likes
+                </strong>
+
+                <h3 class="text-xl font-semibold mb-1">
+                    <a href="/blog/articlio-blog"
+                       class="text-color-lightest link-hover-medium transition">
+                        Articlio Blog
+                    </a>
+                </h3>
+
+                <div class="text-sm text-color-lightest mb-3">
+                    Category: <a class="text-color-lightest author-link-hover-medium underline" href="/search?query=About%20Site">About Site</a>
+                </div>
+
+                <div class="text-sm text-color-lightest mb-3">
+                    Jan. 17, 2026, 10:50 p.m.
+                </div>
+
+                <div class="text-color-light max-w-lg mb-4">
+                    Welcome to Articlio Blog – A Modern Blogging Platform for EveryoneIntroductionArticlio Blog is a modern, feature-packed blogging platform built for readers, writers, and creators who value…
+                </div>
+
+                <div class="mt-auto">
+                    <a href="/blog/articlio-blog" aria-label="Continue reading Articlio Blog"
+                       class="inline-block theme-medium all-border theme-medium-btn text-color-lightest px-5 py-2 rounded-lg transition">
+                        Continue reading
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        
+
+    </div>
+
+</div>
+
+
+    </main>
+
+    <!-- STICKY FOOTER -->
+    <footer class="mt-auto theme-darkest" style="border-top: 2px solid var(--theme-light);">
+        <div class="max-w-7xl mx-auto" style="padding: 32px 24px 24px;">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:20px;">
+                <div>
+                    <span style="font-size: 1.4rem; font-weight: 800; color: var(--theme-lightest); font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.3px; display:block; margin-bottom:6px;">Articlio</span>
+                    <p style="font-size: 0.78rem; color: var(--theme-light); opacity:0.75; margin:0;">&copy; 2026 Articlio. All rights reserved.</p>
+                </div>
+                <nav style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size: 0.82rem; font-weight:500;">
+                    <a href="/about" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">About Us</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/contact" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Contact Us</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/privacy" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Privacy Policy</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/terms" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Terms of Service</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script nonce="cv0DJNsGtuUgd20mgu_xOg">
+        window.CURRENT_USER = "";
+    </script>
+    <script nonce="cv0DJNsGtuUgd20mgu_xOg" src="/static/js/colorPicker.js"></script>
+    <script nonce="cv0DJNsGtuUgd20mgu_xOg">
+        const logoutBtn = document.getElementById('logoutBtn')
+        const logoutText = document.getElementById('logout-text')
+        const logoutSpinner = document.getElementById('logout-spinner')
+        if (document.getElementById("logoutForm")) {
+            document.getElementById("logoutForm").addEventListener("submit", function () {
+                if(logoutBtn) {
+                    logoutBtn.disabled = true;
+                    logoutBtn.classList.add("opacity-80", "cursor-not-allowed");
+                }
+                if(logoutText) logoutText.innerHTML = "Logging out...&nbsp;";
+                if(logoutSpinner) logoutSpinner.classList.remove("hidden");
+            })
+        }
+
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("page-loader");
+            if (loader) loader.remove();
+        });
+
+        // Setup search button loading state
+        const searchForms = document.querySelectorAll('form[action="/search"]');
+        searchForms.forEach(form => {
+            form.addEventListener("submit", (e) => {
+                const btn = form.querySelector("button[type='submit']");
+                const icon = form.querySelector("svg:first-of-type");
+                const loader = form.querySelector("svg.animate-spin");
+                
+                if(icon) icon.classList.add("hidden");
+                if(loader) loader.classList.remove("hidden");
+                if(btn) {
+                    btn.disabled = true;
+                    btn.classList.add("opacity-70", "cursor-not-allowed");
+                }
+            });
+        });
+
+        document.querySelectorAll('.close-msg').forEach(button => {
+            button.addEventListener('click', () => {
+                const msgBox = button.parentElement;
+                msgBox.style.opacity = '0';
+                setTimeout(() => msgBox.remove(), 300);
+            });
+        });
+    </script>
+    
+<script nonce="cv0DJNsGtuUgd20mgu_xOg" src="/static/js/bookmarkToggle.js"></script>
+<script nonce="cv0DJNsGtuUgd20mgu_xOg">
+    let filterSelect = document.getElementById('filter');
+    let authorsSelect = document.getElementById('authors');
+    let categorySelect = document.getElementById('category');
+    document.addEventListener('DOMContentLoaded', ()=>{
+        filterSelect.value = "all";
+        authorsSelect.value = "all";
+        categorySelect.value = "all";
+    })
+    filterSelect.addEventListener('change', () => {
+        filterSelect.form.submit();
+    })
+    authorsSelect.addEventListener('change', () => {
+        authorsSelect.form.submit();
+    })
+    categorySelect.addEventListener('change', () => {
+        categorySelect.form.submit();
+    })
+    let ResetBtn=document.getElementById('reset-btn')
+    if(ResetBtn){
+        ResetBtn.addEventListener('click', () => {
+            filterSelect.value = "all";
+            authorsSelect.value = "all";
+            categorySelect.value = "all";
+            ResetBtn.form.submit();
+        })
+    }
+</script>
+
+    </div>
+</body>
+
+</html>

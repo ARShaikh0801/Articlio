@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from django.contrib import messages
 import os
+import dj_database_url
 
 # Load environment variables from a local .env file when available
 try:
@@ -107,14 +108,11 @@ WSGI_APPLICATION = 'Articlio.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql' if os.environ.get('DB_NAME') else 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('DB_NAME') or BASE_DIR / 'db.sqlite3',
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 

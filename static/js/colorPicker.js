@@ -72,26 +72,27 @@ if (colorReseter && colorPicker) {
             sessionStorage.setItem('baseTheme', JSON.stringify(DEFAULT_COLOR));
         }
 
-        colorReseter.classList.add('hidden');
+        colorReseter.style.display = 'none';
     });
 }
 
 if (colorPicker && colorReseter) {
-    colorPicker.addEventListener('input', function () {
+    function handleColorSelection() {
         const selectedColor = colorPicker.value;
 
         applyThemeFromHex(selectedColor);
 
-        selectedColor === DEFAULT_COLOR
-            ? colorReseter.classList.add('hidden')
-            : colorReseter.classList.remove('hidden');
+        colorReseter.style.display = selectedColor.toLowerCase() === DEFAULT_COLOR.toLowerCase() ? 'none' : 'block';
 
         if (`${window.CURRENT_USER}` !== "") {
             localStorage.setItem(`${window.CURRENT_USER}_baseTheme`, JSON.stringify(selectedColor));
         } else {
             sessionStorage.setItem('baseTheme', JSON.stringify(selectedColor));
         }
-    });
+    }
+
+    colorPicker.addEventListener('input', handleColorSelection);
+    colorPicker.addEventListener('change', handleColorSelection);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -111,8 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
     applyThemeFromHex(savedColor);
 
     if (colorReseter) {
-        savedColor === DEFAULT_COLOR
-            ? colorReseter.classList.add('hidden')
-            : colorReseter.classList.remove('hidden');
+        colorReseter.style.display = savedColor.toLowerCase() === DEFAULT_COLOR.toLowerCase() ? 'none' : 'block';
     }
 });

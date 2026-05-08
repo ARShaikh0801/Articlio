@@ -13,7 +13,7 @@
 <body class="theme-base-faded">
     <div class="max-w-xl mx-auto px-4 py-12">
         {% for message in messages %}
-        <div class="max-w-4xl mx-auto mt-4 px-4">
+        <div class="max-w-4xl mx-auto my-3 px-4">
             <div class="p-4 rounded-lg flex justify-between {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
             {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
             {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">

@@ -48,6 +48,37 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* ── Nav link styles ── */
+        .nav-link {
+            color: var(--theme-lightest);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            padding: 8px 18px;
+            position: relative;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .nav-link.active-link {
+            text-decoration: none;
+            background: rgba(255,255,255,0.12);
+        }
+        .nav-link.active-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background: var(--theme-lightest);
+            border-radius: 1px;
+        }
        @media (max-width: 1200px) {
             #main-body {
                 display: none;
@@ -134,6 +165,24 @@
             }
         }
 
+        .color-picker-label:hover {
+            border-color: var(--theme-light) !important;
+            transform: scale(1.1) !important;
+        }
+        .search-input:focus {
+            border-color: var(--theme-light) !important;
+            box-shadow: 0 0 0 3px hsla(from var(--theme-base) h s l / 0.25) !important;
+        }
+        .logout-btn:hover {
+            background: var(--theme-medium) !important;
+        }
+        .login-link:hover {
+            opacity: 0.7 !important;
+        }
+        .signup-link:hover {
+            background: var(--theme-dark) !important;
+        }
+
     </style>
     <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
     
@@ -162,177 +211,163 @@
 
 
     </div>
-    <div id="main-body" >
+    <div id="main-body" style="display: flex; flex-direction: column; min-height: 100vh;">
     <div id="page-loader">
         <div class="spinner"></div>
         <p class="text-color-darkest">Loading…</p>
     </div>
 
-    <nav class="theme-darkest fixed top-0 w-full bb"
-        style="z-index: 1000; border-bottom: 2px solid var(--theme-light);">
-        <div class="max-w-8xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
+    <!-- ═══════════════ MODERN NAVBAR ═══════════════ -->
+    <nav class="fixed top-0 w-full z-[100]" id="main-nav">
 
-                <a href="/" class="text-4xl font-bold text-color-lightest link-hover-medium mr-7">
-                    Articlio
-                </a>
+        <!-- ── TOP BAR: Logo · Search · Auth ── -->
+        <div class="theme-darkest" style="border-bottom: 1px solid var(--theme-medium);">
+            <div class="max-w-7xl mx-auto px-6 flex items-center" style="height: 56px; overflow: visible;">
 
-                <div class="hidden md:flex space-x-12 text-lg ml-7">
-                    <a href="/"
-                        class="{% block homeactive %}{% endblock homeactive %} text-color-lightest pl-14 link-hover-medium">
-                        Home
+                <!-- Logo (flex:1, left-aligned) -->
+                <div style="flex: 1; display: flex; align-items: center;">
+                    <a href="/" class="flex items-center gap-2 text-color-lightest" style="text-decoration:none;">
+                        <span style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px; font-family: Georgia, 'Times New Roman', serif;">Articlio</span>
                     </a>
-                    <a href="/about"
-                        class="{% block aboutactive %}{% endblock aboutactive %} text-color-lightest link-hover-medium">
-                        About Us
-                    </a>
-                    <a href="/contact"
-                        class="{% block contactactive %}{% endblock contactactive %} text-color-lightest link-hover-medium">
-                        Contact Us
-                    </a>
-                    <a href="/blog"
-                        class="{% block blogactive %}{% endblock blogactive %} text-color-lightest link-hover-medium">
-                        Blogs
-                    </a>
-                    {% if user.is_authenticated %}
-                    <a href="/blog/bookmarks"
-                        class="{% block bookmarkactive %}{% endblock bookmarkactive %} text-color-lightest link-hover-medium">
-                        Bookmarks
-                    </a>
-                    {% if request.user.role == "author" %}
-                    {% if request.user.verified == False %}
-                    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}"
-                        class="text-color-lightest link-hover-medium transition">
-                        Verify
-                    </a>
-                    {% else %}
-                    <a href="/blog/myBlogs"
-                        class="{% block manageactive %}{% endblock manageactive %} text-color-lightest link-hover-medium">
-                        My Blogs
-                    </a>
-                    {% endif %}
-                    {% endif %}
-                    {% endif %}
-
                 </div>
 
-
-                <div class="flex items-center gap-4 mt-3">
-                    {% if user.is_authenticated %}
-                    <span class="text-sm text-color-lightest">
-                        Welcome back! {{ request.user }}
-                    </span>
-                    <form action="{% url 'handleLogout' %}" method="get" id="logoutForm">
-                        <input type="hidden" value="{{ request.get_full_path }}" name="next">
-                        <button
-                            class="theme-medium all-border theme-medium-btn flex items-center px-4 py-3 rounded-lg transition"
-                            id="logoutBtn">
-                            <span id="logout-text" class="text-color-lightest font-semibold">Log Out</span>
-                            <svg id="logout-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24"
-                                fill="none">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4" />
+                <!-- Search (flex:1, centered) -->
+                <div style="flex: 1; display: flex; justify-content: center;">
+                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 360px;" id="nav-search-form">
+                        <input type="search" name="query" id="query" class="search-input" placeholder="Search articles…"
+                        style="width:100%; padding: 7px 40px 7px 16px; border-radius: 999px; border: 1px solid var(--theme-medium); background: var(--theme-dark); color: var(--theme-lightest); font-size: 0.85rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;">
+                        <button type="submit" name="search" id="search-btn" title="Search"
+                            style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
+                            <svg id="search-icon" style="width:16px; height:16px; color:var(--theme-light);" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            <svg id="search-loader" class="animate-spin hidden" style="width:16px; height:16px; color:var(--theme-light);" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                             </svg>
                         </button>
                     </form>
-                    {% else %}
-                    <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}"
-                        class="theme-medium font-semibold all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition">
-                        Log In
-                    </a>
-                    <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}"
-                        class="theme-medium font-semibold all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition">
-                        Sign Up
-                    </a>
-                    {% endif %}
                 </div>
 
+                <!-- Auth + Color Picker (flex:1, right-aligned) -->
+                <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+                    {% if user.is_authenticated %}
+                        <span style="font-size:0.8rem; color:var(--theme-light); margin-right: 4px;">
+                            Hi, {{ request.user }}
+                        </span>
+                        <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0;">
+                            <input type="hidden" value="{{ request.get_full_path }}" name="next">
+                            <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px;">
+                                <span id="logout-text">Log Out</span>
+                                <svg id="logout-spinner" class="animate-spin hidden" style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}" class="login-link"
+                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 12px; transition: opacity 0.2s;">
+                            Log In
+                        </a>
+                        <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}" class="signup-link"
+                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 18px; border-radius: 999px; background: var(--theme-medium); border: 1px solid var(--theme-light); transition: all 0.2s;">
+                            Sign Up
+                        </a>
+                    {% endif %}
+
+                    <!-- Theme Color Picker -->
+                    <div style="position:relative; margin-left:4px; z-index:10;">
+                        <label for="colorPicker" class="color-picker-label" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%; border: 1px solid var(--theme-medium); background: var(--theme-dark); cursor:pointer; transition: all 0.2s; font-size: 14px; position:relative;"
+                            title="Change theme color">
+                            🎨
+                            <input id="colorPicker" type="color" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer;">
+                        </label>
+                        <button type="button" id="colorReseter"
+                            style="display:none; position:absolute; top:40px; right:0; white-space:nowrap; padding: 3px 10px; font-size: 0.7rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--theme-light); background: var(--theme-medium); color: var(--theme-lightest); cursor:pointer; transition: all 0.2s;">
+                            Reset
+                        </button>
+                    </div>
+                </div>
             </div>
-
         </div>
-        <div class="flex justify-between w-full mb-3">
-            <form method="get" action="/search" class="flex max-w-2xl w-full items-center mx-auto">
 
-                <input type="search" name="query" id="query" placeholder="Search" class="px-3 py-3 w-full rounded-l-lg
-               focus:outline-none text-center theme-lightest" style="color:var(--theme-darkest);">
-
-                <button type="submit" name="search" title="Search" id="search-btn" class="theme-light theme-medium-btn text-color-lightest mr-2 p-3 rounded-r-lg
-            transition
-           flex items-center justify-center gap-2">
-
-                    <svg id="search-icon" class="w-6 h-6 text-color-darkest" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                    </svg>
-
-                    <svg id="search-loader" class="w-6 h-6 text-color-darkest animate-spin hidden" viewBox="0 0 24 24" fill="none">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                    </svg>
-                </button>
-
-            </form>
-        </div>
-        <div class="fixed top-20 right-6 z-50">
-            <div class="flex items-center gap-2">
-            <label for="colorPicker" class="w-11 h-9 flex items-center justify-center theme-light border all-border
-               rounded-full shadow cursor-pointer hover:shadow-md transition z-50" title="Change theme color">
-                🎨
-                <input id="colorPicker" type="color" class="absolute opacity-0 w-50 h-full cursor-pointer">
-            </label>
-            <button type="button" id="colorReseter" class="theme-medium theme-medium-btn all-border text-color-lightest hidden font-semibold flex items-center px-1 py-1 rounded-lg transition">Reset Theme</button>
+        <!-- ── BOTTOM BAR: Navigation Links ── -->
+        <div class="theme-dark" style="border-bottom: 2px solid var(--theme-light);">
+            <div class="max-w-7xl mx-auto px-6 flex items-center justify-center" style="height: 42px; gap: 2px;">
+                <a href="/" class="{% block homeactive %}{% endblock homeactive %} nav-link">Home</a>
+                <a href="/blog" class="{% block blogactive %}{% endblock blogactive %} nav-link">Blogs</a>
+                {% if user.is_authenticated %}
+                <a href="/blog/bookmarks" class="{% block bookmarkactive %}{% endblock bookmarkactive %} nav-link">Bookmarks</a>
+                {% if request.user.role == "author" %}
+                    {% if request.user.verified == False %}
+                    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link" style="color: var(--theme-lightest);">Verify</a>
+                    {% else %}
+                    <a href="/blog/myBlogs" class="{% block manageactive %}{% endblock manageactive %} nav-link">My Blogs</a>
+                    {% endif %}
+                {% endif %}
+                {% endif %}
+                <a href="/about" class="{% block aboutactive %}{% endblock aboutactive %} nav-link">About</a>
+                <a href="/contact" class="{% block contactactive %}{% endblock contactactive %} nav-link">Contact</a>
             </div>
         </div>
-
-
     </nav>
+
+    <!-- Floating Action Button for Authors -->
     {% if request.user.is_authenticated and request.user.role == 'author'%}
     {% if request.user.verified %}
-    <a href="/blog/writeBlog" class="fixed bottom-14 right-10 z-50
-                h-16 px-6
-                theme-medium font-semibold text-color-lightest all-border theme-medium-btn text-xl
-                rounded-lg  transition
-                flex items-center justify-center">
-        + Post Blog
+    <a href="/blog/writeBlog" class="fixed bottom-10 right-10 z-[90] h-16 px-6 theme-medium font-bold text-color-lightest all-border theme-medium-btn text-lg rounded-full shadow-2xl hover:-translate-y-1 hover:shadow-xl transition-all flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Post Blog
     </a>
     {% else %}
-    <a class="fixed bottom-10 right-10 all-border z-50
-                h-16 px-6
-                bg-gray-400 font-semibold text-white text-xl
-                rounded-lg hover:bg-gray-600 transition
-                flex items-center justify-center" href="{% url 'emailVerification' %}?next={{ request.get_full_path }}">
-        + Post Blog
+    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="fixed bottom-10 right-10 z-[90] h-16 px-6 bg-gray-400 font-bold text-white text-lg rounded-full shadow-lg hover:bg-gray-600 transition-all flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Post Blog
     </a>
     {% endif %}
     {% endif %}
 
-    {% for message in messages %}
-    <div class="fixed inset-x-0 flex justify-center px-4 z-50" style="top: 125px;">
-        <div class="w-full max-w-4xl p-4 rounded-lg flex justify-between
-        {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
-        {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
-        {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
-            {{ message }}
-            <button type="button" class="close-msg text-xl">&times;</button>
+    <!-- Flash Messages -->
+    <div class="fixed inset-x-0 flex flex-col items-center px-4 z-[95] pointer-events-none" style="top: 104px;">
+        {% for message in messages %}
+        <div class="w-full max-w-2xl p-4 rounded-lg flex justify-between shadow-lg pointer-events-auto transition-transform
+            {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-800{% endif %}
+            {% if message.tags == 'danger' %}bg-red-100 border border-red-400 text-red-800{% endif %}
+            {% if message.tags == 'warning' %}bg-yellow-100 border border-yellow-400 text-yellow-800{% endif %}" style="margin-top: 8px; margin-bottom: 8px;">
+            <span class="font-medium">{{ message }}</span>
+            <button type="button" class="close-msg text-xl leading-none font-bold opacity-70 hover:opacity-100 transition">&times;</button>
         </div>
+        {% endfor %}
     </div>
 
-    {% endfor %}
-    <main>
-    {% block body %}{% endblock body %}
-</main>
-<hr class="mt-8 all-border">
-<footer class="my-3 font-semibold text-lg">
-    <div class="max-w-7xl mx-auto px-4 py-6">
-        <p class="text-color-darkest mb-4 md:mb-0 text-center">&copy; 2026 Articlio. All rights reserved.</p>
-        <div class="mt-4 flex space-x-4 flex-column md:flex-row justify-center items-center">
-            <a href="/about" class="text-color-darkest hover:underline">About Us</a>
-            <a href="/contact" class="text-color-darkest hover:underline">Contact Us</a>
-            <a href="/privacy" class="text-color-darkest hover:underline">Privacy Policy</a>
-            <a href="/terms" class="text-color-darkest hover:underline">Terms of Service</a>
+    <!-- Main Content -->
+    <main style="flex-grow: 1; padding-top: 115px; padding-bottom: 4rem;">
+        {% block body %}{% endblock body %}
+    </main>
+
+    <!-- STICKY FOOTER -->
+    <footer class="mt-auto theme-darkest" style="border-top: 2px solid var(--theme-light);">
+        <div class="max-w-7xl mx-auto" style="padding: 32px 24px 24px;">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:20px;">
+                <div>
+                    <span style="font-size: 1.4rem; font-weight: 800; color: var(--theme-lightest); font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.3px; display:block; margin-bottom:6px;">Articlio</span>
+                    <p style="font-size: 0.78rem; color: var(--theme-light); opacity:0.75; margin:0;">&copy; 2026 Articlio. All rights reserved.</p>
+                </div>
+                <nav style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size: 0.82rem; font-weight:500;">
+                    <a href="/about" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">About Us</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/contact" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Contact Us</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/privacy" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Privacy Policy</a>
+                    <span style="color:var(--theme-light); opacity:0.4;">·</span>
+                    <a href="/terms" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Terms of Service</a>
+                </nav>
+            </div>
         </div>
-    </div>
-</footer>
+    </footer>
+
+    <!-- Scripts -->
     <script nonce="{{ request.csp_nonce }}">
         window.CURRENT_USER = "{{ request.user.username }}";
     </script>
@@ -342,59 +377,43 @@
         const logoutText = document.getElementById('logout-text')
         const logoutSpinner = document.getElementById('logout-spinner')
         if (document.getElementById("logoutForm")) {
-
             document.getElementById("logoutForm").addEventListener("submit", function () {
-                logoutBtn.disabled = true;
-                logoutBtn.classList.add("opacity-80", "cursor-not-allowed");
-                logoutText.innerHTML = "Logging out...&nbsp;";
-                logoutSpinner.classList.remove("hidden");
+                if(logoutBtn) {
+                    logoutBtn.disabled = true;
+                    logoutBtn.classList.add("opacity-80", "cursor-not-allowed");
+                }
+                if(logoutText) logoutText.innerHTML = "Logging out...&nbsp;";
+                if(logoutSpinner) logoutSpinner.classList.remove("hidden");
             })
         }
 
         window.addEventListener("load", () => {
-            document.getElementById("page-loader").remove();
+            const loader = document.getElementById("page-loader");
+            if (loader) loader.remove();
         });
 
-        const searchForm = document.querySelector('form[action="/search"]');
-
-        document.addEventListener("click", function (e) {
-            const link = e.target.closest("a");
-
-            if (!link) return;
-
-            const href = link.getAttribute("href");
-
-            if (href && href.startsWith("/search")) {
-                const btn = document.getElementById("search-btn");
-                const icon = document.getElementById("search-icon");
-                const loader = document.getElementById("search-loader");
-
-                icon.classList.add("hidden");
-                loader.classList.remove("hidden");
-
-                btn.disabled = true;
-                btn.classList.add("opacity-70", "cursor-not-allowed");
-            }
-        });
-
-
-
-        if (searchForm) {
-            searchForm.addEventListener("submit", () => {
-                const btn = document.getElementById("search-btn");
-                const icon = document.getElementById("search-icon");
-                const loader = document.getElementById("search-loader");
-
-                icon.classList.add("hidden");
-                loader.classList.remove("hidden");
-
-                btn.disabled = true;
-                btn.classList.add("opacity-70", "cursor-not-allowed");
+        // Setup search button loading state
+        const searchForms = document.querySelectorAll('form[action="/search"]');
+        searchForms.forEach(form => {
+            form.addEventListener("submit", (e) => {
+                const btn = form.querySelector("button[type='submit']");
+                const icon = form.querySelector("svg:first-of-type");
+                const loader = form.querySelector("svg.animate-spin");
+                
+                if(icon) icon.classList.add("hidden");
+                if(loader) loader.classList.remove("hidden");
+                if(btn) {
+                    btn.disabled = true;
+                    btn.classList.add("opacity-70", "cursor-not-allowed");
+                }
             });
-        }
+        });
+
         document.querySelectorAll('.close-msg').forEach(button => {
             button.addEventListener('click', () => {
-                button.parentElement.remove();
+                const msgBox = button.parentElement;
+                msgBox.style.opacity = '0';
+                setTimeout(() => msgBox.remove(), 300);
             });
         });
     </script>
