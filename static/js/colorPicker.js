@@ -1,117 +1,138 @@
-function hexToHSL(hex) {
-    hex = hex.replace('#', '');
+/**
+ * Articlio Theme System - 5 curated blog-friendly palettes
+ * Each theme generates CSS custom properties for the full shade range.
+ */
 
-    let r = parseInt(hex.substring(0, 2), 16) / 255;
-    let g = parseInt(hex.substring(2, 4), 16) / 255;
-    let b = parseInt(hex.substring(4, 6), 16) / 255;
+const THEMES = {
+    ocean:   { h: 210, s: 50, l: 45, label: 'Ocean',   color: '#3a7cc0' },
+    emerald: { h: 160, s: 42, l: 42, label: 'Emerald', color: '#3da88a' },
+    slate:   { h: 220, s: 14, l: 40, label: 'Slate',   color: '#575e6d' },
+    crimson: { h: 350, s: 50, l: 45, label: 'Crimson', color: '#b04050' },
+    violet:  { h: 270, s: 35, l: 45, label: 'Violet',  color: '#7a50b0' },
+};
 
-    let max = Math.max(r, g, b);
-    let min = Math.min(r, g, b);
-    let delta = max - min;
+const DEFAULT_THEME = 'ocean';
 
-    let h = 0;
-    let s = 0;
-    let l = (max + min) / 2;
+function applyTheme(themeName) {
+    const t = THEMES[themeName];
+    if (!t) return;
 
-    if (delta !== 0) {
-        s = delta / (1 - Math.abs(2 * l - 1));
+    // Lighter shade system for a clean, airy blog feel
+    const softS = Math.round(t.s * 0.6);  // desaturated for backgrounds
 
-        switch (max) {
-            case r:
-                h = ((g - b) / delta) % 6;
-                break;
-            case g:
-                h = (b - r) / delta + 2;
-                break;
-            case b:
-                h = (r - g) / delta + 4;
-                break;
-        }
-
-        h = Math.round(h * 60);
-        if (h < 0) h += 360;
-    }
-
-    return {
-        h,
-        s: Math.round(s * 100),
-        l: Math.round(l * 100)
-    };
-}
-
-function applyThemeFromHex(hex) {
-    const { h, s, l } = hexToHSL(hex);
-
-    const theme = {
-        "--theme-base": `hsl(${h}, ${s}%, ${l}%)`,
-        "--theme-darkest": `hsl(${h}, ${s}%, ${(l - 30 + 100) % 100}%)`,
-        "--theme-dark": `hsl(${h}, ${s}%, ${(l - 20 + 100) % 100}%)`,
-        "--theme-medium": `hsl(${h}, ${s}%, ${(l - 10 + 100) % 100}%)`,
-        "--theme-base-faded": `hsl(${h}, ${s}%, ${l}%, 0.6)`,
-        "--theme-light": `hsl(${h}, ${s}%, ${(l + 30) % 100}%)`,
-        "--theme-lightest": `hsl(${h}, ${s}%, ${(l + 40) % 100}%)`
+    const vars = {
+        '--theme-base':       `hsl(${t.h}, ${t.s}%, ${t.l}%)`,
+        '--theme-darkest':    `hsl(${t.h}, ${t.s}%, 18%)`,
+        '--theme-dark':       `hsl(${t.h}, ${t.s}%, 28%)`,
+        '--theme-medium':     `hsl(${t.h}, ${t.s}%, ${t.l + 8}%)`,
+        '--theme-base-faded': `hsl(${t.h}, ${softS}%, ${t.l}%, 0.10)`,
+        '--theme-light':      `hsl(${t.h}, ${softS}%, 90%)`,
+        '--theme-lightest':   `hsl(${t.h}, ${Math.round(t.s * 0.3)}%, 96%)`,
     };
 
-    for (const key in theme) {
-        document.documentElement.style.setProperty(key, theme[key]);
+    for (const key in vars) {
+        document.documentElement.style.setProperty(key, vars[key]);
     }
 }
 
-const DEFAULT_COLOR = "#2e8ab8";
-const colorPicker = document.getElementById('colorPicker');
-const colorReseter = document.getElementById('colorReseter');
-
-if (colorReseter && colorPicker) {
-    colorReseter.addEventListener('click', function () {
-        colorPicker.value = DEFAULT_COLOR;
-        applyThemeFromHex(DEFAULT_COLOR);
-
-        if (`${window.CURRENT_USER}` !== "") {
-            localStorage.setItem(`${window.CURRENT_USER}_baseTheme`, JSON.stringify(DEFAULT_COLOR));
-        } else {
-            sessionStorage.setItem('baseTheme', JSON.stringify(DEFAULT_COLOR));
-        }
-
-        colorReseter.style.display = 'none';
+/** Mark the active pill visually */
+function setActivePill(themeName) {
+    document.querySelectorAll('.theme-pill').forEach(pill => {
+        pill.classList.remove('theme-pill--active');
+        pill.setAttribute('aria-pressed', 'false');
     });
+    const active = document.querySelector(`.theme-pill[data-theme="${themeName}"]`);
+    if (active) {
+        active.classList.add('theme-pill--active');
+        active.setAttribute('aria-pressed', 'true');
+    }
 }
 
-if (colorPicker && colorReseter) {
-    function handleColorSelection() {
-        const selectedColor = colorPicker.value;
+/** Build the pill buttons inside a container */
+function renderThemePills(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-        applyThemeFromHex(selectedColor);
+    container.innerHTML = '';
 
-        colorReseter.style.display = selectedColor.toLowerCase() === DEFAULT_COLOR.toLowerCase() ? 'none' : 'block';
+    for (const [name, t] of Object.entries(THEMES)) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-pill';
+        btn.dataset.theme = name;
+        btn.title = t.label;
+        btn.setAttribute('aria-label', `${t.label} theme`);
+        btn.setAttribute('aria-pressed', 'false');
+        btn.style.setProperty('--pill-color', t.color);
 
-        if (`${window.CURRENT_USER}` !== "") {
-            localStorage.setItem(`${window.CURRENT_USER}_baseTheme`, JSON.stringify(selectedColor));
-        } else {
-            sessionStorage.setItem('baseTheme', JSON.stringify(selectedColor));
+        btn.addEventListener('click', () => {
+            applyTheme(name);
+            setActivePill(name);
+            
+            if (window.USER_IS_AUTHENTICATED) {
+                // Persistent across pages in this session
+                try { sessionStorage.setItem('articlio_theme', name); } catch(e) {}
+                
+                // Persist to DB (Optimistic UI - we already applied it above)
+                fetch('/update-theme', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ theme: name })
+                }).catch(err => console.error('Theme DB sync failed:', err));
+            } else {
+                try { localStorage.setItem('articlio_theme', name); } catch(e) {}
+            }
+        });
+
+        container.appendChild(btn);
+    }
+}
+
+/** CSRF helper for the theme update API */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
     }
-
-    colorPicker.addEventListener('input', handleColorSelection);
-    colorPicker.addEventListener('change', handleColorSelection);
+    return cookieValue;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    let savedColor = DEFAULT_COLOR;
+/** Initialize on DOMContentLoaded */
+document.addEventListener('DOMContentLoaded', () => {
+    let saved = DEFAULT_THEME;
 
-    if (`${window.CURRENT_USER}` !== "") {
-        savedColor = JSON.parse(
-            localStorage.getItem(`${window.CURRENT_USER}_baseTheme`)
-        ) || DEFAULT_COLOR;
+    if (window.USER_IS_AUTHENTICATED) {
+        // Check session storage first (for cross-page persistence without DB hits)
+        const sessionStored = sessionStorage.getItem('articlio_theme');
+        if (sessionStored && THEMES[sessionStored]) {
+            saved = sessionStored;
+        } else if (window.DB_THEME && THEMES[window.DB_THEME]) {
+            // Use DB theme if session is empty (e.g. first page load of session)
+            saved = window.DB_THEME;
+            sessionStorage.setItem('articlio_theme', saved);
+        }
     } else {
-        savedColor = JSON.parse(
-            sessionStorage.getItem('baseTheme')
-        ) || DEFAULT_COLOR;
+        // Fallback to localStorage for guests
+        try {
+            const stored = localStorage.getItem('articlio_theme');
+            if (stored && THEMES[stored]) saved = stored;
+        } catch(e) {}
     }
 
-    if (colorPicker) colorPicker.value = savedColor;
-    applyThemeFromHex(savedColor);
+    applyTheme(saved);
 
-    if (colorReseter) {
-        colorReseter.style.display = savedColor.toLowerCase() === DEFAULT_COLOR.toLowerCase() ? 'none' : 'block';
-    }
+    // Render pills in both desktop and mobile nav
+    renderThemePills('theme-pills');
+    renderThemePills('theme-pills-mobile');
+    setActivePill(saved);
 });

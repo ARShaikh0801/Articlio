@@ -14,9 +14,9 @@ class CSPMiddleware:
         response["Content-Security-Policy"] = (
             "default-src 'self'; "
             f"script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com 'nonce-{nonce}'; "
-            "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; "
+            "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; "
             "img-src 'self' https: data:; "
-            "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
             "frame-src https://googleads.g.doubleclick.net;"
             "object-src 'none'; "
             "base-uri 'self'; "

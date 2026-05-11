@@ -10,6 +10,7 @@ class CustomUser(AbstractUser):
     name=models.CharField(max_length=200)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='reader')
     verified=models.BooleanField(default=False)
+    theme_preference = models.CharField(max_length=20, default='ocean')
     
     def __str__(self):
         return self.username

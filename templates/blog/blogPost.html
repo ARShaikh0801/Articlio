@@ -3,9 +3,9 @@
 {% load humanize %}
 {% load get_dict %}
 
-{% block title %}{{ post.title }} — Articlio{% endblock title %}
+{% block title %}{{ post.title }} - Articlio{% endblock title %}
 {% block meta_description %}{{ post.content|striptags|truncatechars:160 }}{% endblock meta_description %}
-{% block og_title %}{{ post.title }} — Articlio{% endblock og_title %}
+{% block og_title %}{{ post.title }} - Articlio{% endblock og_title %}
 {% block og_description %}{{ post.content|striptags|truncatechars:160 }}{% endblock og_description %}
 {% block og_type %}article{% endblock og_type %}
 {% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}
@@ -47,7 +47,7 @@
 {% endblock css %}
 {% block body %}
 
-<div class="max-w-5xl mx-auto px-4 py-10 relative z-50" >
+<div class="max-w-5xl mx-auto px-4 py-10" >
     <a class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg" href="/blog">&#x2190; Go Back</a>
     
     <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-2 relative">
@@ -75,9 +75,9 @@
         {% endif %}
     </h1>
 
-    <p class="text-sm text-color-lightest mb-6">
+    <p class="text-sm text-color-dark mb-6">
         {{ post.timestamp }} · by
-        <a href="/search?query={{ post.author|urlencode }}" class="text-color-lightest author-link-hover-medium underline">
+        <a href="/search?query={{ post.author|urlencode }}" class="text-color-dark author-link-hover-medium underline">
             {{ post.author }}
         </a>
         · {{ post.views }} views
@@ -115,7 +115,7 @@
             </button>
 
             <div class="like-box inline-flex items-center">
-                <span id="like-count-{{ post.sno }}" class="count text-color-lightest">
+                <span id="like-count-{{ post.sno }}" class="count text-color-dark">
                     {{ post.likes }}
                 </span>
             </div>
@@ -149,12 +149,12 @@
 
     <hr class="my-10 all-border">
 
-    <h2 class="text-2xl text-color-darkest font-semibold mb-4">
+    <h2 id="comments-section" class="text-2xl text-color-darkest font-semibold mb-4">
         Comments ({{ comments.count }})
     </h2>
 
     {% if user.is_authenticated %}
-    <form action="/blog/postComment" method="post" class="mb-8 w-full flex items-center gap-2">
+    <form action="/blog/postComment" method="post" class="mb-8 w-full flex items-stretch gap-2">
         {% csrf_token %}
         <input type="hidden" name="postSno" value="{{ post.sno }}">
         <input type="hidden" name="parentSno" value="">
@@ -171,7 +171,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                 <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
             </svg>
-            Comment
+            <span class="hidden sm:inline">Comment</span>
         </button>
     </form>
     {% else %}
@@ -180,179 +180,479 @@
         </p>
     {% endif %}
 
-    {% for comment in comments %}
-    <div class="theme-dark text-color-lightest  rounded-xl p-4 mb-6 card-shadow all-border">
-
-        <div class="flex items-start gap-4">
-            <img src="/static/img/user.webp"
-                 class="w-12 h-12 rounded-full"
-                 alt="{{ comment.user.username }}">
-
-            <div class="flex-1">
-                <div class="flex items-center gap-2">
-                    <b class="font-semibold text-color-lightest">{{ comment.user.username }}</b>
-                    <span class="text-xs text-color-light">
-                        {{ comment.timestamp|naturaltime }}
-                    </span>
-                </div>
-
-                <p class="text-color-lightest mt-1">
-                    {{ comment.comment }}
-                </p>
-
-                <div class="mt-3">
-                    {% if user.is_authenticated %}
-                    <details>
-                        <summary class="cursor-pointer text-sm text-color-lightest hover:underline">
-                            Reply
-                        </summary>
-
-                        <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-center gap-2">
-                            {% csrf_token %}
-                            <input type="hidden" name="postSno" value="{{ post.sno }}">
-                            <input type="hidden" name="parentSno" value="{{ comment.sno }}">
-
-                            <input
-                                type="text"
-                                name="comment"
-                                placeholder="Write a reply..."
-                                class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-
-                            <button
-                                type="submit"
-                                class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                </svg>
-                                Reply
-                            </button>
-                        </form>
-                    </details>
-                    {% else %}
-                    <p class="text-sm text-color-light mt-2">
-                        Log in to reply
-                    </p>
-                    {% endif %}
-                </div>
-
-                <div class="mt-4 space-y-4">
-                    {% for reply in repDict|get_val:comment.sno %}
-                    {% if forloop.counter <= 2 %}
-                    <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                        <img src="/static/img/user.webp"
-                             class="w-9 h-9 rounded-full"
-                             alt="{{ reply.user.username }}">
-
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <b class="text-color-light font-semibold">{{ reply.user.username }}</b>
-                                <span class="text-xs text-color-light">
-                                    {{ reply.timestamp|naturaltime }}
-                                </span>
-                            </div>
-                            <p class="text-color-light">
-                                {{ reply.comment }}
-                            </p>
+    <div id="comments-container">
+    {# First loop: User's own comments (Latest first) #}
+    {% for comment in comments|dictsortreversed:"timestamp" %}
+        {% if user.is_authenticated and comment.user == user %}
+        <div class="comment-item bg-white rounded-xl mb-6 card-shadow" data-comment-sno="{{ comment.sno }}" style="border-left: 4px solid var(--theme-base);">
+            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                <div class="flex items-start gap-4">
+                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="{{ comment.user.username }}">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <b class="font-semibold text-color-darkest">{{ comment.user.username }} (You)</b>
+                            <span class="text-xs text-color-dark">{{ comment.timestamp|naturaltime }}</span>
                         </div>
-                    </div>
-                    {% endif %}
-                    {% if forloop.counter >= 3 %}
-                        {% if forloop.counter == 3 %}
+                        <p class="text-color-darkest mt-1">{{ comment.comment }}</p>
+                        <div class="mt-3">
                             <details>
-                                <summary class="cursor-pointer text-sm text-color-light ml-3 pl-5 hover:underline">More replies</summary>
-                        {% endif %}
-                        <div class="flex gap-3 mt-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                        <img src="/static/img/user.webp"
-                             class="w-9 h-9 rounded-full"
-                             alt="User">
-
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <b class="text-color-light font-semibold">{{ reply.user.username }}</b>
-                                <span class="text-xs text-color-light">
-                                    {{ reply.timestamp|naturaltime }}
-                                </span>
+                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
+                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="postSno" value="{{ post.sno }}">
+                                    <input type="hidden" name="parentSno" value="{{ comment.sno }}">
+                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
+                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Reply</span>
+                                    </button>
+                                </form>
+                            </details>
+                        </div>
+                        <div class="mt-4 space-y-4">
+                            {% for reply in repDict|get_val:comment.sno %}
+                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
+                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="{{ reply.user.username }}">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <b class="text-color-darkest font-semibold">{{ reply.user.username }}</b>
+                                        <span class="text-xs text-color-dark">{{ reply.timestamp|naturaltime }}</span>
+                                    </div>
+                                    <p class="text-color-darkest">{{ reply.comment }}</p>
+                                </div>
                             </div>
-                            <p class="text-color-light">
-                                {{ reply.comment }}
-                            </p>
+                            {% endfor %}
                         </div>
                     </div>
-                        {% if forloop.last%}
-                            </details>
-                        {% endif %}
-                    {% endif %}
-                    {% endfor %}
                 </div>
             </div>
         </div>
-        
-    </div>
+        {% endif %}
     {% endfor %}
-    <button class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 opacity-50"  type="button" id="toTopBtn">^</button>
+
+    {# Second loop: Everyone else's comments (Latest first) #}
+    {% for comment in comments|dictsortreversed:"timestamp" %}
+        {% if not user.is_authenticated or comment.user != user %}
+        <div class="comment-item bg-white rounded-xl mb-6 card-shadow" data-comment-sno="{{ comment.sno }}" style="border-left: 4px solid var(--theme-base);">
+            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                <div class="flex items-start gap-4">
+                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="{{ comment.user.username }}">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <b class="font-semibold text-color-darkest">{{ comment.user.username }}</b>
+                            <span class="text-xs text-color-dark">{{ comment.timestamp|naturaltime }}</span>
+                        </div>
+                        <p class="text-color-darkest mt-1">{{ comment.comment }}</p>
+                        <div class="mt-3">
+                            {% if user.is_authenticated %}
+                            <details>
+                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
+                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="postSno" value="{{ post.sno }}">
+                                    <input type="hidden" name="parentSno" value="{{ comment.sno }}">
+                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
+                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Reply</span>
+                                    </button>
+                                </form>
+                            </details>
+                            {% else %}
+                            <p class="text-sm text-color-light mt-2">Log in to reply</p>
+                            {% endif %}
+                        </div>
+                        <div class="mt-4 space-y-4">
+                            {% for reply in repDict|get_val:comment.sno %}
+                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
+                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="{{ reply.user.username }}">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <b class="text-color-darkest font-semibold">{{ reply.user.username }}</b>
+                                        <span class="text-xs text-color-dark">{{ reply.timestamp|naturaltime }}</span>
+                                    </div>
+                                    <p class="text-color-darkest">{{ reply.comment }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+
+    {% if comments.count > 5 %}
+    <div class="text-center mt-4 mb-8">
+        <button id="read-more-comments" class="all-border theme-medium theme-medium-btn text-color-lightest px-6 py-2 rounded-lg transition font-semibold">
+            Read More Comments
+        </button>
+    </div>
+    {% endif %}
+    <button class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-50"  type="button" id="toTopBtn" style="bottom: 80px;">^</button>
 
     
     
 </div>
 <!-- Advertisement -->
 
-<div class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="left: 10px ;width: max-content; height: 350px; text-align: center;">
+<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="left: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
 </div>
-<div class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="right: 20px ;width: max-content; height: 350px; text-align: center;">
+<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="right: 20px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
 </div>
 
+    <script nonce="{{ request.csp_nonce }}">
+        let visibleCount = 5;
+        const loadMoreBtn = document.getElementById('read-more-comments');
+        
+        function updateCommentsVisibility() {
+            const container = document.getElementById('comments-container');
+            if (!container) return;
+            const topLevelComments = Array.from(container.children).filter(el => el.classList.contains('comment-item'));
+            
+            topLevelComments.forEach((comment, index) => {
+                if (index < visibleCount) {
+                    comment.style.display = 'block';
+                } else {
+                    comment.style.display = 'none';
+                }
+            });
+            
+            if (loadMoreBtn && loadMoreBtn.parentElement) {
+                if (visibleCount >= topLevelComments.length) {
+                    loadMoreBtn.parentElement.style.display = 'none';
+                } else {
+                    loadMoreBtn.parentElement.style.display = 'block';
+                }
+            }
+        }
+        
+        // Initial setup
+        updateCommentsVisibility();
+        
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                visibleCount += 5;
+                updateCommentsVisibility();
+            });
+        }
+
+        // Handle comment/reply submissions optimistically
+        function handleCommentSubmit(e) {
+            e.preventDefault(); // Stop standard submission
+            
+            const form = e.currentTarget;
+            const commentInput = form.querySelector('input[name="comment"]');
+            const commentText = commentInput.value.trim();
+            if (!commentText) return;
+
+            const parentSnoInput = form.querySelector('input[name="parentSno"]');
+            const parentSno = parentSnoInput ? parentSnoInput.value : null;
+            const postSnoInput = form.querySelector('input[name="postSno"]');
+            const postSno = postSnoInput.value;
+            const username = "{{ request.user.username }}";
+
+            // Generate a temporary ID for the optimistic element
+            const tempId = "temp-" + Date.now();
+            
+            // Clear the input
+            commentInput.value = "";
+
+            // Construct optimistic HTML
+            let newCommentHTML = "";
+            if (parentSno) {
+                // It's a reply
+                newCommentHTML = `
+                <div id="${tempId}" class="flex gap-3 ml-8 pl-4 opacity-70" style="border-left: 1px solid var(--theme-light)">
+                    <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${username}">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <b class="text-color-darkest font-semibold">${username}</b>
+                            <span class="text-xs text-color-dark">Just now</span>
+                        </div>
+                        <p class="text-color-darkest">${commentText}</p>
+                    </div>
+                </div>`;
+                
+                // Find the parent comment's reply container and append
+                const parentItem = form.closest('.comment-item');
+                if (parentItem) {
+                    const replyContainer = parentItem.querySelector('.mt-4.space-y-4');
+                    if (replyContainer) {
+                        replyContainer.insertAdjacentHTML('beforeend', newCommentHTML);
+                    }
+                }
+                
+                // Optionally close details tag
+                const detailsTag = form.closest('details');
+                if (detailsTag) detailsTag.removeAttribute('open');
+
+            } else {
+                // Top-level comment
+                newCommentHTML = `
+                <div id="${tempId}" class="comment-item bg-white rounded-xl mb-6 card-shadow opacity-70" style="border-left: 4px solid var(--theme-base);">
+                    <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                        <div class="flex items-start gap-4">
+                            <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${username}">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <b class="font-semibold text-color-darkest">${username} (You)</b>
+                                    <span class="text-xs text-color-dark">Just now</span>
+                                </div>
+                                <p class="text-color-darkest mt-1">${commentText}</p>
+                                <div class="mt-3">
+                                    <details>
+                                        <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
+                                        <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2 optimistic-form">
+                                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                            <input type="hidden" name="postSno" value="${postSno}">
+                                            <input type="hidden" name="parentSno" value="">
+                                            <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
+                                            <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                </svg>
+                                                <span class="hidden sm:inline">Reply</span>
+                                            </button>
+                                        </form>
+                                    </details>
+                                </div>
+                                <div class="mt-4 space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                const commentsContainer = document.getElementById('comments-container');
+                if (commentsContainer) {
+                    commentsContainer.insertAdjacentHTML('afterbegin', newCommentHTML);
+                    
+                    // Bind event listener to the newly inserted form
+                    const newlyInserted = document.getElementById(tempId);
+                    if(newlyInserted) {
+                        const newForm = newlyInserted.querySelector('form');
+                        if(newForm) newForm.addEventListener('submit', handleCommentSubmit);
+                    }
+                    
+                    visibleCount++;
+                    updateCommentsVisibility();
+                }
+                
+                // Update main comment count
+                const heading = document.getElementById('comments-section');
+                if(heading) {
+                    const countMatch = heading.innerText.match(/\d+/);
+                    if(countMatch) {
+                        const newCount = parseInt(countMatch[0]) + 1;
+                        heading.innerText = `Comments (${newCount})`;
+                    }
+                }
+            }
+
+            // Send request
+            fetch("/blog/postComment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    comment: commentText,
+                    postSno: postSno,
+                    parentSno: parentSno
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const tempEl = document.getElementById(tempId);
+                if (data.status === "success") {
+                    if (tempEl) {
+                        tempEl.classList.remove('opacity-70');
+                        if (!parentSno) {
+                            tempEl.dataset.commentSno = data.comment_sno;
+                            const newParentInput = tempEl.querySelector('input[name="parentSno"]');
+                            if (newParentInput) newParentInput.value = data.comment_sno;
+                        }
+                    }
+                } else {
+                    // Revert
+                    if (tempEl) tempEl.remove();
+                    commentInput.value = commentText; // Restore input
+                    console.error("Error posting comment:", data.message);
+                }
+            })
+            .catch(err => {
+                const tempEl = document.getElementById(tempId);
+                if (tempEl) tempEl.remove();
+                commentInput.value = commentText; // Restore input
+                console.error("Error posting comment:", err);
+            });
+        }
+
+        document.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
+            form.addEventListener('submit', handleCommentSubmit);
+        });
+    </script>
 {% endblock body %}
 {% block js %}
 <script nonce="{{ request.csp_nonce }}">
-    function toggleLike(postId) {
-        fetch("{% url 'toggleLike' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({ post_id: postId })
-        })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById(`like-count-${postId}`).innerText = data.likes;
+    let lastLikeRequestTime = 0;
+    let likeDebounceTimer = null;
+    let likeToggleCount = 0;
+    let likeStateBeforeDebounce = null;
+    let likeCountBeforeDebounce = null;
 
-                const btn = document.getElementById(`like-btn-${postId}`);
-                if (data.status === "liked") {
-                    btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041-.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
-                } else {
-                    btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
-                }
-            });
-    }
+    function toggleLike(postId) {
+        const btn = document.getElementById(`like-btn-${postId}`);
+        if (!btn) return;
+
+        const countSpan = document.getElementById(`like-count-${postId}`);
+        if (!countSpan) return;
+
+        const isLiked = btn.innerHTML.includes('bi-hand-thumbs-down');
+        const originalCount = parseInt(countSpan.innerText) || 0;
+
+        // 1. IMMEDIATE OPTIMISTIC UPDATE
+        if (isLiked) {
+            btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+            countSpan.innerText = Math.max(0, originalCount - 1);
+        } else {
+            btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+            countSpan.innerText = originalCount + 1;
+        }
+
+        // 2. DEBOUNCE THE SERVER SYNC
+        if (likeToggleCount === 0) {
+            likeStateBeforeDebounce = isLiked;
+            likeCountBeforeDebounce = originalCount;
+        }
+        likeToggleCount++;
+        
+        clearTimeout(likeDebounceTimer);
+        likeDebounceTimer = setTimeout(() => {
+            // Only send ONE request if the net number of clicks was odd
+            if (likeToggleCount % 2 !== 0) {
+                const requestTime = Date.now();
+                lastLikeRequestTime = requestTime;
+
+                fetch("{% url 'toggleLike' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({ 
+                        post_id: postId,
+                        timestamp: requestTime 
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.timestamp && data.timestamp < lastLikeRequestTime) return;
+                    countSpan.innerText = Math.max(0, data.likes);
+                    // Update icon to match final server state
+                    if (data.status === "liked") {
+                        btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+                    } else {
+                        btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+                    }
+                })
+                .catch(err => {
+                    console.error("Error syncing like:", err);
+                    // Revert to pre-debounce state
+                    if (likeStateBeforeDebounce) {
+                        btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+                    } else {
+                        btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+                    }
+                    countSpan.innerText = Math.max(0, likeCountBeforeDebounce);
+                });
+            }
+            likeToggleCount = 0;
+        }, 400);
+    };
+    
 
     document.getElementById('like-btn-{{ post.sno }}').addEventListener("click", () => toggleLike("{{ post.sno }}"));
+    let bookmarkDebounceTimer = null;
+    let bookmarkToggleCount = 0;
+    let lastBookmarkRequestTime = 0;
+    let bookmarkStateBeforeDebounce = null;
 
     function toggleBookmark(postId) {
-        fetch("{% url 'toggleBookmark' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({ post_id: postId })
-        })
-            .then(res => res.json())
-            .then(data => {
+        const btn = document.getElementById(`save-btn-${postId}`);
+        if (!btn) return;
 
-                const btn = document.getElementById(`save-btn-${postId}`);
-                if (data.status === "unsave") {
-                    btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
-                } else {
-                    btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
-                }
-            });
+        const originalContent = btn.innerHTML;
+        const isSaved = btn.innerHTML.includes('bi-bookmark-check-fill');
+
+        // 1. OPTIMISTIC UI UPDATE
+        if (isSaved) {
+            btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+        } else {
+            btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+        }
+
+        // 2. DEBOUNCE THE SERVER SYNC
+        if (bookmarkToggleCount === 0) {
+            bookmarkStateBeforeDebounce = isSaved;
+        }
+        bookmarkToggleCount++;
+        
+        clearTimeout(bookmarkDebounceTimer);
+        bookmarkDebounceTimer = setTimeout(() => {
+            // Only send ONE request if the net number of clicks was odd
+            if (bookmarkToggleCount % 2 !== 0) {
+                const requestTime = Date.now();
+                lastBookmarkRequestTime = requestTime;
+
+                fetch("{% url 'toggleBookmark' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({ 
+                        post_id: postId,
+                        timestamp: requestTime 
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // If a newer request was sent, ignore this response
+                    if (data.timestamp && data.timestamp < lastBookmarkRequestTime) return;
+                    
+                    // Keep server truth
+                    if (data.status === "unsave") {
+                        btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+                    } else {
+                        btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+                    }
+                })
+                .catch(err => {
+                    console.error("Error syncing bookmark:", err);
+                    // Revert to pre-debounce state
+                    if (bookmarkStateBeforeDebounce) {
+                        btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+                    } else {
+                        btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+                    }
+                });
+            }
+            bookmarkToggleCount = 0;
+        }, 400);
     }
     if(document.getElementById('save-btn-{{ post.sno }}')){
 

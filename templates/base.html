@@ -6,242 +6,200 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>{% block title %}{% endblock title %}</title>
-    <meta name="description" content="{% block meta_description %}Articlio — Thoughtful articles and tutorials.{% endblock meta_description %}">
+    <meta name="description" content="{% block meta_description %}Articlio - Thoughtful articles and tutorials.{% endblock meta_description %}">
     <meta name="robots" content="{% block meta_robots %}index,follow{% endblock meta_robots %}">
     <link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock canonical %}">
     <meta property="og:site_name" content="Articlio">
     <meta property="og:title" content="{% block og_title %}Articlio{% endblock og_title %}">
-    <meta property="og:description" content="{% block og_description %}Articlio — Thoughtful articles and tutorials.{% endblock og_description %}">
+    <meta property="og:description" content="{% block og_description %}Articlio - Thoughtful articles and tutorials.{% endblock og_description %}">
     <meta property="og:type" content="{% block og_type %}website{% endblock og_type %}">
     <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}">
     <meta property="og:image" content="{% block og_image %}{% static 'img/user.webp' %}{% endblock og_image %}">
     <meta name="twitter:card" content="summary_large_image">
 
-
     {% load static %}
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
     <link href="{% static 'css/output.css' %}" rel="stylesheet">
     <style>
-        #page-loader {
-            position: fixed;
-            inset: 0;
-            background: var(--theme-base-faded);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            font-family: system-ui, sans-serif;
-        }
+        * { font-family: 'Inter', system-ui, sans-serif; }
 
+        /* ── Loader ── */
+        #page-loader {
+            position: fixed; inset: 0;
+            background: var(--theme-base-faded);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999;
+        }
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 4px solid var(--theme-lightest);
             border-top-color: var(--theme-dark);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        /* ── Theme Pills ── */
+        .theme-pills-wrap { display: flex; gap: 6px; align-items: center; }
+        .theme-pill {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--pill-color);
+            border: 2px solid transparent;
+            cursor: pointer; transition: all 0.2s;
+            padding: 0; outline: none;
+        }
+        .theme-pill:hover { transform: scale(1.2); }
+        .theme-pill--active {
+            border-color: var(--theme-lightest);
+            box-shadow: 0 0 0 2px var(--theme-medium);
+            transform: scale(1.15);
         }
 
-        /* ── Nav link styles ── */
+        /* ── Navbar ── */
+        #main-nav { 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            z-index: 9999 !important;
+        }
+        .nav-top { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-bottom { border-bottom: 2px solid var(--theme-light); }
+
         .nav-link {
             color: var(--theme-lightest);
-            font-size: 0.82rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
+            font-size: 0.82rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
             text-decoration: none;
-            padding: 8px 18px;
-            position: relative;
+            padding: 8px 16px; position: relative;
             transition: color 0.2s, background 0.2s;
-            border-radius: 4px;
+            border-radius: 4px; white-space: nowrap;
         }
-        .nav-link:hover {
-            background: rgba(255,255,255,0.08);
-        }
-        .nav-link.active-link {
-            text-decoration: none;
-            background: rgba(255,255,255,0.12);
-        }
+        .nav-link:hover { background: rgba(255,255,255,0.08); }
+        .nav-link.active-link { background: rgba(255,255,255,0.12); }
         .nav-link.active-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 18px;
-            right: 18px;
-            height: 2px;
-            background: var(--theme-lightest);
+            content: ''; position: absolute;
+            bottom: -2px; left: 16px; right: 16px;
+            height: 2px; background: var(--theme-lightest);
             border-radius: 1px;
         }
-       @media (max-width: 1200px) {
-            #main-body {
-                display: none;
-            }
-            #mobile-blocked-message {
-                display: block;
-            }
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                font-family: "Segoe UI", sans-serif;
-            }
 
-            body {
-                height: 100vh;
-                background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+        /* ── Hamburger ── */
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
+        .hamburger svg { width: 26px; height: 26px; color: var(--theme-lightest); }
 
-            .container {
-                background: white;
-                padding: 35px 30px;
-                border-radius: 16px;
-                max-width: 420px;
-                width: 90%;
-                text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-                animation: pop 0.5s ease;
-            }
-
-            @keyframes pop {
-                from {
-                    transform: scale(0.8);
-                    opacity: 0;
-                }
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-
-            .icon {
-                font-size: 60px;
-                margin-bottom: 15px;
-            }
-
-            h1 {
-                font-size: 24px;
-                margin-bottom: 10px;
-                color: #222;
-            }
-
-            p {
-                font-size: 15px;
-                color: #555;
-                line-height: 1.6;
-                margin-bottom: 20px;
-            }
-
-            .tip {
-                background: #f1f5ff;
-                padding: 12px;
-                border-radius: 10px;
-                font-size: 14px;
-                color: #333;
-            }
-
-            .footer {
-                margin-top: 18px;
-                font-size: 12px;
-                color: #777;
-            }
+        /* ── Mobile Drawer ── */
+        .mobile-drawer {
+            position: fixed; top: 0; right: -300px;
+            width: 280px; height: 100vh;
+            background: var(--theme-darkest);
+            z-index: 10001; transition: right 0.3s ease;
+            padding: 20px; overflow-y: auto;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+        }
+        .mobile-drawer.open { right: 0; }
+        .mobile-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 10000; display: none;
+        }
+        .mobile-overlay.open { display: block; }
+        .mobile-drawer .nav-link {
+            display: block; padding: 12px 16px;
+            font-size: 0.9rem; border-radius: 8px;
+            margin-bottom: 4px;
+        }
+        .mobile-drawer .drawer-section {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 16px; padding-top: 16px;
+        }
+        .drawer-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--theme-lightest); padding: 4px;
         }
 
-        @media (min-width: 1201px) {
-            #main-body {
-                display: block;
-            }
-            #mobile-blocked-message {
-                display: none;
-            }
-        }
-
-        .color-picker-label:hover {
-            border-color: var(--theme-light) !important;
-            transform: scale(1.1) !important;
-        }
+        /* ── Search ── */
         .search-input:focus {
             border-color: var(--theme-light) !important;
             box-shadow: 0 0 0 3px hsla(from var(--theme-base) h s l / 0.25) !important;
         }
-        .logout-btn:hover {
-            background: var(--theme-medium) !important;
-        }
-        .login-link:hover {
-            opacity: 0.7 !important;
-        }
-        .signup-link:hover {
-            background: var(--theme-dark) !important;
-        }
 
+        /* ── Auth buttons ── */
+        .logout-btn:hover { background: var(--theme-medium) !important; }
+        .login-link:hover { opacity: 0.7 !important; }
+        .signup-link:hover { background: var(--theme-dark) !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; align-items: center; }
+            .nav-bottom-links { display: none !important; }
+            .nav-auth-desktop { display: none !important; }
+            .nav-pills-desktop { display: none !important; }
+            .nav-top-inner { 
+                flex-wrap: wrap !important; 
+                height: auto !important; 
+                padding-top: 12px !important; 
+                padding-bottom: 12px !important;
+                gap: 12px !important;
+            }
+            .nav-search-desktop { 
+                order: 10 !important; 
+                flex: none !important; 
+                width: 100% !important; 
+                display: flex !important; 
+            }
+            .nav-search-desktop form { 
+                max-width: 100% !important; 
+                width: 100% !important; 
+            }
+            .logo-container { flex: 1 !important; }
+            .actions-container { display: none !important; }
+        }
+        /* Adjust main content padding for taller mobile nav */
+        @media (max-width: 768px) {
+            main { padding-top: 120px !important; }
+            .fixed.inset-x-0 { top: 120px !important; }
+        }
+        @media (min-width: 769px) {
+            .mobile-drawer, .mobile-overlay { display: none !important; }
+            .hamburger { display: none !important; }
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
     
     {% block css %}{% endblock css %}
 </head>
 
-<body class="theme-base" >
-    <div class="container" id="mobile-blocked-message" >
-
-        <div class="icon">🖥️</div>
-
-        <h1>Desktop Access Required</h1>
-
-        <p>
-            This website is optimized for desktop devices only.
-            Please open it on a laptop or computer for the best experience.
-        </p>
-
-        <div class="tip">
-            💡 Tip: Switch to "Desktop Site" mode or use a PC browser.
-        </div>
-
-        <div class="footer">
-            Thank you for understanding
-        </div>
-
-
-    </div>
+<body class="theme-lightest">
     <div id="main-body" style="display: flex; flex-direction: column; min-height: 100vh;">
     <div id="page-loader">
         <div class="spinner"></div>
         <p class="text-color-darkest">Loading…</p>
     </div>
 
-    <!-- ═══════════════ MODERN NAVBAR ═══════════════ -->
-    <nav class="fixed top-0 w-full z-[100]" id="main-nav">
+    <!-- ═══════════════ NAVBAR ═══════════════ -->
+    <nav class="fixed top-0 w-full" id="main-nav">
 
-        <!-- ── TOP BAR: Logo · Search · Auth ── -->
-        <div class="theme-darkest" style="border-bottom: 1px solid var(--theme-medium);">
-            <div class="max-w-7xl mx-auto px-6 flex items-center" style="height: 56px; overflow: visible;">
+        <!-- ── TOP BAR ── -->
+        <div class="theme-darkest nav-top">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center nav-top-inner" style="height: 56px; gap: 12px;">
 
-                <!-- Logo (flex:1, left-aligned) -->
-                <div style="flex: 1; display: flex; align-items: center;">
+                <!-- Logo (balanced) -->
+                <div class="logo-container" style="flex: 1; display: flex; align-items: center;">
                     <a href="/" class="flex items-center gap-2 text-color-lightest" style="text-decoration:none;">
-                        <span style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px; font-family: Georgia, 'Times New Roman', serif;">Articlio</span>
+                        <span style="font-size: 1.75rem; font-weight: 400; font-family: 'Pacifico', cursive; margin-bottom: 4px;">Articlio</span>
                     </a>
                 </div>
 
-                <!-- Search (flex:1, centered) -->
-                <div style="flex: 1; display: flex; justify-content: center;">
-                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 360px;" id="nav-search-form">
+                <!-- Search (desktop) -->
+                <div class="nav-search-desktop" style="flex: 1.5; display: flex; justify-content: center;">
+                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 500px;" id="nav-search-form">
                         <input type="search" name="query" id="query" class="search-input" placeholder="Search articles…"
                         style="width:100%; padding: 7px 40px 7px 16px; border-radius: 999px; border: 1px solid var(--theme-medium); background: var(--theme-dark); color: var(--theme-lightest); font-size: 0.85rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;">
                         <button type="submit" name="search" id="search-btn" title="Search"
                             style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
-                            <svg id="search-icon" style="width:16px; height:16px; color:var(--theme-light);" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <svg id="search-icon" style="width:1rem; height:1rem; color:var(--theme-light);" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                             </svg>
-                            <svg id="search-loader" class="animate-spin hidden" style="width:16px; height:16px; color:var(--theme-light);" viewBox="0 0 24 24" fill="none">
+                            <svg id="search-loader" class="animate-spin hidden" style="width:1rem; height:1rem; color:var(--theme-light);" viewBox="0 0 24 24" fill="none">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                             </svg>
@@ -249,59 +207,55 @@
                     </form>
                 </div>
 
-                <!-- Auth + Color Picker (flex:1, right-aligned) -->
-                <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
-                    {% if user.is_authenticated %}
-                        <span style="font-size:0.8rem; color:var(--theme-light); margin-right: 4px;">
-                            Hi, {{ request.user }}
-                        </span>
-                        <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0;">
-                            <input type="hidden" value="{{ request.get_full_path }}" name="next">
-                            <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px;">
-                                <span id="logout-text">Log Out</span>
-                                <svg id="logout-spinner" class="animate-spin hidden" style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                                </svg>
-                            </button>
-                        </form>
-                    {% else %}
-                        <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}" class="login-link"
-                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 12px; transition: opacity 0.2s;">
-                            Log In
-                        </a>
-                        <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}" class="signup-link"
-                            style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 18px; border-radius: 999px; background: var(--theme-medium); border: 1px solid var(--theme-light); transition: all 0.2s;">
-                            Sign Up
-                        </a>
-                    {% endif %}
-
-                    <!-- Theme Color Picker -->
-                    <div style="position:relative; margin-left:4px; z-index:10;">
-                        <label for="colorPicker" class="color-picker-label" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%; border: 1px solid var(--theme-medium); background: var(--theme-dark); cursor:pointer; transition: all 0.2s; font-size: 14px; position:relative;"
-                            title="Change theme color">
-                            🎨
-                            <input id="colorPicker" type="color" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer;">
-                        </label>
-                        <button type="button" id="colorReseter"
-                            style="display:none; position:absolute; top:40px; right:0; white-space:nowrap; padding: 3px 10px; font-size: 0.7rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--theme-light); background: var(--theme-medium); color: var(--theme-lightest); cursor:pointer; transition: all 0.2s;">
-                            Reset
-                        </button>
+                <!-- Theme Pills & Auth (balanced) -->
+                <div class="actions-container" style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+                    <div class="nav-pills-desktop theme-pills-wrap" id="theme-pills"></div>
+                    
+                    <div class="nav-auth-desktop" style="display: flex; align-items: center; gap: 10px;">
+                        {% if user.is_authenticated %}
+                            <span style="font-size:0.8rem; color:var(--theme-light);">Hi, {{ request.user }}</span>
+                            <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0;">
+                                <input type="hidden" value="{{ request.get_full_path }}" name="next">
+                                <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px;">
+                                    <span id="logout-text">Log Out</span>
+                                    <svg id="logout-spinner" class="animate-spin hidden" style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}" class="login-link"
+                                style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 12px; transition: opacity 0.2s;">
+                                Log In
+                            </a>
+                            <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}" class="signup-link"
+                                style="color: var(--theme-lightest); font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 5px 18px; border-radius: 999px; background: var(--theme-medium); border: 1px solid var(--theme-light); transition: all 0.2s;">
+                                Sign Up
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
+
+                <!-- Hamburger (mobile) -->
+                <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
-        <!-- ── BOTTOM BAR: Navigation Links ── -->
-        <div class="theme-dark" style="border-bottom: 2px solid var(--theme-light);">
-            <div class="max-w-7xl mx-auto px-6 flex items-center justify-center" style="height: 42px; gap: 2px;">
+        <!-- ── BOTTOM BAR: Nav Links (desktop) ── -->
+        <div class="theme-dark nav-bottom">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center nav-bottom-links" style="height: 42px; gap: 2px; overflow-x: auto;">
                 <a href="/" class="{% block homeactive %}{% endblock homeactive %} nav-link">Home</a>
                 <a href="/blog" class="{% block blogactive %}{% endblock blogactive %} nav-link">Blogs</a>
                 {% if user.is_authenticated %}
                 <a href="/blog/bookmarks" class="{% block bookmarkactive %}{% endblock bookmarkactive %} nav-link">Bookmarks</a>
                 {% if request.user.role == "author" %}
                     {% if request.user.verified == False %}
-                    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link" style="color: var(--theme-lightest);">Verify</a>
+                    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link">Verify</a>
                     {% else %}
                     <a href="/blog/myBlogs" class="{% block manageactive %}{% endblock manageactive %} nav-link">My Blogs</a>
                     {% endif %}
@@ -313,23 +267,75 @@
         </div>
     </nav>
 
+    <!-- ── MOBILE DRAWER ── -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <div class="mobile-drawer" id="mobile-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <span style="font-size:1.3rem; font-weight:800; color:var(--theme-lightest); font-family:Georgia,serif;">Articlio</span>
+            <button class="drawer-close" id="drawer-close" aria-label="Close menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile search -->
+        <form method="get" action="/search" style="margin-bottom:16px;">
+            <input type="search" name="query" placeholder="Search articles…" class="search-input"
+                style="width:100%; padding:8px 14px; border-radius:999px; border:1px solid var(--theme-medium); background:var(--theme-dark); color:var(--theme-lightest); font-size:0.85rem; outline:none;">
+        </form>
+
+        <!-- Mobile nav links -->
+        <a href="/" class="{% block homeactive_m %}{% endblock %} nav-link">Home</a>
+        <a href="/blog" class="{% block blogactive_m %}{% endblock %} nav-link">Blogs</a>
+        {% if user.is_authenticated %}
+        <a href="/blog/bookmarks" class="nav-link">Bookmarks</a>
+        {% if request.user.role == "author" %}
+            {% if request.user.verified == False %}
+            <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link">Verify</a>
+            {% else %}
+            <a href="/blog/myBlogs" class="nav-link">My Blogs</a>
+            {% endif %}
+        {% endif %}
+        {% endif %}
+        <a href="/about" class="nav-link">About</a>
+        <a href="/contact" class="nav-link">Contact</a>
+
+        <!-- Mobile theme pills -->
+        <div class="drawer-section">
+            <p style="font-size:0.75rem; font-weight:600; color:var(--theme-light); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Theme</p>
+            <div class="theme-pills-wrap" id="theme-pills-mobile"></div>
+        </div>
+
+        <!-- Mobile auth -->
+        <div class="drawer-section">
+            {% if user.is_authenticated %}
+                <p style="font-size:0.85rem; color:var(--theme-light); margin-bottom:8px;">Hi, {{ request.user }}</p>
+                <a href="{% url 'handleLogout' %}?next={{ request.get_full_path }}" class="nav-link" style="background:rgba(255,255,255,0.06);">Log Out</a>
+            {% else %}
+                <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}" class="nav-link">Log In</a>
+                <a href="{% url 'handleSignup' %}?next={{ request.get_full_path }}" class="nav-link" style="background:var(--theme-medium); text-align:center; border-radius:999px; margin-top:6px;">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Floating Action Button for Authors -->
     {% if request.user.is_authenticated and request.user.role == 'author'%}
     {% if request.user.verified %}
-    <a href="/blog/writeBlog" class="fixed bottom-10 right-10 z-[90] h-16 px-6 theme-medium font-bold text-color-lightest all-border theme-medium-btn text-lg rounded-full shadow-2xl hover:-translate-y-1 hover:shadow-xl transition-all flex items-center justify-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Post Blog
+    <a href="/blog/writeBlog" class="fixed bottom-16 right-6 z-[1050] h-14 px-5 theme-medium font-bold text-color-lightest all-border theme-medium-btn text-base rounded-full shadow-2xl hover:-translate-y-1 hover:shadow-xl transition-all flex items-center justify-center gap-2" id="fab-btn" style="bottom: 80px;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="hidden sm:inline">Post Blog</span>
     </a>
     {% else %}
-    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="fixed bottom-10 right-10 z-[90] h-16 px-6 bg-gray-400 font-bold text-white text-lg rounded-full shadow-lg hover:bg-gray-600 transition-all flex items-center justify-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Post Blog
+    <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="fixed bottom-16 right-6 z-[1050] h-14 px-5 bg-gray-400 font-bold text-white text-base rounded-full shadow-lg hover:bg-gray-600 transition-all flex items-center justify-center gap-2" style="bottom: 80px;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="hidden sm:inline">Post Blog</span>
     </a>
     {% endif %}
     {% endif %}
 
     <!-- Flash Messages -->
-    <div class="fixed inset-x-0 flex flex-col items-center px-4 z-[95] pointer-events-none" style="top: 104px;">
+    <div class="fixed inset-x-0 flex flex-col items-center px-4 z-[1100] pointer-events-none" style="top: 104px;">
         {% for message in messages %}
         <div class="w-full max-w-2xl p-4 rounded-lg flex justify-between shadow-lg pointer-events-auto transition-transform
             {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-800{% endif %}
@@ -342,26 +348,26 @@
     </div>
 
     <!-- Main Content -->
-    <main style="flex-grow: 1; padding-top: 115px; padding-bottom: 4rem;">
+    <main style="flex-grow: 1; padding-top: 104px; padding-bottom: 4rem;">
         {% block body %}{% endblock body %}
     </main>
 
     <!-- STICKY FOOTER -->
     <footer class="mt-auto theme-darkest" style="border-top: 2px solid var(--theme-light);">
-        <div class="max-w-7xl mx-auto" style="padding: 32px 24px 24px;">
+        <div class="max-w-7xl mx-auto" style="padding: 32px 16px 24px;">
             <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:20px;">
                 <div>
-                    <span style="font-size: 1.4rem; font-weight: 800; color: var(--theme-lightest); font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.3px; display:block; margin-bottom:6px;">Articlio</span>
+                    <span style="font-size: 1.75rem; font-weight: 400; color: var(--theme-lightest); font-family: 'Pacifico', cursive; display:block; margin-bottom:6px;">Articlio</span>
                     <p style="font-size: 0.78rem; color: var(--theme-light); opacity:0.75; margin:0;">&copy; 2026 Articlio. All rights reserved.</p>
                 </div>
                 <nav style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size: 0.82rem; font-weight:500;">
-                    <a href="/about" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">About Us</a>
+                    <a href="/about" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px;">About Us</a>
                     <span style="color:var(--theme-light); opacity:0.4;">·</span>
-                    <a href="/contact" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Contact Us</a>
+                    <a href="/contact" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px;">Contact Us</a>
                     <span style="color:var(--theme-light); opacity:0.4;">·</span>
-                    <a href="/privacy" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Privacy Policy</a>
+                    <a href="/privacy" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px;">Privacy Policy</a>
                     <span style="color:var(--theme-light); opacity:0.4;">·</span>
-                    <a href="/terms" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">Terms of Service</a>
+                    <a href="/terms" style="color:var(--theme-lightest); text-decoration:none; padding:4px 6px;">Terms of Service</a>
                 </nav>
             </div>
         </div>
@@ -370,9 +376,12 @@
     <!-- Scripts -->
     <script nonce="{{ request.csp_nonce }}">
         window.CURRENT_USER = "{{ request.user.username }}";
+        window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
+        window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
     </script>
     <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
     <script nonce="{{ request.csp_nonce }}">
+        // Logout form
         const logoutBtn = document.getElementById('logoutBtn')
         const logoutText = document.getElementById('logout-text')
         const logoutSpinner = document.getElementById('logout-spinner')
@@ -387,28 +396,24 @@
             })
         }
 
+        // Page loader
         window.addEventListener("load", () => {
             const loader = document.getElementById("page-loader");
             if (loader) loader.remove();
         });
 
-        // Setup search button loading state
+        // Search loading
         const searchForms = document.querySelectorAll('form[action="/search"]');
         searchForms.forEach(form => {
             form.addEventListener("submit", (e) => {
-                const btn = form.querySelector("button[type='submit']");
-                const icon = form.querySelector("svg:first-of-type");
-                const loader = form.querySelector("svg.animate-spin");
-                
+                const icon = form.querySelector("#search-icon");
+                const loader = form.querySelector("#search-loader");
                 if(icon) icon.classList.add("hidden");
                 if(loader) loader.classList.remove("hidden");
-                if(btn) {
-                    btn.disabled = true;
-                    btn.classList.add("opacity-70", "cursor-not-allowed");
-                }
             });
         });
 
+        // Flash messages
         document.querySelectorAll('.close-msg').forEach(button => {
             button.addEventListener('click', () => {
                 const msgBox = button.parentElement;
@@ -416,6 +421,27 @@
                 setTimeout(() => msgBox.remove(), 300);
             });
         });
+
+        // Mobile drawer
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileDrawer = document.getElementById('mobile-drawer');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const drawerClose = document.getElementById('drawer-close');
+
+        function openDrawer() {
+            mobileDrawer.classList.add('open');
+            mobileOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDrawer() {
+            mobileDrawer.classList.remove('open');
+            mobileOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        if (hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', closeDrawer);
     </script>
     {% block js %}{% endblock js %}
     </div>

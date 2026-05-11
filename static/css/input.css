@@ -10,7 +10,7 @@
 @layer base {
 
 :root {
-    --theme-base: hsl(200, 60%, 45%);
+    --theme-base: hsl(210, 55%, 42%);
 
     --theme-darkest: hsl(from var(--theme-base) h s calc(l - 30));
     --theme-dark: hsl(from var(--theme-base) h s calc(l - 20));
@@ -61,6 +61,7 @@
 
 .theme-medium-btn:hover {
   background-color: var(--theme-dark);
+  cursor: pointer;
 }
 
 
@@ -118,4 +119,56 @@
   border: 2px solid var(--theme-lightest);
 }
 
+
+/* ============================
+   RESPONSIVE UTILITIES
+============================ */
+
+/* Filter bar responsive */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-bar select,
+.filter-bar button {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+@media (max-width: 640px) {
+  .filter-bar select,
+  .filter-bar button {
+    flex: 1 1 100%;
+  }
+}
+
+/* Ad sidebar responsive - hide on small screens */
+.ad-sidebar {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .ad-sidebar {
+    display: block;
+  }
+}
+
+}
+
+
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
 }

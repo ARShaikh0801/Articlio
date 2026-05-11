@@ -187,86 +187,118 @@ def deleteBlogPost(request, slug):
     return redirect("myBlogs")
 
 
+from django.db import IntegrityError
+from django.db.models import F
+from django.db.models.functions import Greatest
+
 @require_POST
 def toggle_like(request):
     data = json.loads(request.body)
     post_id = data.get("post_id")
+    request_timestamp = data.get("timestamp", 0)
     post = Post.objects.get(sno=post_id)
+
     if request.user.is_authenticated:
         user = request.user
 
-        liked = Like.objects.filter(post=post, user=user).exists()
+        # Server-side timestamp enforcement - reject stale requests
+        ts_key = f'like_ts_{post_id}'
+        last_ts = request.session.get(ts_key, 0)
+        if request_timestamp and request_timestamp <= last_ts:
+            post.refresh_from_db()
+            liked = Like.objects.filter(post=post, user=user).exists()
+            return JsonResponse({
+                "status": "liked" if liked else "unliked",
+                "likes": post.likes,
+                "timestamp": request_timestamp
+            })
+        request.session[ts_key] = request_timestamp
+        request.session.modified = True
 
-        if liked:
-            Like.objects.filter(post=post, user=user).delete()
-            post.likes -= 1
+        # Atomic delete - avoids TOCTOU race
+        deleted_count, _ = Like.objects.filter(post=post, user=user).delete()
+        if deleted_count > 0:
+            Post.objects.filter(sno=post_id).update(likes=Greatest(F('likes') - 1, 0))
             status = "unliked"
         else:
-            Like.objects.create(post=post, user=user)
-            post.likes += 1
-            status = "liked"
+            try:
+                Like.objects.create(post=post, user=user)
+                Post.objects.filter(sno=post_id).update(likes=F('likes') + 1)
+                status = "liked"
+            except IntegrityError:
+                # Race condition: someone already created the like
+                status = "liked"
 
-        post.save()
+        # Fetch fresh count after update
+        post.refresh_from_db()
 
         return JsonResponse({
             "status": status,
-            "likes": post.likes
+            "likes": post.likes,
+            "timestamp": request_timestamp
         })
     else:
-        status="unknown"
         return JsonResponse({
-            "status": status,
-            "likes": post.likes
+            "status": "unknown",
+            "likes": post.likes,
+            "timestamp": request_timestamp
         })
     
 @require_POST
 def toggle_bookmark(request):
     data = json.loads(request.body)
     post_id = data.get("post_id")
+    request_timestamp = data.get("timestamp")
     post = Post.objects.get(sno=post_id)
-    print(post.title)
+
     if request.user.is_authenticated:
         user = request.user
 
-        bookmarked = Bookmark.objects.filter(post=post, user=user)
-        flag=bookmarked.exists()
-
-        if flag:
-            bookmarked.delete()
+        # Atomic delete - avoids TOCTOU race
+        deleted_count, _ = Bookmark.objects.filter(post=post, user=user).delete()
+        if deleted_count > 0:
             status = "unsave"
         else:
-            Bookmark.objects.create(post=post, user=user)
-            status = "save"
+            try:
+                Bookmark.objects.create(post=post, user=user)
+                status = "save"
+            except IntegrityError:
+                status = "save"
 
         return JsonResponse({
             "status": status,
+            "timestamp": request_timestamp
         })
     else:
         return JsonResponse({
             "status": "unsave",
         })
     
+@require_POST
 def postComment(request):
-    if request.method=="POST":
-        comment=request.POST.get("comment")
-        if comment=="":
-            messages.error(request,"Comment Field Is Required !")
-            return redirect(f'/blog/{post.slug}')
-        comment=sanitizer.sanitize_comment(comment)
-        user=request.user
-        postSno=request.POST.get("postSno")
-        post=Post.objects.get(sno=postSno)
-        parentSno=request.POST.get("parentSno")
-        if parentSno=="":
-            comments=BlogComment(comment=comment,user=user,post=post)
+    try:
+        data = json.loads(request.body)
+        comment_text = data.get("comment", "")
+        if comment_text == "":
+            return JsonResponse({"status": "error", "message": "Comment Field Is Required !"}, status=400)
+            
+        comment_text = sanitizer.sanitize_comment(comment_text)
+        user = request.user
+        postSno = data.get("postSno")
+        post = Post.objects.get(sno=postSno)
+        parentSno = data.get("parentSno")
+        
+        if not parentSno:
+            comments = BlogComment(comment=comment_text, user=user, post=post)
             comments.save()
-            messages.success(request,"Comment Posted Successfully")
+            return JsonResponse({"status": "success", "message": "Comment Posted Successfully", "comment_sno": comments.sno})
         else:
-            parent=BlogComment.objects.get(sno=parentSno)
-            comments=BlogComment(comment=comment,user=user,post=post,parent=parent)
+            parent = BlogComment.objects.get(sno=parentSno)
+            comments = BlogComment(comment=comment_text, user=user, post=post, parent=parent)
             comments.save()
-            messages.success(request,"Reply Posted Successfully")
-    return redirect(f'/blog/{post.slug}')
+            return JsonResponse({"status": "success", "message": "Reply Posted Successfully", "comment_sno": comments.sno})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 def emailVerification(request):

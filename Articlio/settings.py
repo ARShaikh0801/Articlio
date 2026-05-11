@@ -20,7 +20,7 @@ try:
     from dotenv import load_dotenv
     load_dotenv(os.path.join(Path(__file__).resolve().parent.parent, '.env'))
 except Exception:
-    # python-dotenv not installed or .env not present — fall back to OS env
+    # python-dotenv not installed or .env not present - fall back to OS env
     pass
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -67,7 +67,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'Articlio.mobile_blocker.BlockMobileMiddleware',
     'Articlio.middleware.CSPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -110,7 +109,7 @@ WSGI_APPLICATION = 'Articlio.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        conn_max_age=0,
         conn_health_checks=True,
     )
 }

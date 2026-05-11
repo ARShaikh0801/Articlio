@@ -29,5 +29,8 @@ module.exports = {
   'active-link',
   'link-hover-medium',
   'author-link-hover-medium',
+
+  'filter-bar',
+  'ad-sidebar',
 ],
 }

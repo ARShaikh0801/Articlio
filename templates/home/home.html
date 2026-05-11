@@ -12,7 +12,7 @@
 <div class="max-w-7xl mx-auto px-4 my-8" >
 
     <div class="theme-dark text-color-lightest rounded-xl p-8 card-shadow flex flex-col items-center all-border">
-        <h1 class="text-4xl font-bold inline-block px-4 py-2 rounded">
+        <h1 class="text-3xl sm:text-4xl font-bold inline-block px-4 py-2 rounded text-center">
             Welcome To Articlio...!
         </h1>
 
@@ -34,52 +34,52 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {% for post in topPosts %}
-        <div class=" rounded-xl hover-card-shadow transition theme-dark relative">
-            <div class="p-6 flex rounded-xl flex-col h-full all-border">
+        <div class="bg-white rounded-xl hover:shadow-lg transition relative" style="border-left: 4px solid var(--theme-base);">
+            <div class="p-6 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
                 {% if request.user.is_authenticated %}
                 <div class="absolute top-4 right-4 saveSVG" id="save-btn-{{post.sno}}" data-sno="{{post.sno}}" data-url="{% url 'toggleBookmark' %}" data-csrf="{{csrf_token}}">
                     {% if post.sno in bookmarked %}
-                    <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-lightest w-6 h-6 cursor-pointer' viewBox='0 0 16 16'>
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='var(--theme-darkest)' class='bi bi-bookmark-check-fill w-6 h-6 cursor-pointer' viewBox='0 0 16 16'>
                         <path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/>
                     </svg>
                     {% else %}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 bi bi-bookmark text-color-lightest cursor-pointer"  fill="currentColor" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 bi bi-bookmark cursor-pointer"  fill="var(--theme-darkest)" viewBox="0 0 16 16">
                         <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                     </svg>
                     {% endif %}
                 </div>
                 {% else %}
                 <a class="absolute top-4 right-4" href="{% url 'handleLogin' %}?next={{ request.get_full_path }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-lightest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest"  fill="currentColor" viewBox="0 0 16 16">
                         <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                     </svg>
                 </a>
                 {% endif %}
-                <strong class=" text-color-lightest mb-2">
-                    Article by <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.author|urlencode }}">{{ post.author }}</a> 
+                <strong class="text-color-darkest mb-2" style="font-size: 0.85rem;">
+                    Article by <a class="author-link-hover-medium underline" style="color: var(--theme-base);" href="/search?query={{ post.author|urlencode }}">{{ post.author }}</a> 
                 </strong>
 
                 <h3 class="text-xl font-semibold mb-1">
-                    <a href="/blog/{{ post.slug }}" class="text-color-lightest link-hover-medium transition">
+                    <a href="/blog/{{ post.slug }}" class="text-color-darkest link-hover-medium transition">
                         {{ post.title }}
                     </a>
                 </h3>
 
-                <div class="text-sm text-color-lightest mb-3">
-                    Category: <a class="text-color-lightest author-link-hover-medium underline" href="/search?query={{ post.category|urlencode }}">{{ post.category }}</a>
+                <div class="text-sm mb-3" style="color: #6b7280;">
+                    Category: <a class="author-link-hover-medium underline" style="color: var(--theme-base);" href="/search?query={{ post.category|urlencode }}">{{ post.category }}</a>
                 </div>
 
-                <div class="text-sm text-color-lightest mb-3">
+                <div class="text-sm mb-3" style="color: #6b7280;">
                     {{ post.timestamp }} · {{ post.views }} views · {{ post.likes }} likes
                 </div>
 
-                <div class="text-color-light max-w-lg mb-4">
+                <div class="max-w-lg mb-4" style="color: #4b5563;">
                     {{ post.summary }}
                 </div>
 
                 <div class="mt-auto">
                     <a href="/blog/{{ post.slug }}" aria-label="Continue reading {{ post.title }}"
-                       class="inline-block theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded transition">
+                       class="inline-block px-4 py-2 rounded transition font-medium" style="background: var(--theme-base); color: white; border: 1px solid var(--theme-base);">
                         Continue reading
                     </a>
                 </div>

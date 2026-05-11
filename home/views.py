@@ -1,4 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
+from django.http import JsonResponse
+import json
 from django.contrib import messages
 from home.models import Contact
 from blog.models import Post,Bookmark
@@ -224,3 +226,17 @@ def resetPassword(request):
         messages.success(request, "Password reset successfully")
         
         return redirect('handleLogin')
+
+def update_theme_preference(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        try:
+            data = json.loads(request.body)
+            theme = data.get('theme')
+            if theme:
+                user = request.user
+                user.theme_preference = theme
+                user.save()
+                return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
