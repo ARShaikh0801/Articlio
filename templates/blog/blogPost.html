@@ -172,38 +172,29 @@
 </div>
 
     <script nonce="{{ request.csp_nonce }}">
-        let visibleCount = 5;
+        let commentsPage = 1;
+        let commentsHasNext = false;
         const loadMoreBtn = document.getElementById('read-more-comments');
         
-        function updateCommentsVisibility() {
-            const container = document.getElementById('comments-container');
-            if (!container) return;
-            const topLevelComments = Array.from(container.children).filter(el => el.classList.contains('comment-item'));
-            
-            topLevelComments.forEach((comment, index) => {
-                if (index < visibleCount) {
-                    comment.style.display = 'block';
-                } else {
-                    comment.style.display = 'none';
-                }
-            });
-            
+        function updateLoadMoreVisibility() {
             if (loadMoreBtn && loadMoreBtn.parentElement) {
-                if (visibleCount >= topLevelComments.length) {
-                    loadMoreBtn.parentElement.style.display = 'none';
-                } else {
+                if (commentsHasNext) {
                     loadMoreBtn.parentElement.style.display = 'block';
+                } else {
+                    loadMoreBtn.parentElement.style.display = 'none';
                 }
             }
         }
         
         // Initial setup
-        updateCommentsVisibility();
+        updateLoadMoreVisibility();
         
         if (loadMoreBtn) {
             loadMoreBtn.addEventListener('click', function() {
-                visibleCount += 5;
-                updateCommentsVisibility();
+                commentsPage++;
+                if (typeof window.loadMoreComments === 'function') {
+                    window.loadMoreComments();
+                }
             });
         }
 
@@ -302,9 +293,6 @@
                         const newForm = newlyInserted.querySelector('form');
                         if(newForm) newForm.addEventListener('submit', handleCommentSubmit);
                     }
-                    
-                    visibleCount++;
-                    updateCommentsVisibility();
                 }
                 
                 const heading = document.getElementById('comments-section');
@@ -443,8 +431,114 @@
                     if(likeCountContainer) likeCountContainer.style.display = 'inline-flex';
                 });
 
-            // 2. Fetch Comments
-            fetch(`/blog/api/${slug}/comments/`)
+            // 2. Shared comment renderer
+            function renderComment(c, isOwn) {
+                let repliesHtml = "";
+                c.replies.forEach(r => {
+                    repliesHtml += `
+                    <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
+                        <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <b class="text-color-darkest font-semibold">${escapeHtml(r.username)}</b>
+                                <span class="text-xs text-color-dark">${escapeHtml(r.timestamp)}</span>
+                            </div>
+                            <p class="text-color-darkest">${escapeHtml(r.comment)}</p>
+                        </div>
+                    </div>`;
+                });
+
+                const replyForm = window.USER_IS_AUTHENTICATED === true ? `
+                    <details>
+                        <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
+                        <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <input type="hidden" name="postSno" value="${postSno}">
+                            <input type="hidden" name="parentSno" value="${c.sno}">
+                            <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
+                            <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/></svg>
+                                <span class="hidden sm:inline">Reply</span>
+                            </button>
+                        </form>
+                    </details>` : '';
+
+                return `
+                <div class="comment-item bg-white rounded-xl mb-6 card-shadow fade-in" data-comment-sno="${c.sno}" style="border-left: 4px solid var(--theme-base);">
+                    <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                        <div class="flex items-start gap-4">
+                            <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <b class="font-semibold text-color-darkest">${escapeHtml(c.username)} ${isOwn ? '(You)' : ''}</b>
+                                    <span class="text-xs text-color-dark">${escapeHtml(c.timestamp)}</span>
+                                </div>
+                                <p class="text-color-darkest mt-1">${escapeHtml(c.comment)}</p>
+                                <div class="mt-3">
+                                    ${replyForm}
+                                </div>
+                                <div class="mt-4 space-y-4">
+                                    ${repliesHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Load more comments (appends to existing)
+            window.loadMoreComments = function() {
+                const commentsContainer = document.getElementById('comments-container');
+                if (!commentsContainer) return;
+
+                // Add 5 skeleton loaders
+                const skeletonHtml = Array(5).fill(`
+                    <div class="comment-item bg-white rounded-xl mb-6 card-shadow skeleton-comment fade-in" style="border-left: 4px solid var(--theme-base); height: 120px;">
+                        <div class="p-4 flex h-full rounded-xl skeleton" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;"></div>
+                    </div>`).join('');
+                commentsContainer.insertAdjacentHTML('beforeend', skeletonHtml);
+
+                fetch(`/blog/api/${slug}/comments/?page=${commentsPage}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Server error (' + res.status + ')');
+                        return res.json();
+                    })
+                    .then(data => {
+                        const commentsContainer = document.getElementById('comments-container');
+                        if (!commentsContainer) return;
+
+                        // Remove skeleton loaders
+                        const skeletons = commentsContainer.querySelectorAll('.skeleton-comment');
+                        skeletons.forEach(s => s.remove());
+
+                        let html = "";
+                        data.other_comments.forEach(c => html += renderComment(c, false));
+                        commentsContainer.insertAdjacentHTML('beforeend', html);
+
+                        commentsHasNext = data.has_next;
+                        updateLoadMoreVisibility();
+
+                        // Bind reply forms on new comments
+                        commentsContainer.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
+                            form.removeEventListener('submit', handleCommentSubmit);
+                            form.addEventListener('submit', handleCommentSubmit);
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Error loading more comments:", err);
+                        showToast('Failed to load more comments.', 'error');
+                        commentsPage--; // Revert page increment on error
+                        
+                        const commentsContainer = document.getElementById('comments-container');
+                        if (commentsContainer) {
+                            const skeletons = commentsContainer.querySelectorAll('.skeleton-comment');
+                            skeletons.forEach(s => s.remove());
+                        }
+                    });
+            }
+
+            // 3. Initial comments fetch (page 1)
+            fetch(`/blog/api/${slug}/comments/?page=1`)
                 .then(res => {
                     if (res.status === 429) {
                         window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
@@ -463,71 +557,17 @@
                     if(heading) heading.innerText = `Comments (${data.total})`;
                     
                     let html = "";
-                    
-                    function renderComment(c, isOwn) {
-                        let repliesHtml = "";
-                        c.replies.forEach(r => {
-                            repliesHtml += `
-                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <b class="text-color-darkest font-semibold">${escapeHtml(r.username)}</b>
-                                        <span class="text-xs text-color-dark">${escapeHtml(r.timestamp)}</span>
-                                    </div>
-                                    <p class="text-color-darkest">${escapeHtml(r.comment)}</p>
-                                </div>
-                            </div>`;
-                        });
-
-                        const replyForm = window.USER_IS_AUTHENTICATED === true ? `
-                            <details>
-                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
-                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
-                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                    <input type="hidden" name="postSno" value="${postSno}">
-                                    <input type="hidden" name="parentSno" value="${c.sno}">
-                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/></svg>
-                                        <span class="hidden sm:inline">Reply</span>
-                                    </button>
-                                </form>
-                            </details>` : '';
-
-                        return `
-                        <div class="comment-item bg-white rounded-xl mb-6 card-shadow fade-in" data-comment-sno="${c.sno}" style="border-left: 4px solid var(--theme-base);">
-                            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                                <div class="flex items-start gap-4">
-                                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-2">
-                                            <b class="font-semibold text-color-darkest">${escapeHtml(c.username)} ${isOwn ? '(You)' : ''}</b>
-                                            <span class="text-xs text-color-dark">${escapeHtml(c.timestamp)}</span>
-                                        </div>
-                                        <p class="text-color-darkest mt-1">${escapeHtml(c.comment)}</p>
-                                        <div class="mt-3">
-                                            ${replyForm}
-                                        </div>
-                                        <div class="mt-4 space-y-4">
-                                            ${repliesHtml}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                    }
-
                     data.own_comments.forEach(c => html += renderComment(c, true));
                     data.other_comments.forEach(c => html += renderComment(c, false));
                     
                     commentsContainer.innerHTML = html || '<p class="text-color-darkest mb-6">No comments yet.</p>';
                     
+                    commentsHasNext = data.has_next;
+                    updateLoadMoreVisibility();
+                    
                     document.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
                         form.addEventListener('submit', handleCommentSubmit);
                     });
-                    
-                    updateCommentsVisibility();
                 })
                 .catch(err => {
                     if (err.message === 'Rate limited') return;

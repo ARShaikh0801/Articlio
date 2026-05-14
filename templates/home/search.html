@@ -13,10 +13,23 @@
         searchBar.value = query;
     }
     
-    document.addEventListener('DOMContentLoaded', () => {
+    let currentSearchPage = 1;
+
+    function goToPage(page) {
+        currentSearchPage = page;
+        fetchSearchResults();
+        document.getElementById('search-results-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function fetchSearchResults() {
         if (!query) return;
-        
-        fetch(`/api/search/?query=${encodeURIComponent(query)}`)
+
+        const container = document.getElementById('search-results-container');
+        const paginationContainer = document.getElementById('search-pagination-container');
+        container.innerHTML = Array(4).fill('<div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>').join('');
+        paginationContainer.innerHTML = '';
+
+        fetch(`/api/search/?query=${encodeURIComponent(query)}&page=${currentSearchPage}`)
             .then(res => {
                 if (res.status === 429) {
                     window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
@@ -28,7 +41,6 @@
                 return res.json();
             })
             .then(data => {
-                const container = document.getElementById('search-results-container');
                 container.innerHTML = '';
                 
                 const messageEl = document.getElementById('search-message');
@@ -89,6 +101,9 @@
                     </div>`;
                     container.insertAdjacentHTML('beforeend', postHtml);
                 });
+
+                // Render pagination
+                renderPagination(paginationContainer, data.page, data.total_pages, goToPage);
             })
             .catch(err => {
                 if (err.message === 'Rate limited') return;
@@ -97,6 +112,10 @@
                 document.getElementById('search-message').innerHTML = '<p class="text-color-darkest font-semibold">Failed to fetch search results.</p>';
                 document.getElementById('search-results-container').innerHTML = '';
             });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchSearchResults();
     });
 </script>
 {% endblock js %}
@@ -119,6 +138,8 @@
         <div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>
         {% endfor %}
     </div>
+
+    <div id="search-pagination-container"></div>
 </div>
 
 {% endblock body %}

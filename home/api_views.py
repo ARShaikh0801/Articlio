@@ -1,6 +1,7 @@
 from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage
 from blog.models import Post, Bookmark
-from blog.api_views import _check_rate_limit
+from blog.api_views import _check_rate_limit, _safe_page
 
 
 def _serialize_post(post, bookmarked_ids=None):
@@ -38,7 +39,7 @@ def api_home_posts(request):
 
 
 def api_search(request):
-    """Return search results."""
+    """Return search results with pagination."""
     if _check_rate_limit(request, 'api_search_rate'):
         return JsonResponse({'error': 'Rate limited. Please wait 10 minutes or login to continue.'}, status=429)
 
@@ -56,16 +57,31 @@ def api_search(request):
     allPostsAuthor = Post.objects.filter(author__icontains=query, draft=False)
     allPosts = allPostsTitle.union(allPostsContent, allPostsAuthor, allPostsCategory).order_by('-views')
 
+    total_results = allPosts.count()
+
+    # Pagination
+    page = _safe_page(request)
+    paginator = Paginator(allPosts, 8)
+    try:
+        page_obj = paginator.page(page)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
     bookmarked_ids = set()
     if request.user.is_authenticated:
         bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
 
-    posts_data = [_serialize_post(p, bookmarked_ids) for p in allPosts]
+    posts_data = [_serialize_post(p, bookmarked_ids) for p in page_obj]
 
-    message = 'No Search Result Found' if allPosts.count() == 0 else ''
+    message = 'No Search Result Found' if total_results == 0 else ''
 
     return JsonResponse({
         'posts': posts_data,
         'query': query,
         'message': message,
+        'page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'total_results': total_results,
     })

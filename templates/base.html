@@ -494,6 +494,79 @@
             closeBtn.addEventListener('click', dismiss);
             setTimeout(dismiss, 5000);
         };
+
+        // Global Pagination Renderer (CSP-safe: uses addEventListener, not onclick)
+        // container: DOM element to render pagination into
+        // currentPage: current page number
+        // totalPages: total number of pages
+        // onPageChange: callback function(pageNumber) called when a page button is clicked
+        window.renderPagination = function(container, currentPage, totalPages, onPageChange) {
+            if (!container) return;
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '<div class="flex flex-wrap items-center justify-center gap-3 mt-10 mb-6 pt-6 pagination-controls" style="border-top: 1px solid rgba(0,0,0,0.08);">';
+
+            // Previous button
+            if (currentPage > 1) {
+                html += `<button data-page="${currentPage - 1}" class="pagination-btn px-5 py-2.5 rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Previous page">&laquo; Prev</button>`;
+            } else {
+                html += `<button disabled class="px-5 py-2.5 rounded-full text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">&laquo; Prev</button>`;
+            }
+
+            // Page numbers with ellipsis
+            const maxVisible = 5;
+            let startPage, endPage;
+            if (totalPages <= maxVisible) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const half = Math.floor(maxVisible / 2);
+                startPage = Math.max(1, currentPage - half);
+                endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                if (endPage - startPage < maxVisible - 1) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+            }
+
+            if (startPage > 1) {
+                html += `<button data-page="1" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="px-2 text-color-dark font-bold select-none text-lg">…</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<button class="w-11 h-11 flex items-center justify-center rounded-full text-base font-bold all-border theme-darkest text-color-lightest cursor-default shadow-md transform scale-110">${i}</button>`;
+                } else {
+                    html += `<button data-page="${i}" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${i}</button>`;
+                }
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="px-2 text-color-dark font-bold select-none text-lg">…</span>`;
+                }
+                html += `<button data-page="${totalPages}" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${totalPages}</button>`;
+            }
+
+            // Next button
+            if (currentPage < totalPages) {
+                html += `<button data-page="${currentPage + 1}" class="pagination-btn px-5 py-2.5 rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Next page">Next &raquo;</button>`;
+            } else {
+                html += `<button disabled class="px-5 py-2.5 rounded-full text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">Next &raquo;</button>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Attach event listeners (CSP-safe, no inline handlers)
+            container.querySelectorAll('.pagination-btn[data-page]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    onPageChange(parseInt(btn.dataset.page, 10));
+                });
+            });
+        };
     </script>
     <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
     <script nonce="{{ request.csp_nonce }}">

@@ -12,19 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category');
     const resetBtn = document.getElementById('reset-btn');
     const container = document.getElementById('posts-container');
+    const paginationContainer = document.getElementById('pagination-container');
+    let currentPage = 1;
 
     const params = new URLSearchParams(window.location.search);
     if (params.has('filter')) filterSelect.value = params.get('filter');
     if (params.has('authors')) authorsSelect.value = params.get('authors');
     if (params.has('category')) categorySelect.value = params.get('category');
+    if (params.has('page')) currentPage = Math.max(1, parseInt(params.get('page')) || 1);
+
+    function goToPage(page) {
+        currentPage = page;
+        fetchPosts();
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     function fetchPosts() {
         container.innerHTML = Array(4).fill('<div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>').join('');
+        paginationContainer.innerHTML = '';
         
         const currentParams = new URLSearchParams({
             filter: filterSelect.value,
             authors: authorsSelect.value,
-            category: categorySelect.value
+            category: categorySelect.value,
+            page: currentPage
         });
 
         window.history.replaceState({}, '', `${window.location.pathname}?${currentParams.toString()}`);
@@ -120,6 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
                     container.insertAdjacentHTML('beforeend', postHtml);
                 });
+
+                // Render pagination
+                renderPagination(paginationContainer, data.page, data.total_pages, goToPage);
             })
             .catch(err => {
                 if (err.message === 'Rate limited') return;
@@ -129,14 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    filterSelect.addEventListener('change', fetchPosts);
-    authorsSelect.addEventListener('change', fetchPosts);
-    categorySelect.addEventListener('change', fetchPosts);
+    filterSelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
+    authorsSelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
+    categorySelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
 
     resetBtn.addEventListener('click', () => {
         filterSelect.value = "all";
         authorsSelect.value = "all";
         categorySelect.value = "all";
+        currentPage = 1;
         fetchPosts();
     });
 
@@ -175,6 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>
         {% endfor %}
     </div>
+
+    <div id="pagination-container"></div>
 
 </div>
 

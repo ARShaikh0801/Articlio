@@ -34,6 +34,7 @@
         <div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>
         {% endfor %}
     </div>
+    <div id="myblogs-pagination-container"></div>
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="delete-modal">
 
         <div class="theme-base-faded rounded-xl shadow-xl max-w-md w-full p-6">
@@ -95,18 +96,6 @@
     const deleteSpinner = document.getElementById("delete-spinner");
     const modalTitle = document.getElementById("delete-modal-title");
 
-    document.querySelectorAll(".open-delete-modal").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const slug = btn.dataset.slug;
-            const title = btn.dataset.title;
-
-            modalTitle.innerText = `Delete "${title}"?`;
-            deleteForm.action = `/blog/delete/${slug}`;
-
-            deleteModal.classList.remove("hidden");
-        });
-    });
-
     closeBtn.addEventListener("click", () => {
         deleteModal.classList.add("hidden");
     });
@@ -132,9 +121,9 @@
     const tabPublished = document.getElementById("tab-published");
     const container = document.getElementById("blogs-container");
 
-    let myDrafts = [];
-    let myPublished = [];
     let currentTab = 'drafts';
+    let draftsPage = 1;
+    let publishedPage = 1;
 
     function activateTab(activeBtn, inactiveBtn) {
         activeBtn.classList.add("theme-darkest", "text-color-lightest", "all-border");
@@ -143,7 +132,17 @@
         inactiveBtn.classList.add("text-color-light");
     }
 
-    function renderBlogs(blogs, type) {
+    function goToPage(page) {
+        if (currentTab === 'drafts') {
+            draftsPage = page;
+        } else {
+            publishedPage = page;
+        }
+        fetchMyBlogs(currentTab);
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderBlogs(blogs, type, paginationData) {
         let html = `<h2 class="text-2xl text-center font-semibold text-color-darkest mb-6">${type === 'drafts' ? 'Saved Drafts' : 'Published Blogs'}</h2>`;
         
         if (blogs.length === 0) {
@@ -183,9 +182,18 @@
             });
             html += `</div>`;
         }
-        
+
+        // Render blogs
         container.innerHTML = html;
         bindDeleteButtons();
+
+        // Render pagination
+        const paginationContainer = document.getElementById('myblogs-pagination-container');
+        if (paginationData) {
+            renderPagination(paginationContainer, paginationData.page, paginationData.total_pages, goToPage);
+        } else {
+            paginationContainer.innerHTML = '';
+        }
     }
 
     function bindDeleteButtons() {
@@ -200,21 +208,58 @@
         });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        fetch('/blog/api/my-blogs/')
+    function fetchMyBlogs(tab) {
+        const page = tab === 'drafts' ? draftsPage : publishedPage;
+
+        // Show skeleton while loading
+        container.innerHTML = Array(2).fill('<div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>').join('');
+
+        fetch(`/blog/api/my-blogs/?tab=${tab}&page=${page}`)
             .then(res => res.json())
             .then(data => {
-                myDrafts = data.drafts || [];
-                myPublished = data.published || [];
-                
+                // Update tab labels with counts
+                tabDrafts.textContent = `Drafts (${data.total_drafts || 0})`;
+                tabPublished.textContent = `Published (${data.total_published || 0})`;
+
+                renderBlogs(data.blogs || [], tab, {
+                    page: data.page,
+                    total_pages: data.total_pages,
+                });
+
+                // Handle initial tab selection
+                if (tab === 'drafts') {
+                    activateTab(tabDrafts, tabPublished);
+                } else {
+                    activateTab(tabPublished, tabDrafts);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Failed to load your blogs. Please try again.', 'error');
+                container.innerHTML = '<p class="text-color-darkest text-center">Failed to load blogs.</p>';
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initial load — fetch drafts first to determine default tab
+        fetch('/blog/api/my-blogs/?tab=drafts&page=1')
+            .then(res => res.json())
+            .then(data => {
+                tabDrafts.textContent = `Drafts (${data.total_drafts || 0})`;
+                tabPublished.textContent = `Published (${data.total_published || 0})`;
+
                 if (data.has_drafts) {
                     currentTab = 'drafts';
                     activateTab(tabDrafts, tabPublished);
-                    renderBlogs(myDrafts, 'drafts');
+                    renderBlogs(data.blogs || [], 'drafts', {
+                        page: data.page,
+                        total_pages: data.total_pages,
+                    });
                 } else {
                     currentTab = 'published';
                     activateTab(tabPublished, tabDrafts);
-                    renderBlogs(myPublished, 'published');
+                    // Need to fetch published tab
+                    fetchMyBlogs('published');
                 }
             })
             .catch(err => {
@@ -228,14 +273,14 @@
         if (currentTab === 'drafts') return;
         currentTab = 'drafts';
         activateTab(tabDrafts, tabPublished);
-        renderBlogs(myDrafts, 'drafts');
+        fetchMyBlogs('drafts');
     });
 
     tabPublished.addEventListener("click", () => {
         if (currentTab === 'published') return;
         currentTab = 'published';
         activateTab(tabPublished, tabDrafts);
-        renderBlogs(myPublished, 'published');
+        fetchMyBlogs('published');
     });
 </script>
 
