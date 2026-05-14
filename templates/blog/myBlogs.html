@@ -17,144 +17,22 @@
 
         <div class="mt-6 flex justify-center">
             <div class="inline-flex theme-medium rounded-lg p-1">
-                {% if draftBlogs %}
-                <button id="tab-drafts" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition
-                       theme-darkest all-border text-color-lightest">
+                <button id="tab-drafts" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition theme-darkest all-border text-color-lightest cursor-pointer">
                     Drafts
                 </button>
-
-                <button id="tab-published" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition
-                        text-color-light ">
+                <button id="tab-published" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition text-color-light cursor-pointer">
                     Published
                 </button>
-                {% else %}
-                <button id="tab-drafts" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition
-                        text-color-light">
-                    Drafts
-                </button>
-
-                <button id="tab-published" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition
-                        theme-darkest all-border text-color-lightest">
-                    Published
-                </button>
-                {% endif %}
             </div>
         </div>
     </div>
 
 
-    <div class="max-w-3xl mx-auto">
-        {% if draftBlogs %}
-        <div id="drafts-section">
-        {% else %}
-        <div id="drafts-section" class="hidden">
-        {% endif %}
-            <h2 class="text-2xl text-center font-semibold text-color-darkest mb-6">
-                Saved Drafts
-            </h2>
-
-            {% if draftBlogs %}
-            <div class="space-y-4">
-                {% for blog in draftBlogs %}
-                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition">
-                    <h3 class="text-lg font-semibold text-color-lightest">
-                        {{ blog.title }}
-                    </h3>
-                    <p class="text-sm text-color-lightest mt-1">
-                        Category: {{ blog.category }}
-                    </p>
-                    <p class="text-sm text-color-lightest mt-1">
-                        created: {{ blog.timestamp }}
-                    </p>
-                    <p class="text-sm text-color-lightest mt-1">
-                        Last updated: {{ blog.updated_at }}
-                    </p>
-                    <div class="text-color-light max-w-lg mb-4">
-                        {{ blog.summary }}
-                    </div>
-                    <div class="mt-4 flex gap-3">
-                        <form action="/blog/edit/{{ blog.slug }}" method="post">
-                           {% csrf_token %}
-                        <button type="submit"
-                            class="px-4 py-2 all-border text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 transition">
-                            Edit
-                        </button>
-                        </form>
-                        <button type="button"
-                            class="open-delete-modal all-border px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
-                            data-slug="{{ blog.slug }}" data-title="{{ blog.title }}">
-                            Delete
-                        </button>
-
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest">
-                No drafts saved yet.
-            </div>
-            {% endif %}
-        </div>
-
-        {% if draftBlogs %}
-        <div id="published-section" class="hidden">
-        {% else %}
-        <div id="published-section">
-        {% endif %}
-            <h2 class="text-2xl text-center font-semibold text-color-darkest mb-6">
-                Published Blogs
-            </h2>
-
-            {% if postedBlogs %}
-            <div class="space-y-4">
-                {% for blog in postedBlogs %}
-                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition">
-                    <h3 class="text-lg font-semibold text-color-lightest">
-                        {{ blog.title }}
-                    </h3>
-                    <p class="text-sm text-color-lightest mt-1">
-                        Category: {{ blog.category }}
-                    </p>
-                    <p class="text-sm text-color-lightest mt-1">
-                        Published on: {{ blog.timestamp }} · {{ blog.views }} views · {{ blog.likes }} likes
-                    </p>
-                    <p class="text-sm text-color-lightest mt-1">
-                        Last updated: {{ blog.updated_at }}
-                    </p>
-                    <div class="text-color-light max-w-lg mb-4">
-                        {{ blog.summary }}
-                    </div>
-                    <div class="mt-4 flex gap-3">
-                        <a href="/blog/{{ blog.slug }}"
-                            class="px-4 py-2 all-border text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                            View
-                        </a>
-                        <form action="/blog/edit/{{ blog.slug }}" method="post">
-                           {% csrf_token %}
-                        <button type="submit"
-                            class="px-4 py-2 all-border text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition">
-                            Edit
-                        </button>
-                        </form>
-                        <button type="button"
-                            class="open-delete-modal all-border px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
-                            data-slug="{{ blog.slug }}" data-title="{{ blog.title }}">
-                            Delete
-                        </button>
-
-
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest">
-                You haven't published any blogs yet.
-            </div>
-            {% endif %}
-        </div>
-
+    <div class="max-w-3xl mx-auto" id="blogs-container">
+        <!-- Skeleton Loaders -->
+        {% for i in "12" %}
+        <div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>
+        {% endfor %}
     </div>
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="delete-modal">
 
@@ -252,25 +130,112 @@
 
     const tabDrafts = document.getElementById("tab-drafts");
     const tabPublished = document.getElementById("tab-published");
+    const container = document.getElementById("blogs-container");
 
-    const draftsSection = document.getElementById("drafts-section");
-    const publishedSection = document.getElementById("published-section");
+    let myDrafts = [];
+    let myPublished = [];
+    let currentTab = 'drafts';
 
-    function activateTab(activeBtn, inactiveBtn, showSection, hideSection) {
-        activeBtn.classList.add("theme-darkest", "text-color-lightest","all-border");
-        inactiveBtn.classList.remove("theme-darkest", "text-color-lightest","all-border");
+    function activateTab(activeBtn, inactiveBtn) {
+        activeBtn.classList.add("theme-darkest", "text-color-lightest", "all-border");
+        activeBtn.classList.remove("text-color-light");
+        inactiveBtn.classList.remove("theme-darkest", "text-color-lightest", "all-border");
         inactiveBtn.classList.add("text-color-light");
-
-        showSection.classList.remove("hidden");
-        hideSection.classList.add("hidden");
     }
 
+    function renderBlogs(blogs, type) {
+        let html = `<h2 class="text-2xl text-center font-semibold text-color-darkest mb-6">${type === 'drafts' ? 'Saved Drafts' : 'Published Blogs'}</h2>`;
+        
+        if (blogs.length === 0) {
+            html += `
+            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest">
+                ${type === 'drafts' ? 'No drafts saved yet.' : "You haven't published any blogs yet."}
+            </div>`;
+        } else {
+            html += `<div class="space-y-4">`;
+            blogs.forEach(blog => {
+                const viewBtn = type === 'published' ? `
+                    <a href="/blog/${encodeURIComponent(blog.slug)}" class="px-4 py-2 all-border text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        View
+                    </a>` : '';
+                    
+                const editBtnColor = type === 'drafts' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-600 hover:bg-gray-700';
+
+                html += `
+                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in">
+                    <h3 class="text-lg font-semibold text-color-lightest">${escapeHtml(blog.title)}</h3>
+                    <p class="text-sm text-color-lightest mt-1">Category: ${escapeHtml(blog.category)}</p>
+                    ${type === 'published' ? 
+                        `<p class="text-sm text-color-lightest mt-1">Published on: ${escapeHtml(blog.timestamp)} · ${escapeHtml(blog.views)} views · ${escapeHtml(blog.likes)} likes</p>` :
+                        `<p class="text-sm text-color-lightest mt-1">Created: ${escapeHtml(blog.timestamp)}</p>`
+                    }
+                    <p class="text-sm text-color-lightest mt-1">Last updated: ${escapeHtml(blog.updated_at)}</p>
+                    <div class="text-color-light max-w-lg mb-4">${escapeHtml(blog.summary)}</div>
+                    <div class="mt-4 flex gap-3">
+                        ${viewBtn}
+                        <form action="/blog/edit/${encodeURIComponent(blog.slug)}" method="post">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${window.CSRF_TOKEN}">
+                            <button type="submit" class="px-4 py-2 all-border text-sm ${editBtnColor} text-white rounded transition cursor-pointer">Edit</button>
+                        </form>
+                        <button type="button" class="open-delete-modal all-border px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition cursor-pointer" data-slug="${escapeHtml(blog.slug)}" data-title="${escapeHtml(blog.title)}">Delete</button>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+        
+        container.innerHTML = html;
+        bindDeleteButtons();
+    }
+
+    function bindDeleteButtons() {
+        document.querySelectorAll(".open-delete-modal").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const slug = btn.dataset.slug;
+                const title = btn.dataset.title;
+                modalTitle.innerText = `Delete "${title}"?`;
+                deleteForm.action = `/blog/delete/${slug}`;
+                deleteModal.classList.remove("hidden");
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch('/blog/api/my-blogs/')
+            .then(res => res.json())
+            .then(data => {
+                myDrafts = data.drafts || [];
+                myPublished = data.published || [];
+                
+                if (data.has_drafts) {
+                    currentTab = 'drafts';
+                    activateTab(tabDrafts, tabPublished);
+                    renderBlogs(myDrafts, 'drafts');
+                } else {
+                    currentTab = 'published';
+                    activateTab(tabPublished, tabDrafts);
+                    renderBlogs(myPublished, 'published');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Failed to load your blogs. Please try again.', 'error');
+                container.innerHTML = '<p class="text-color-darkest text-center">Failed to load blogs.</p>';
+            });
+    });
+
     tabDrafts.addEventListener("click", () => {
-        activateTab(tabDrafts, tabPublished, draftsSection, publishedSection);
+        if (currentTab === 'drafts') return;
+        currentTab = 'drafts';
+        activateTab(tabDrafts, tabPublished);
+        renderBlogs(myDrafts, 'drafts');
     });
 
     tabPublished.addEventListener("click", () => {
-        activateTab(tabPublished, tabDrafts, publishedSection, draftsSection);
+        if (currentTab === 'published') return;
+        currentTab = 'published';
+        activateTab(tabPublished, tabDrafts);
+        renderBlogs(myPublished, 'published');
     });
 </script>
 

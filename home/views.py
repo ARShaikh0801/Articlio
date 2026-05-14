@@ -1,9 +1,8 @@
-from django.shortcuts import render,HttpResponse,redirect
+from django.shortcuts import render,redirect
 from django.http import JsonResponse
 import json
 from django.contrib import messages
 from home.models import Contact
-from blog.models import Post,Bookmark
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.contrib.auth import authenticate,login,logout
@@ -13,13 +12,7 @@ from django.urls import reverse
 import random
 
 def home(request):
-    topPosts=Post.objects.filter(draft=False).order_by('-views')[:2]
-    if(request.user.is_authenticated): 
-        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-    else:
-        bookmarked = set()
-    context={'topPosts':topPosts,'bookmarked':bookmarked}
-    return render(request,'home/home.html',context)
+    return render(request,'home/home.html')
 
 def contact(request):
     if request.user.is_authenticated:
@@ -48,26 +41,7 @@ def search(request):
     query=request.GET.get('query')
     if query=='':
         return redirect('blogHome')
-    else:
-        if(request.user.is_authenticated): 
-            bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-        else:
-            bookmarked = set()
-        if len(query)>30:
-            messages.warning(request,"Please Enter Less Than 30 Character")
-            allPosts=Post.objects.none()
-        
-        else:
-            allPostsTitle=Post.objects.filter(title__icontains=query,draft=False)
-            allPostsCategory=Post.objects.filter(category__icontains=query,draft=False)
-            allPostsContent=Post.objects.filter(content__icontains=query,draft=False)
-            allPostsAuthor=Post.objects.filter(author__icontains=query,draft=False)
-            allPosts=allPostsTitle.union(allPostsContent,allPostsAuthor,allPostsCategory).order_by('-views')
-
-            if allPosts.count()==0:
-                messages.warning(request,"No Search Result Found")
-
-    context={'allPosts':allPosts,'query':query,'bookmarked':bookmarked}
+    context={'query':query}
     return render(request,'home/search.html',context)
 
 def handleSignup(request):

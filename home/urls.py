@@ -1,5 +1,5 @@
 from django.urls import path
-from home import views
+from home import views, api_views
 
 urlpatterns=[
     path('',views.home,name='home'),
@@ -13,4 +13,7 @@ urlpatterns=[
     path('privacy',views.privacy,name='privacy'),
     path('resetpass',views.resetPassword,name='resetPassword'),
     path('update-theme', views.update_theme_preference, name='update_theme_preference'),
+
+    path('api/home/posts/', api_views.api_home_posts, name='api_home_posts'),
+    path('api/search/', api_views.api_search, name='api_search'),
 ]

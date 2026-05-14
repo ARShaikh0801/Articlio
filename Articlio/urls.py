@@ -27,16 +27,10 @@ admin.site.index_title="Welcome To Articlio"
 sitemaps = {
     'posts': PostSitemap(),
 }
-from django.shortcuts import render
-
-def mobile_blocked(request):
-    return render(request, 'mobile_blocked.html')
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('blog/', include('blog.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
-    path('mobile-not-supported/', mobile_blocked, name='mobile_blocked'),
 ]

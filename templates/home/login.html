@@ -7,7 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Articlio Blog - Login to access your account and explore our content.">
     <title>Articlio-Login</title>
-    <link rel="stylesheet" href="{% static '/css/output.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <style>
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        .close-msg { cursor: pointer; }
+    </style>
 </head>
 
 <body class="theme-base-faded">
@@ -71,8 +77,11 @@
 
     </div>
 </body>
-<script nonce="{{ request.csp_nonce }}">
+    <script nonce="{{ request.csp_nonce }}">
         window.CURRENT_USER = "{{ request.user.username }}";
+        window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
+        window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
+        window.CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     </script>
     <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
@@ -81,6 +90,23 @@
             button.parentElement.remove();
         });
     });
+
+    // Display URL message param (from rate-limit redirect or bookmark redirect)
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const msg = params.get('msg');
+        if (msg) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'max-w-4xl mx-auto my-3 px-4';
+            wrapper.innerHTML = '<div class="p-4 rounded-lg flex justify-between bg-yellow-200 text-yellow-700"><span>' + msg.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span><button type="button" class="close-msg text-xl">&times;</button></div>';
+            const container = document.querySelector('.max-w-xl');
+            const firstChild = container.querySelector('main') || container.firstElementChild;
+            container.insertBefore(wrapper, firstChild);
+            wrapper.querySelector('.close-msg').addEventListener('click', function() {
+                wrapper.remove();
+            });
+        }
+    })();
     const loginBtn=document.getElementById('loginBtn')
     const loginText=document.getElementById('login-text')
     const loginSpinner=document.getElementById('login-spinner')

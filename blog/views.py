@@ -16,59 +16,23 @@ import re
 
 
 def blogHome(request):
-    allPosts=Post.objects.filter(draft=False)
-    authors=Post.objects.filter(draft=False).values('author').distinct()
-    categories=Post.objects.filter(draft=False).values('category').distinct()
-    if request.user.is_authenticated:
-        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-    else:
-        bookmarked = set()
-    context={'allPosts':allPosts,'filter':'all','authors':authors,'selectedAuthor':'all','selectedCategory':'all','categories':categories,'bookmarked':bookmarked}
-    return render(request,'blog/blogHome.html',context)
+    return render(request, 'blog/blogHome.html', {'filter': 'all', 'selectedAuthor': 'all', 'selectedCategory': 'all'})
 
 def filteredBlogs(request):
-    allPosts=Post.objects.filter(draft=False)
-    authors=Post.objects.filter(draft=False).values('author').distinct()
-    categories=Post.objects.filter(draft=False).values('category').distinct()
-    filtered=request.GET.get("filter")
-    authorsFilter=request.GET.get("authors")
-    categoryFilter=request.GET.get("category")
-    if request.user.is_authenticated:
-        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-    else:
-        bookmarked = set()
-    if filtered=="all" and authorsFilter=="all" and categoryFilter=="all":
-        return redirect('blogHome')
-    elif filtered=="liked":
-        allPosts=allPosts.order_by('-likes')
-    elif filtered=="unliked":
-        allPosts=allPosts.order_by('likes')
-    elif filtered=="viewed":
-        allPosts=allPosts.order_by('-views')
-    elif filtered=="unviewed":
-        allPosts=allPosts.order_by('views')
-    elif filtered=="latest":
-        allPosts=allPosts.order_by('-timestamp')
-    elif filtered=="old":
-        allPosts=allPosts.order_by('timestamp')
-
-    if authorsFilter!="all":
-        allPosts=allPosts.filter(author=authorsFilter)
-    if categoryFilter!="all":
-        allPosts=allPosts.filter(category=categoryFilter)
-    return render(request,'blog/blogHome.html',{'allPosts':allPosts,'filter':filtered,'authors':authors,'selectedAuthor':authorsFilter,'selectedCategory':categoryFilter,'categories':categories,'bookmarked':bookmarked})
+    filtered = request.GET.get("filter", "all")
+    authorsFilter = request.GET.get("authors", "all")
+    categoryFilter = request.GET.get("category", "all")
+    return render(request, 'blog/blogHome.html', {'filter': filtered, 'selectedAuthor': authorsFilter, 'selectedCategory': categoryFilter})
 
 def bookmarks(request):
     if request.user.is_authenticated:
-        savedPost = Post.objects.filter(bookmark__user=request.user).distinct() 
-        bookmarked = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-        return render(request,'blog/bookmarkBlog.html',{'allPosts':savedPost,'bookmarked':bookmarked})
+        return render(request, 'blog/bookmarkBlog.html')
     else:
         return redirect('blogHome')
 
 def blogPost(request,slug):
-    post=Post.objects.filter(slug=slug,draft=False).first()
-    interestedPosts=Post.objects.filter(draft=False,category=post.category).exclude(sno=post.sno)[:4]
+    post=get_object_or_404(Post, slug=slug, draft=False)
+    
     viewed_posts = request.session.get("viewed_posts", [])
     if post.sno not in viewed_posts:
         post.views += 1
@@ -77,20 +41,8 @@ def blogPost(request,slug):
         viewed_posts.append(post.sno)
         request.session["viewed_posts"] = viewed_posts
         request.session.modified = True
-    post.save()
-    comments=BlogComment.objects.filter(post=post,parent=None)
-    replies=BlogComment.objects.filter(post=post).exclude(parent=None)
-    repDict={}
-    for reply in replies:
-        if reply.parent.sno not in repDict.keys():
-            repDict[reply.parent.sno]=[reply]
-        else:
-            repDict[reply.parent.sno].append(reply)
-    if request.user.is_authenticated:
-        context={'post':post,"comments":comments,"user":request.user,'repDict':repDict,'liked':Like.objects.filter(post=post.sno,user=request.user).exists(),'bookmarked':Bookmark.objects.filter(post=post.sno,user=request.user).exists(),'interestedPosts':interestedPosts}
-    else:
-        context={'post':post,"comments":comments,'repDict':repDict,'liked':False,'interestedPosts':interestedPosts}
-    return render(request,'blog/blogPost.html',context)
+        
+    return render(request,'blog/blogPost.html', {'post': post})
 
 def generate_unique_slug(model, base_text):
     base_slug = slugify(base_text)
@@ -165,9 +117,7 @@ def myBlogs(request):
         elif request.user.verified==False:
             messages.error(request,"Please Verify Your Account First !")
             return redirect('blogHome')
-        draftBlogs=Post.objects.filter(author=request.user.name,draft=True).order_by('-updated_at')
-        postedBlogs=Post.objects.filter(author=request.user.name,draft=False).order_by('-updated_at')
-        return render(request,'blog/myBlogs.html',{'draftBlogs':draftBlogs,'postedBlogs':postedBlogs})
+        return render(request,'blog/myBlogs.html')
     else:
         return redirect('blogHome')
 
@@ -193,86 +143,90 @@ from django.db.models.functions import Greatest
 
 @require_POST
 def toggle_like(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
     data = json.loads(request.body)
     post_id = data.get("post_id")
     request_timestamp = data.get("timestamp", 0)
     post = Post.objects.get(sno=post_id)
+    user = request.user
 
-    if request.user.is_authenticated:
-        user = request.user
-
-        # Server-side timestamp enforcement - reject stale requests
-        ts_key = f'like_ts_{post_id}'
-        last_ts = request.session.get(ts_key, 0)
-        if request_timestamp and request_timestamp <= last_ts:
-            post.refresh_from_db()
-            liked = Like.objects.filter(post=post, user=user).exists()
-            return JsonResponse({
-                "status": "liked" if liked else "unliked",
-                "likes": post.likes,
-                "timestamp": request_timestamp
-            })
-        request.session[ts_key] = request_timestamp
-        request.session.modified = True
-
-        # Atomic delete - avoids TOCTOU race
-        deleted_count, _ = Like.objects.filter(post=post, user=user).delete()
-        if deleted_count > 0:
-            Post.objects.filter(sno=post_id).update(likes=Greatest(F('likes') - 1, 0))
-            status = "unliked"
-        else:
-            try:
-                Like.objects.create(post=post, user=user)
-                Post.objects.filter(sno=post_id).update(likes=F('likes') + 1)
-                status = "liked"
-            except IntegrityError:
-                # Race condition: someone already created the like
-                status = "liked"
-
-        # Fetch fresh count after update
+    # Server-side timestamp enforcement - reject stale requests
+    ts_key = f'like_ts_{post_id}'
+    last_ts = request.session.get(ts_key, 0)
+    if request_timestamp and request_timestamp <= last_ts:
         post.refresh_from_db()
+        liked = Like.objects.filter(post=post, user=user).exists()
+        return JsonResponse({
+            "status": "liked" if liked else "unliked",
+            "likes": post.likes,
+            "timestamp": request_timestamp
+        })
+    request.session[ts_key] = request_timestamp
+    request.session.modified = True
 
-        return JsonResponse({
-            "status": status,
-            "likes": post.likes,
-            "timestamp": request_timestamp
-        })
+    # Atomic delete - avoids TOCTOU race
+    deleted_count, _ = Like.objects.filter(post=post, user=user).delete()
+    if deleted_count > 0:
+        Post.objects.filter(sno=post_id).update(likes=Greatest(F('likes') - 1, 0))
+        status = "unliked"
     else:
-        return JsonResponse({
-            "status": "unknown",
-            "likes": post.likes,
-            "timestamp": request_timestamp
-        })
+        try:
+            Like.objects.create(post=post, user=user)
+            Post.objects.filter(sno=post_id).update(likes=F('likes') + 1)
+            status = "liked"
+        except IntegrityError:
+            # Race condition: someone already created the like
+            status = "liked"
+
+    # Fetch fresh count after update
+    post.refresh_from_db()
+
+    return JsonResponse({
+        "status": status,
+        "likes": post.likes,
+        "timestamp": request_timestamp
+    })
     
 @require_POST
 def toggle_bookmark(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
     data = json.loads(request.body)
     post_id = data.get("post_id")
     request_timestamp = data.get("timestamp")
     post = Post.objects.get(sno=post_id)
+    user = request.user
 
-    if request.user.is_authenticated:
-        user = request.user
-
-        # Atomic delete - avoids TOCTOU race
-        deleted_count, _ = Bookmark.objects.filter(post=post, user=user).delete()
-        if deleted_count > 0:
-            status = "unsave"
-        else:
-            try:
-                Bookmark.objects.create(post=post, user=user)
-                status = "save"
-            except IntegrityError:
-                status = "save"
-
+    # Server-side timestamp enforcement - reject stale requests
+    ts_key = f'bookmark_ts_{post_id}'
+    last_ts = request.session.get(ts_key, 0)
+    if request_timestamp and request_timestamp <= last_ts:
+        bookmarked = Bookmark.objects.filter(post=post, user=user).exists()
         return JsonResponse({
-            "status": status,
+            "status": "save" if bookmarked else "unsave",
             "timestamp": request_timestamp
         })
+    request.session[ts_key] = request_timestamp
+    request.session.modified = True
+
+    # Atomic delete - avoids TOCTOU race
+    deleted_count, _ = Bookmark.objects.filter(post=post, user=user).delete()
+    if deleted_count > 0:
+        status = "unsave"
     else:
-        return JsonResponse({
-            "status": "unsave",
-        })
+        try:
+            Bookmark.objects.create(post=post, user=user)
+            status = "save"
+        except IntegrityError:
+            status = "save"
+
+    return JsonResponse({
+        "status": status,
+        "timestamp": request_timestamp
+    })
     
 @require_POST
 def postComment(request):

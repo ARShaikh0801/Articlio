@@ -53,20 +53,10 @@
     <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-2 relative">
         {{ post.title }}
         {% if request.user.is_authenticated %}
-        <div class="absolute text-lg top-4 right-4 flex items-center gap-2 cursor-pointer" id="save-btn-{{ post.sno }}">
-            {% if bookmarked %}
-            Saved <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-darkest w-6 h-6' viewBox='0 0 16 16'>
-                <path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/>
-            </svg>
-            {% else %}
-            Save
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
-                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
-            </svg>
-            {% endif %}
+        <div class="absolute text-lg top-4 right-4 items-center gap-2 cursor-pointer saveSVG" style="display: none;" id="save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
         </div>
         {% else %}
-        <a class="absolute text-lg top-4 right-4 flex items-center gap-2" href="{% url 'handleLogin' %}?next={{ request.get_full_path }}">
+        <a class="absolute text-lg top-4 right-4 flex items-center gap-2" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
             Save
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
                 <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
@@ -80,7 +70,7 @@
         <a href="/search?query={{ post.author|urlencode }}" class="text-color-dark author-link-hover-medium underline">
             {{ post.author }}
         </a>
-        · {{ post.views }} views
+        <span id="post-views-container"><span class="skeleton inline-block align-middle rounded ml-1" style="width: 4rem; height: 1rem;"></span></span>
     </p>
 
     <script nonce="{{ request.csp_nonce }}" type="application/ld+json">
@@ -95,62 +85,33 @@
       "description": "{{ post.content|striptags|truncatechars:160|escapejs }}",
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/user.webp' %}"
     }
-    </script>
-    <button class="theme-medium all-border theme-medium-btn text-color-lightest inline-flex items-center gap-1  px-4 py-2 rounded-lg transition mb-4" type="button" id="like-btn-{{ post.sno }}">
-                {% if liked %}
-                Unlike
-                <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor'
-                    class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'>
-                    <path
-                        d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041-.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1' />
-                </svg>
-                {% else %}
-                Like
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                    class="bi bi-hand-thumbs-up" viewBox="0 0 16 16">
-                    <path
-                        d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z" />
-                </svg>
-                {% endif %}
-            </button>
+    </script>    <div id="like-skeleton-wrapper" class="flex items-center gap-2 mb-4">
+        <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
+        <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
+    </div>
 
-            <div class="like-box inline-flex items-center">
-                <span id="like-count-{{ post.sno }}" class="count text-color-dark">
-                    {{ post.likes }}
-                </span>
-            </div>
+    <button style="display: none;" class="theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition mb-4 align-middle" type="button" id="like-btn-{{ post.sno }}">
+    </button>
+
+    <div style="display: none;" class="like-box items-center align-middle" id="like-container">
+        <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+    </div>
 
     <div class="ql-editor max-w-none all-border p-4 rounded-lg" style="background-color: #ffffff">
         {{ post.content|safe }}
     </div>
 
-    {% if interestedPosts %}
-    <hr class="my-10 all-border">
-    <h2 class="text-2xl text-color-darkest font-semibold mb-4">
+    <hr class="my-10 all-border hidden" id="interested-posts-hr">
+    <h2 class="text-2xl text-color-darkest font-semibold mb-4 hidden" id="interested-posts-heading">
         You might also like
     </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {% for p in interestedPosts %}
-        <a href="/blog/{{ p.slug }}" class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition hover:scale-105">
-            <h3 class="text-lg font-semibold mb-2">
-                {{ p.title }}
-            </h3>
-            <p class="text-sm text-color-lightest mb-2">
-                Category: {{ p.category }}
-            </p>
-            <p class="text-sm text-color-lightest">
-                {{ p.summary|truncatechars:100 }}
-            </p>
-        </a>
-        {% endfor %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden" id="interested-posts-container">
     </div>
-
-    {% endif %}
 
     <hr class="my-10 all-border">
 
     <h2 id="comments-section" class="text-2xl text-color-darkest font-semibold mb-4">
-        Comments ({{ comments.count }})
+        Comments (<span class="skeleton inline-block align-middle rounded" style="width: 1.5rem; height: 1.5rem;"></span>)
     </h2>
 
     {% if user.is_authenticated %}
@@ -175,126 +136,23 @@
         </button>
     </form>
     {% else %}
-        <p class="text-color-lightest font-medium mb-6">
+        <p class="text-color-dark font-medium mb-6">
             Please log in to post a comment.
         </p>
     {% endif %}
 
     <div id="comments-container">
-    {# First loop: User's own comments (Latest first) #}
-    {% for comment in comments|dictsortreversed:"timestamp" %}
-        {% if user.is_authenticated and comment.user == user %}
-        <div class="comment-item bg-white rounded-xl mb-6 card-shadow" data-comment-sno="{{ comment.sno }}" style="border-left: 4px solid var(--theme-base);">
-            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                <div class="flex items-start gap-4">
-                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="{{ comment.user.username }}">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <b class="font-semibold text-color-darkest">{{ comment.user.username }} (You)</b>
-                            <span class="text-xs text-color-dark">{{ comment.timestamp|naturaltime }}</span>
-                        </div>
-                        <p class="text-color-darkest mt-1">{{ comment.comment }}</p>
-                        <div class="mt-3">
-                            <details>
-                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
-                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="postSno" value="{{ post.sno }}">
-                                    <input type="hidden" name="parentSno" value="{{ comment.sno }}">
-                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Reply</span>
-                                    </button>
-                                </form>
-                            </details>
-                        </div>
-                        <div class="mt-4 space-y-4">
-                            {% for reply in repDict|get_val:comment.sno %}
-                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="{{ reply.user.username }}">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <b class="text-color-darkest font-semibold">{{ reply.user.username }}</b>
-                                        <span class="text-xs text-color-dark">{{ reply.timestamp|naturaltime }}</span>
-                                    </div>
-                                    <p class="text-color-darkest">{{ reply.comment }}</p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
-
-    {# Second loop: Everyone else's comments (Latest first) #}
-    {% for comment in comments|dictsortreversed:"timestamp" %}
-        {% if not user.is_authenticated or comment.user != user %}
-        <div class="comment-item bg-white rounded-xl mb-6 card-shadow" data-comment-sno="{{ comment.sno }}" style="border-left: 4px solid var(--theme-base);">
-            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                <div class="flex items-start gap-4">
-                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="{{ comment.user.username }}">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <b class="font-semibold text-color-darkest">{{ comment.user.username }}</b>
-                            <span class="text-xs text-color-dark">{{ comment.timestamp|naturaltime }}</span>
-                        </div>
-                        <p class="text-color-darkest mt-1">{{ comment.comment }}</p>
-                        <div class="mt-3">
-                            {% if user.is_authenticated %}
-                            <details>
-                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
-                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="postSno" value="{{ post.sno }}">
-                                    <input type="hidden" name="parentSno" value="{{ comment.sno }}">
-                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Reply</span>
-                                    </button>
-                                </form>
-                            </details>
-                            {% else %}
-                            <p class="text-sm text-color-light mt-2">Log in to reply</p>
-                            {% endif %}
-                        </div>
-                        <div class="mt-4 space-y-4">
-                            {% for reply in repDict|get_val:comment.sno %}
-                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="{{ reply.user.username }}">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <b class="text-color-darkest font-semibold">{{ reply.user.username }}</b>
-                                        <span class="text-xs text-color-dark">{{ reply.timestamp|naturaltime }}</span>
-                                    </div>
-                                    <p class="text-color-darkest">{{ reply.comment }}</p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
+        <!-- Skeletons will be rendered here by JS -->
+        {% for i in "12" %}
+        <div class="bg-white rounded-xl mb-6 card-shadow skeleton" style="height: 120px; border-left: 4px solid var(--theme-base);"></div>
+        {% endfor %}
     </div>
 
-    {% if comments.count > 5 %}
-    <div class="text-center mt-4 mb-8">
+    <div class="text-center mt-4 mb-8" style="display: none;" id="read-more-container">
         <button id="read-more-comments" class="all-border theme-medium theme-medium-btn text-color-lightest px-6 py-2 rounded-lg transition font-semibold">
             Read More Comments
         </button>
     </div>
-    {% endif %}
     <button class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-50"  type="button" id="toTopBtn" style="bottom: 80px;">^</button>
 
     
@@ -362,7 +220,7 @@
             const parentSno = parentSnoInput ? parentSnoInput.value : null;
             const postSnoInput = form.querySelector('input[name="postSno"]');
             const postSno = postSnoInput.value;
-            const username = "{{ request.user.username }}";
+            const username = window.CURRENT_USER || "{{ request.user.username }}";
 
             // Generate a temporary ID for the optimistic element
             const tempId = "temp-" + Date.now();
@@ -439,7 +297,6 @@
                 if (commentsContainer) {
                     commentsContainer.insertAdjacentHTML('afterbegin', newCommentHTML);
                     
-                    // Bind event listener to the newly inserted form
                     const newlyInserted = document.getElementById(tempId);
                     if(newlyInserted) {
                         const newForm = newlyInserted.querySelector('form');
@@ -450,7 +307,6 @@
                     updateCommentsVisibility();
                 }
                 
-                // Update main comment count
                 const heading = document.getElementById('comments-section');
                 if(heading) {
                     const countMatch = heading.innerText.match(/\d+/);
@@ -460,8 +316,6 @@
                     }
                 }
             }
-
-            // Send request
             fetch("/blog/postComment", {
                 method: "POST",
                 headers: {
@@ -487,22 +341,201 @@
                         }
                     }
                 } else {
-                    // Revert
                     if (tempEl) tempEl.remove();
-                    commentInput.value = commentText; // Restore input
+                    commentInput.value = commentText; 
                     console.error("Error posting comment:", data.message);
                 }
             })
             .catch(err => {
                 const tempEl = document.getElementById(tempId);
                 if (tempEl) tempEl.remove();
-                commentInput.value = commentText; // Restore input
+                commentInput.value = commentText; 
                 console.error("Error posting comment:", err);
+                showToast('Failed to post comment. Please try again.', 'error');
             });
         }
+        document.addEventListener("DOMContentLoaded", () => {
+            const slug = "{{ post.slug }}";
+            const postSno = "{{ post.sno }}";
+            
+            // 1. Fetch Post State (Likes, Bookmarks, Views, Interested)
+            fetch(`/blog/api/${slug}/state/`)
+                .then(res => {
+                    if (res.status === 429) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
+                        throw new Error("Rate limited");
+                    }
+                    if (!res.ok) {
+                        throw new Error('Server error (' + res.status + ')');
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    // Update Views
+                    const viewsContainer = document.getElementById('post-views-container');
+                    if(viewsContainer) viewsContainer.innerHTML = `· ${data.views} views`;
 
-        document.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
-            form.addEventListener('submit', handleCommentSubmit);
+                    // Update Like Button
+                    const likeSkeletonWrapper = document.getElementById('like-skeleton-wrapper');
+                    if (likeSkeletonWrapper) likeSkeletonWrapper.classList.add('hidden');
+
+                    const likeBtn = document.getElementById(`like-btn-${postSno}`);
+                    const likeCountContainer = document.getElementById('like-container');
+                    const likeCountSpan = document.getElementById(`like-count-${postSno}`);
+                    
+                    if (likeBtn && likeCountContainer && likeCountSpan) {
+                        if(data.liked) {
+                            likeBtn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+                        } else {
+                            likeBtn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+                        }
+                        likeCountSpan.innerText = data.likes;
+                        likeBtn.style.display = 'inline-flex';
+                        likeCountContainer.style.display = 'inline-flex';
+                    }
+
+                    // Update Bookmark Button
+                    const saveBtn = document.getElementById(`save-btn-${postSno}`);
+                    if (saveBtn) {
+                        if(data.bookmarked) {
+                            saveBtn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-darkest w-6 h-6' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+                        } else {
+                            saveBtn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest' fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+                        }
+                        saveBtn.style.display = 'flex';
+                    }
+
+                    // Update Interested Posts
+                    if (data.interestedPosts && data.interestedPosts.length > 0) {
+                        const interestedContainer = document.getElementById('interested-posts-container');
+                        const interestedHeading = document.getElementById('interested-posts-heading');
+                        const interestedHr = document.getElementById('interested-posts-hr');
+                        
+                        if(interestedContainer && interestedHeading && interestedHr) {
+                            let html = "";
+                            data.interestedPosts.forEach(p => {
+                                html += `
+                                <a href="/blog/${encodeURIComponent(p.slug)}" class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition hover:scale-105 fade-in">
+                                    <h3 class="text-lg font-semibold mb-2">${escapeHtml(p.title)}</h3>
+                                    <p class="text-sm text-color-lightest mb-2">Category: ${escapeHtml(p.category)}</p>
+                                    <p class="text-sm text-color-lightest">${escapeHtml(p.summary)}</p>
+                                </a>`;
+                            });
+                            interestedContainer.innerHTML = html;
+                            interestedContainer.classList.remove('hidden');
+                            interestedHeading.classList.remove('hidden');
+                            interestedHr.classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(err => {
+                    if (err.message === 'Rate limited') return;
+                    console.error("Error fetching post state:", err);
+                    showToast('Failed to load post details. Please refresh.', 'error');
+                    // Remove stuck skeletons and show defaults
+                    const likeSkeletonWrapper = document.getElementById('like-skeleton-wrapper');
+                    if (likeSkeletonWrapper) likeSkeletonWrapper.classList.add('hidden');
+                    const viewsContainer = document.getElementById('post-views-container');
+                    if(viewsContainer) viewsContainer.innerHTML = '';
+                    const likeBtn = document.getElementById(`like-btn-${postSno}`);
+                    if(likeBtn) { likeBtn.style.display = 'inline-flex'; likeBtn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>"; }
+                    const likeCountContainer = document.getElementById('like-container');
+                    if(likeCountContainer) likeCountContainer.style.display = 'inline-flex';
+                });
+
+            // 2. Fetch Comments
+            fetch(`/blog/api/${slug}/comments/`)
+                .then(res => {
+                    if (res.status === 429) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
+                        throw new Error("Rate limited");
+                    }
+                    if (!res.ok) {
+                        throw new Error('Server error (' + res.status + ')');
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    const commentsContainer = document.getElementById('comments-container');
+                    if (!commentsContainer) return;
+                    
+                    const heading = document.getElementById('comments-section');
+                    if(heading) heading.innerText = `Comments (${data.total})`;
+                    
+                    let html = "";
+                    
+                    function renderComment(c, isOwn) {
+                        let repliesHtml = "";
+                        c.replies.forEach(r => {
+                            repliesHtml += `
+                            <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
+                                <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <b class="text-color-darkest font-semibold">${escapeHtml(r.username)}</b>
+                                        <span class="text-xs text-color-dark">${escapeHtml(r.timestamp)}</span>
+                                    </div>
+                                    <p class="text-color-darkest">${escapeHtml(r.comment)}</p>
+                                </div>
+                            </div>`;
+                        });
+
+                        const replyForm = window.USER_IS_AUTHENTICATED === true ? `
+                            <details>
+                                <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
+                                <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    <input type="hidden" name="postSno" value="${postSno}">
+                                    <input type="hidden" name="parentSno" value="${c.sno}">
+                                    <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
+                                    <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/></svg>
+                                        <span class="hidden sm:inline">Reply</span>
+                                    </button>
+                                </form>
+                            </details>` : '';
+
+                        return `
+                        <div class="comment-item bg-white rounded-xl mb-6 card-shadow fade-in" data-comment-sno="${c.sno}" style="border-left: 4px solid var(--theme-base);">
+                            <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                                <div class="flex items-start gap-4">
+                                    <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <b class="font-semibold text-color-darkest">${escapeHtml(c.username)} ${isOwn ? '(You)' : ''}</b>
+                                            <span class="text-xs text-color-dark">${escapeHtml(c.timestamp)}</span>
+                                        </div>
+                                        <p class="text-color-darkest mt-1">${escapeHtml(c.comment)}</p>
+                                        <div class="mt-3">
+                                            ${replyForm}
+                                        </div>
+                                        <div class="mt-4 space-y-4">
+                                            ${repliesHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
+                    data.own_comments.forEach(c => html += renderComment(c, true));
+                    data.other_comments.forEach(c => html += renderComment(c, false));
+                    
+                    commentsContainer.innerHTML = html || '<p class="text-color-darkest mb-6">No comments yet.</p>';
+                    
+                    document.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
+                        form.addEventListener('submit', handleCommentSubmit);
+                    });
+                    
+                    updateCommentsVisibility();
+                })
+                .catch(err => {
+                    if (err.message === 'Rate limited') return;
+                    console.error("Error fetching comments:", err);
+                    showToast('Failed to load comments.', 'error');
+                    const commentsContainer = document.getElementById('comments-container');
+                    if (commentsContainer) commentsContainer.innerHTML = '<p class="text-color-darkest mb-6">Failed to load comments.</p>';
+                });
         });
     </script>
 {% endblock body %}
@@ -526,10 +559,10 @@
 
         // 1. IMMEDIATE OPTIMISTIC UPDATE
         if (isLiked) {
-            btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+            btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
             countSpan.innerText = Math.max(0, originalCount - 1);
         } else {
-            btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+            btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
             countSpan.innerText = originalCount + 1;
         }
 
@@ -564,18 +597,19 @@
                     countSpan.innerText = Math.max(0, data.likes);
                     // Update icon to match final server state
                     if (data.status === "liked") {
-                        btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
                     } else {
-                        btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
                     }
                 })
                 .catch(err => {
                     console.error("Error syncing like:", err);
+                    showToast('Failed to update like. Please try again.', 'error');
                     // Revert to pre-debounce state
                     if (likeStateBeforeDebounce) {
-                        btn.innerHTML = "Unlike <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
                     } else {
-                        btn.innerHTML = "Like <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
                     }
                     countSpan.innerText = Math.max(0, likeCountBeforeDebounce);
                 });
@@ -600,9 +634,9 @@
 
         // 1. OPTIMISTIC UI UPDATE
         if (isSaved) {
-            btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+            btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
         } else {
-            btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+            btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
         }
 
         // 2. DEBOUNCE THE SERVER SYNC
@@ -636,18 +670,19 @@
                     
                     // Keep server truth
                     if (data.status === "unsave") {
-                        btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
                     } else {
-                        btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
                     }
                 })
                 .catch(err => {
                     console.error("Error syncing bookmark:", err);
+                    showToast('Failed to update bookmark. Please try again.', 'error');
                     // Revert to pre-debounce state
                     if (bookmarkStateBeforeDebounce) {
-                        btn.innerHTML = "Saved <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
                     } else {
-                        btn.innerHTML = "Save <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
+                        btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
                     }
                 });
             }
@@ -688,3 +723,4 @@
     }
 </script>
 {% endblock js %}
+
