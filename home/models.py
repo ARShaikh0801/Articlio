@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='reader')
     verified=models.BooleanField(default=False)
     theme_preference = models.CharField(max_length=20, default='ocean')
+    social_profile_completed = models.BooleanField(default=True)
     
     def __str__(self):
         return self.username

@@ -4,7 +4,7 @@
 {% block title %}Blog Home{% endblock title %}
 
 {% block js %}
-<script nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', () => {
     const filterSelect = document.getElementById('filter');
@@ -13,18 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetBtn = document.getElementById('reset-btn');
     const container = document.getElementById('posts-container');
     const paginationContainer = document.getElementById('pagination-container');
-    let currentPage = 1;
 
     const params = new URLSearchParams(window.location.search);
-    if (params.has('filter')) filterSelect.value = params.get('filter');
-    if (params.has('authors')) authorsSelect.value = params.get('authors');
-    if (params.has('category')) categorySelect.value = params.get('category');
-    if (params.has('page')) currentPage = Math.max(1, parseInt(params.get('page')) || 1);
+    let currentFilter = params.get('filter') || 'all';
+    let currentAuthor = params.get('authors') || 'all';
+    let currentCategory = params.get('category') || 'all';
+    let currentPage = Math.max(1, parseInt(params.get('page')) || 1);
 
     function goToPage(page) {
         currentPage = page;
         fetchPosts();
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function fetchPosts() {
@@ -32,15 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainer.innerHTML = '';
         
         const currentParams = new URLSearchParams({
-            filter: filterSelect.value,
-            authors: authorsSelect.value,
-            category: categorySelect.value,
+            filter: currentFilter,
+            authors: currentAuthor,
+            category: currentCategory,
             page: currentPage
         });
 
         window.history.replaceState({}, '', `${window.location.pathname}?${currentParams.toString()}`);
 
-        if (filterSelect.value !== 'all' || authorsSelect.value !== 'all' || categorySelect.value !== 'all') {
+        if (currentFilter !== 'all' || currentAuthor !== 'all' || currentCategory !== 'all') {
             resetBtn.classList.remove('hidden');
         } else {
             resetBtn.classList.add('hidden');
@@ -60,19 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (authorsSelect.options.length <= 1) {
                     data.authors.forEach(author => {
-                        const option = new Option(author, author);
-                        if (author === data.selectedAuthor) option.selected = true;
-                        authorsSelect.add(option);
+                        authorsSelect.add(new Option(author, author));
                     });
                 }
+                authorsSelect.value = currentAuthor;
                 
                 if (categorySelect.options.length <= 1) {
                     data.categories.forEach(cat => {
-                        const option = new Option(cat, cat);
-                        if (cat === data.selectedCategory) option.selected = true;
-                        categorySelect.add(option);
+                        categorySelect.add(new Option(cat, cat));
                     });
                 }
+                categorySelect.value = currentCategory;
 
                 container.innerHTML = '';
                 if (data.posts.length === 0) {
@@ -143,11 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    filterSelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
-    authorsSelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
-    categorySelect.addEventListener('change', () => { currentPage = 1; fetchPosts(); });
+    filterSelect.addEventListener('change', () => { currentFilter = filterSelect.value; currentPage = 1; fetchPosts(); });
+    authorsSelect.addEventListener('change', () => { currentAuthor = authorsSelect.value; currentPage = 1; fetchPosts(); });
+    categorySelect.addEventListener('change', () => { currentCategory = categorySelect.value; currentPage = 1; fetchPosts(); });
 
     resetBtn.addEventListener('click', () => {
+        currentFilter = "all";
+        currentAuthor = "all";
+        currentCategory = "all";
         filterSelect.value = "all";
         authorsSelect.value = "all";
         categorySelect.value = "all";

@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Articlio Blog - Complete your profile to get started.">
+    <title>Articlio - Complete Your Profile</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <style>
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        .close-msg { cursor: pointer; }
+    </style>
+</head>
+
+<body class="theme-base-faded">
+    <div class="max-w-xl mx-auto px-4 py-12">
+
+        {% for message in messages %}
+        <div class="max-w-4xl mx-auto my-3 px-4">
+            <div class="p-4 rounded-lg flex justify-between
+            {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
+            {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
+            {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
+                {{ message }}
+                <button type="button" class="close-msg text-xl">&times;</button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <main>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-color-darkest">
+                    Complete Your Profile
+                </h2>
+                <p class="text-color-darkest mt-3">
+                    Just one more step before you're all set on Articlio.
+                </p>
+            </div>
+
+            <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+                <form action="{% url 'complete_profile' %}" method="post" class="space-y-6" id="profileForm">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="name" class="block text-color-lightest font-medium mb-1">
+                            Name
+                        </label>
+                        <input type="text" id="name" name="name"
+                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                            value="{{ request.user.name }}" placeholder="Your display name" required>
+                        <p class="text-color-lightest text-sm mt-1 opacity-70">Pulled from your social account — feel free to change it.</p>
+                    </div>
+
+                    <div>
+                        <label for="username" class="block text-color-lightest font-medium mb-1">
+                            Username
+                        </label>
+                        <input type="text" id="username" name="username" maxlength="10"
+                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                            value="{{ request.user.username }}" placeholder="Choose a username" required>
+                        <p class="text-color-lightest text-sm mt-1 opacity-70">Max 10 characters, letters & numbers only.</p>
+                        <p class="mt-1 text-sm hidden" id="usernameError"></p>
+                    </div>
+
+                    <div>
+                        <label for="role" class="block text-color-lightest font-medium mb-1">
+                            What would you like to do on Articlio?
+                        </label>
+                        <select id="role" name="role"
+                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box">
+                            <option value="reader" selected>Reader - I want to read and explore blogs</option>
+                            <option value="author">Author - I want to write and publish blogs</option>
+                        </select>
+                        <p class="text-color-lightest mt-3 note" id="roleNote"></p>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit"
+                            class="theme-medium theme-medium-btn all-border flex items-center text-white px-8 py-3 rounded-lg font-medium transition"
+                            id="completeBtn">
+                            <span id="complete-text" class="text-color-lightest font-semibold">Continue to Articlio</span>
+                            <svg id="complete-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+    </div>
+    <script nonce="{{ request.csp_nonce }}">
+        window.CURRENT_USER = "{{ request.user.username }}";
+        window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
+        window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
+        window.CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    </script>
+    <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        document.querySelectorAll('.close-msg').forEach(button => {
+            button.addEventListener('click', () => {
+                button.parentElement.remove();
+            });
+        });
+
+        // Role change hint
+        const roleSelect = document.getElementById('role');
+        const roleNote = document.getElementById('roleNote');
+        roleSelect.addEventListener('change', () => {
+            if (roleSelect.value === 'author') {
+                roleNote.textContent = "As an Author, you'll be able to create and publish blog posts.";
+            } else {
+                roleNote.textContent = "";
+            }
+        });
+
+        // Live username validation
+        const usernameInput = document.getElementById('username');
+        const usernameError = document.getElementById('usernameError');
+        const completeBtn = document.getElementById('completeBtn');
+
+        usernameInput.addEventListener('input', () => {
+            const val = usernameInput.value;
+            usernameError.classList.add('hidden');
+
+            if (val.length > 10) {
+                usernameError.textContent = "Must be 10 characters or less.";
+                usernameError.className = "mt-1 text-sm text-red-500";
+                completeBtn.disabled = true;
+                completeBtn.classList.add("opacity-60", "cursor-not-allowed");
+                return;
+            }
+
+            if (val && !(/^[a-zA-Z0-9]*$/.test(val))) {
+                usernameError.textContent = "Letters and numbers only.";
+                usernameError.className = "mt-1 text-sm text-red-500";
+                completeBtn.disabled = true;
+                completeBtn.classList.add("opacity-60", "cursor-not-allowed");
+                return;
+            }
+
+            completeBtn.disabled = false;
+            completeBtn.classList.remove("opacity-60", "cursor-not-allowed");
+        });
+
+        // Submit spinner
+        const completeText = document.getElementById('complete-text');
+        const completeSpinner = document.getElementById('complete-spinner');
+        document.getElementById('profileForm').addEventListener('submit', function () {
+            completeBtn.disabled = true;
+            completeBtn.classList.add('opacity-80', 'cursor-not-allowed');
+            completeText.innerHTML = 'Setting Up...&nbsp;';
+            completeSpinner.classList.remove('hidden');
+        });
+    </script>
+</body>
+
+</html>

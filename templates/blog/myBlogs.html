@@ -25,10 +25,18 @@
                 </button>
             </div>
         </div>
+        <div class="mt-6 max-w-md mx-auto relative flex items-center">
+            <input type="text" id="search-input" placeholder="Search your blogs..." class="w-full px-4 py-2 rounded-lg all-border theme-base-faded input-box text-color-darkest focus:outline-none pr-10" style="border: 2px solid var(--theme-medium);">
+            <button id="clear-search" class="absolute right-4 top-1/2 -translate-y-1/2 text-color-dark hover:text-color-darkest hidden cursor-pointer flex items-center justify-center" title="Clear search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
 
-    <div class="max-w-3xl mx-auto" id="blogs-container">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6" id="blogs-container">
         <!-- Skeleton Loaders -->
         {% for i in "12" %}
         <div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>
@@ -120,10 +128,42 @@
     const tabDrafts = document.getElementById("tab-drafts");
     const tabPublished = document.getElementById("tab-published");
     const container = document.getElementById("blogs-container");
+    const searchInput = document.getElementById("search-input");
+    const clearSearchBtn = document.getElementById("clear-search");
 
     let currentTab = 'drafts';
     let draftsPage = 1;
     let publishedPage = 1;
+    let searchTimer = null;
+
+    searchInput.addEventListener("input", () => {
+        if (searchInput.value.trim() !== "") {
+            clearSearchBtn.classList.remove("hidden");
+        } else {
+            clearSearchBtn.classList.add("hidden");
+        }
+
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            if (currentTab === 'drafts') {
+                draftsPage = 1;
+            } else {
+                publishedPage = 1;
+            }
+            fetchMyBlogs(currentTab);
+        }, 500);
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        clearSearchBtn.classList.add("hidden");
+        if (currentTab === 'drafts') {
+            draftsPage = 1;
+        } else {
+            publishedPage = 1;
+        }
+        fetchMyBlogs(currentTab);
+    });
 
     function activateTab(activeBtn, inactiveBtn) {
         activeBtn.classList.add("theme-darkest", "text-color-lightest", "all-border");
@@ -139,19 +179,18 @@
             publishedPage = page;
         }
         fetchMyBlogs(currentTab);
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderBlogs(blogs, type, paginationData) {
-        let html = `<h2 class="text-2xl text-center font-semibold text-color-darkest mb-6">${type === 'drafts' ? 'Saved Drafts' : 'Published Blogs'}</h2>`;
+        let html = '';
         
         if (blogs.length === 0) {
-            html += `
-            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest">
-                ${type === 'drafts' ? 'No drafts saved yet.' : "You haven't published any blogs yet."}
+            html = `
+            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest text-center" style="grid-column: 1 / -1;">
+                ${type === 'drafts' ? 'No drafts found.' : "No published blogs found."}
             </div>`;
         } else {
-            html += `<div class="space-y-4">`;
             blogs.forEach(blog => {
                 const viewBtn = type === 'published' ? `
                     <a href="/blog/${encodeURIComponent(blog.slug)}" class="px-4 py-2 all-border text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
@@ -161,7 +200,7 @@
                 const editBtnColor = type === 'drafts' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-600 hover:bg-gray-700';
 
                 html += `
-                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in">
+                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in flex flex-col h-full">
                     <h3 class="text-lg font-semibold text-color-lightest">${escapeHtml(blog.title)}</h3>
                     <p class="text-sm text-color-lightest mt-1">Category: ${escapeHtml(blog.category)}</p>
                     ${type === 'published' ? 
@@ -169,8 +208,8 @@
                         `<p class="text-sm text-color-lightest mt-1">Created: ${escapeHtml(blog.timestamp)}</p>`
                     }
                     <p class="text-sm text-color-lightest mt-1">Last updated: ${escapeHtml(blog.updated_at)}</p>
-                    <div class="text-color-light max-w-lg mb-4">${escapeHtml(blog.summary)}</div>
-                    <div class="mt-4 flex gap-3">
+                    <div class="text-color-light mb-4 mt-2 flex-grow">${escapeHtml(blog.summary)}</div>
+                    <div class="mt-auto flex gap-3 pt-4">
                         ${viewBtn}
                         <form action="/blog/edit/${encodeURIComponent(blog.slug)}" method="post">
                             <input type="hidden" name="csrfmiddlewaretoken" value="${window.CSRF_TOKEN}">
@@ -180,7 +219,6 @@
                     </div>
                 </div>`;
             });
-            html += `</div>`;
         }
 
         // Render blogs
@@ -210,11 +248,12 @@
 
     function fetchMyBlogs(tab) {
         const page = tab === 'drafts' ? draftsPage : publishedPage;
+        const query = searchInput.value.trim();
 
         // Show skeleton while loading
         container.innerHTML = Array(2).fill('<div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>').join('');
 
-        fetch(`/blog/api/my-blogs/?tab=${tab}&page=${page}`)
+        fetch(`/blog/api/my-blogs/?tab=${tab}&page=${page}&query=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
                 // Update tab labels with counts

@@ -23,14 +23,14 @@
 {% endblock body %}
 
 {% block js %}
-<script nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
 let bookmarksCurrentPage = 1;
 
 function goToPage(page) {
     bookmarksCurrentPage = page;
     fetchBookmarks();
-    document.getElementById('bookmarks-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function fetchBookmarks() {

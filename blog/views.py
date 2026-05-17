@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Post,BlogComment,Like,Bookmark
+from .models import Post,BlogComment,Like,Bookmark,History
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -29,6 +29,9 @@ def bookmarks(request):
         return render(request, 'blog/bookmarkBlog.html')
     else:
         return redirect('blogHome')
+
+def history(request):
+    return render(request, 'blog/historyBlog.html')
 
 def blogPost(request,slug):
     post=get_object_or_404(Post, slug=slug, draft=False)
@@ -80,6 +83,8 @@ def writeBlog(request):
                 category=request.POST.get('category')
                 content=request.POST.get('content')
                 if title=="" or category=="" or content=="":
+                    if request.POST.get('is_autosave') == 'true':
+                        return JsonResponse({'status': 'error', 'message': 'Incomplete fields'})
                     messages.error(request,"All Fields Are Required !")
                     return redirect('writeBlog')
                 content=sanitizer.sanitize_html(content)
@@ -102,6 +107,9 @@ def writeBlog(request):
                 else:
                     post=Post(title=title,category=category,content=content,summary=summary,author=author,slug=slug,draft=draft)
                     post.save()
+                if request.POST.get('is_autosave') == 'true':
+                    return JsonResponse({'status': 'success', 'slug': post.slug})
+
                 if draft:
                     messages.success(request,"Draft Saved Successfully")
                 else:

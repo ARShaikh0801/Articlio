@@ -51,3 +51,14 @@ class Bookmark(models.Model):
     def __str__(self):
         return f"{self.user.username} Saved {self.post.title}"
     
+class History(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    scroll_progress = models.FloatField(default=0.0)
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('post', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} viewed {self.post.title}"

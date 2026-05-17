@@ -37,7 +37,7 @@
                 Content
             </label>
             <div id="editor-overlay" class="bg-white rounded-b-lg" style="border:2px solid var(--theme-darkest)">
-                <div id="editor" class="bg-white rounded-b-lg" style="min-height: 300px; max-height: 500px; overflow-y: auto;" {% if post %}
+                <div id="editor" class="bg-white rounded-b-lg" style="min-height: 500px;" {% if post %}
                     data-content="{{post.content}}" {% endif %}>
                 </div>
             </div>
@@ -45,12 +45,12 @@
         </div>
         <input type="hidden" name="slug" id="slug" value="{% if post %}{{post.slug}}{% endif %}">
         <input type="hidden" name="draftVal" id="draftVal">
-        <div class="flex gap-4 mt-4">
+        <div class="flex gap-4 mt-4 items-center">
         <button type="button" aria-label="Publish Blog button"
             class="bg-gray-400 all-border text-white flex font-bold items-center px-6 py-3 rounded-lg hover:bg-gray-500 cursor-not-allowed transition"
             id="publish" disabled>
             <span id="publish-text">Publish Blog</span>
-            <svg id="publish-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+            <svg id="publish-spinner" class="w-4 h-4 animate-spin hidden ml-2" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
@@ -59,11 +59,12 @@
             class="bg-gray-400 all-border text-white flex font-bold items-center px-6 py-3 rounded-lg hover:bg-gray-500 cursor-not-allowed transition"
             id="draft" disabled>
             <span id="draft-text">Save Draft</span>
-            <svg id="draft-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+            <svg id="draft-spinner" class="w-4 h-4 animate-spin hidden ml-2" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
         </button>
+        <span id="autosave-status" class="text-sm text-gray-500 font-medium ml-2"></span>
         </div>
     </form>
 
@@ -72,10 +73,10 @@
 
 
 {% block js %}
-<script nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
-<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
 
 <script nonce="{{ request.csp_nonce }}">
     document.addEventListener("DOMContentLoaded", function () {
@@ -147,9 +148,107 @@
             }
         }
 
-        quill.on("text-change", togglePublish);
-        titleInput.addEventListener("input", togglePublish);
-        categoryInput.addEventListener("input", togglePublish);
+        let autosaveTimer = null;
+        const AUTOSAVE_INTERVAL = 3000; // 3 seconds
+
+        function autoSave() {
+            if (submitBtn.disabled) return; // Don't autosave if fields are incomplete
+
+            const contentVal = quill.root.innerHTML;
+            const titleVal = titleInput.value.trim();
+            const categoryVal = categoryInput.value.trim();
+            const slugVal = document.getElementById("slug").value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const formData = new FormData();
+            formData.append('title', titleVal);
+            formData.append('category', categoryVal);
+            formData.append('content', contentVal);
+            formData.append('slug', slugVal);
+            formData.append('draftVal', 'true');
+            formData.append('is_autosave', 'true');
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            const statusEl = document.getElementById('autosave-status');
+            statusEl.textContent = 'Saving...';
+
+            fetch('/blog/writeBlog', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById("slug").value = data.slug;
+                    const now = new Date();
+                    statusEl.textContent = `Draft saved at ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                } else {
+                    statusEl.textContent = 'Failed to autosave';
+                }
+            })
+            .catch(error => {
+                console.error('Autosave error:', error);
+                statusEl.textContent = 'Error autosaving';
+            });
+        }
+
+        function resetAutosaveTimer() {
+            const statusEl = document.getElementById('autosave-status');
+            if (submitBtn.disabled) {
+                statusEl.textContent = '';
+            } else {
+                statusEl.textContent = 'Typing...';
+            }
+            clearTimeout(autosaveTimer);
+            autosaveTimer = setTimeout(autoSave, AUTOSAVE_INTERVAL);
+        }
+
+        function centerCursor() {
+            const range = quill.getSelection();
+            if (range) {
+                const bounds = quill.getBounds(range.index);
+                const editorContainer = document.querySelector('.ql-container');
+                const editorRect = editorContainer.getBoundingClientRect();
+                
+                // Calculate absolute position of cursor on the page
+                const absoluteY = window.scrollY + editorRect.top + bounds.top;
+                
+                // Calculate target scroll position to center the cursor
+                const targetScrollY = absoluteY - (window.innerHeight / 2);
+                
+                // Smoothly scroll to the target position
+                window.scrollTo({
+                    top: targetScrollY,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        quill.on("text-change", (delta, oldDelta, source) => {
+            togglePublish();
+            resetAutosaveTimer();
+            if (source === 'user') {
+                centerCursor();
+            }
+        });
+        
+        quill.on("selection-change", (range, oldRange, source) => {
+            if (range && source === 'user') {
+                centerCursor();
+            }
+        });
+
+        titleInput.addEventListener("input", () => {
+            togglePublish();
+            resetAutosaveTimer();
+        });
+        categoryInput.addEventListener("input", () => {
+            togglePublish();
+            resetAutosaveTimer();
+        });
         togglePublish();
 
         submitBtn.addEventListener("click", function () {

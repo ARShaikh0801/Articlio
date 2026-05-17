@@ -8,6 +8,7 @@ urlpatterns=[
     path('writeBlog',views.writeBlog,name='writeBlog'),
     path('myBlogs',views.myBlogs,name='myBlogs'),
     path('bookmarks',views.bookmarks,name='bookmarks'),
+    path('history',views.history,name='history'),
     path('toggle-like/',views.toggle_like,name='toggleLike'),
     path('toggle-bookmark/',views.toggle_bookmark,name='toggleBookmark'),
     path('verification',views.emailVerification,name='emailVerification'),
@@ -17,6 +18,8 @@ urlpatterns=[
     path('api/posts/', api_views.api_posts, name='api_posts'),
     path('api/bookmarks/', api_views.api_bookmarks, name='api_bookmarks'),
     path('api/my-blogs/', api_views.api_my_blogs, name='api_my_blogs'),
+    path('api/history/', api_views.api_history, name='api_history'),
+    path('api/history/track/', api_views.api_track_history, name='api_track_history'),
     path('api/<str:slug>/state/', api_views.api_post_state, name='api_post_state'),
     path('api/<str:slug>/comments/', api_views.api_comments, name='api_comments'),
     

@@ -40,8 +40,8 @@ def api_home_posts(request):
 
 def api_search(request):
     """Return search results with pagination."""
-    if _check_rate_limit(request, 'api_search_rate'):
-        return JsonResponse({'error': 'Rate limited. Please wait 10 minutes or login to continue.'}, status=429)
+    if _check_rate_limit(request, 'api_search_rate', max_requests=60, window_seconds=60):
+        return JsonResponse({'error': 'Rate limited. Please wait 1 minute or login to continue.'}, status=429)
 
     query = request.GET.get('query', '')
 

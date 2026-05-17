@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Search Results{% endblock title %}
-{% block meta_robots %}noindex,follow{% endblock meta_robots %}
+{% block title %}Search Results - Articlio{% endblock title %}
+{% block meta_description %}Find the best articles and tutorials matching your search query on Articlio.{% endblock meta_description %}
+{% block meta_robots %}index,follow{% endblock meta_robots %}
 
 {% block js %}
-<script nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
     const searchBar = document.getElementById('query');
     const params = new URLSearchParams(window.location.search);
@@ -18,7 +19,7 @@
     function goToPage(page) {
         currentSearchPage = page;
         fetchSearchResults();
-        document.getElementById('search-results-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function fetchSearchResults() {
@@ -125,10 +126,15 @@
 {% block body %}
 
 <div class="max-w-7xl mx-auto px-4 py-10" >
-    <a class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg" href="/blog">&#x2190; Go Back</a>
-    <h2 class="text-3xl font-bold text-color-darkest mt-5 mb-6">
+    <a class="go-back-btn theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Go Back
+    </a>
+    <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-6">
         Search Results...
-    </h2>
+    </h1>
 
     <div id="search-message" class="mb-4"></div>
 

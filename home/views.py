@@ -201,6 +201,58 @@ def resetPassword(request):
         
         return redirect('handleLogin')
 
+def complete_profile(request):
+    """Profile-completion page shown to first-time OAuth users."""
+    if not request.user.is_authenticated:
+        return redirect('handleLogin')
+
+    # If profile is already completed, go home
+    if request.user.social_profile_completed:
+        return redirect('home')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        username = request.POST.get('username', '').strip()
+        role = request.POST.get('role', 'reader')
+
+        # Validation
+        if not name or len(name) < 2:
+            messages.error(request, "Name must be at least 2 characters.")
+            return render(request, 'home/complete_profile.html')
+
+        if not username:
+            messages.error(request, "Username is required.")
+            return render(request, 'home/complete_profile.html')
+
+        if len(username) > 10:
+            messages.error(request, "Username must be less than 10 characters.")
+            return render(request, 'home/complete_profile.html')
+
+        if not username.isalnum():
+            messages.error(request, "Username should contain letters and numbers only.")
+            return render(request, 'home/complete_profile.html')
+
+        # Check uniqueness (excluding current user)
+        if User.objects.filter(username=username).exclude(pk=request.user.pk).exists():
+            messages.error(request, "That username is already taken.")
+            return render(request, 'home/complete_profile.html')
+
+        if role not in ('reader', 'author'):
+            role = 'reader'
+
+        user = request.user
+        user.name = name
+        user.username = username
+        user.role = role
+        user.verified = True
+        user.social_profile_completed = True
+        user.save()
+
+        messages.success(request, "Profile completed! Welcome to Articlio.")
+        return redirect('home')
+
+    return render(request, 'home/complete_profile.html')
+
 def update_theme_preference(request):
     if request.method == 'POST' and request.user.is_authenticated:
         try:

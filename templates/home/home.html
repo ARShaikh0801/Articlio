@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Home{% endblock title %}
 {% block js %}
-<script nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/home/posts/')

@@ -2,6 +2,7 @@
 {% load static %}
 {% load humanize %}
 {% load get_dict %}
+{% load lazy_images %}
 
 {% block title %}{{ post.title }} - Articlio{% endblock title %}
 {% block meta_description %}{{ post.content|striptags|truncatechars:160 }}{% endblock meta_description %}
@@ -48,21 +49,29 @@
 {% block body %}
 
 <div class="max-w-5xl mx-auto px-4 py-10" >
-    <a class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg" href="/blog">&#x2190; Go Back</a>
-    
-    <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-2 relative">
-        {{ post.title }}
+    <div class="flex justify-between items-start w-full">
+        <a class="go-back-btn theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Go Back
+        </a>
+
         {% if request.user.is_authenticated %}
-        <div class="absolute text-lg top-4 right-4 items-center gap-2 cursor-pointer saveSVG" style="display: none;" id="save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
+        <div class="text-lg flex items-center gap-2 cursor-pointer saveSVG" style="display: none;" id="save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
         </div>
         {% else %}
-        <a class="absolute text-lg top-4 right-4 flex items-center gap-2" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
-            Save
+        <a class="text-lg flex items-center gap-2" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
+            <span class="hidden sm:inline">Save</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
                 <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
             </svg>
         </a>
         {% endif %}
+    </div>
+    
+    <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-2">
+        {{ post.title }}
     </h1>
 
     <p class="text-sm text-color-dark mb-6">
@@ -90,22 +99,27 @@
         <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
     </div>
 
-    <button style="display: none;" class="theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition mb-4 align-middle" type="button" id="like-btn-{{ post.sno }}">
-    </button>
+    <div id="like-interactive-wrapper" class="flex items-center gap-2 mb-4" style="height: 2.5rem; display: none;">
+        <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
+        </button>
 
-    <div style="display: none;" class="like-box items-center align-middle" id="like-container">
-        <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+        <div class="like-box items-center align-middle h-full flex" id="like-container">
+            <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+        </div>
     </div>
 
     <div class="ql-editor max-w-none all-border p-4 rounded-lg" style="background-color: #ffffff">
-        {{ post.content|safe }}
+        {{ post.content|lazy_images|safe }}
     </div>
 
-    <hr class="my-10 all-border hidden" id="interested-posts-hr">
-    <h2 class="text-2xl text-color-darkest font-semibold mb-4 hidden" id="interested-posts-heading">
+    <hr class="my-10 all-border" id="interested-posts-hr">
+    <h2 class="text-2xl text-color-darkest font-semibold mb-4" id="interested-posts-heading">
         You might also like
     </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden" id="interested-posts-container">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="interested-posts-container">
+        {% for i in "1234" %}
+        <div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 180px;"></div>
+        {% endfor %}
     </div>
 
     <hr class="my-10 all-border">
@@ -225,7 +239,7 @@
                 // It's a reply
                 newCommentHTML = `
                 <div id="${tempId}" class="flex gap-3 ml-8 pl-4 opacity-70" style="border-left: 1px solid var(--theme-light)">
-                    <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${username}">
+                    <img loading="lazy" src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${username}">
                     <div>
                         <div class="flex items-center gap-2">
                             <b class="text-color-darkest font-semibold">${username}</b>
@@ -254,7 +268,7 @@
                 <div id="${tempId}" class="comment-item bg-white rounded-xl mb-6 card-shadow opacity-70" style="border-left: 4px solid var(--theme-base);">
                     <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
                         <div class="flex items-start gap-4">
-                            <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${username}">
+                            <img loading="lazy" src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${username}">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                     <b class="font-semibold text-color-darkest">${username} (You)</b>
@@ -370,6 +384,7 @@
                     const likeBtn = document.getElementById(`like-btn-${postSno}`);
                     const likeCountContainer = document.getElementById('like-container');
                     const likeCountSpan = document.getElementById(`like-count-${postSno}`);
+                    const likeInteractiveWrapper = document.getElementById('like-interactive-wrapper');
                     
                     if (likeBtn && likeCountContainer && likeCountSpan) {
                         if(data.liked) {
@@ -378,8 +393,7 @@
                             likeBtn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
                         }
                         likeCountSpan.innerText = data.likes;
-                        likeBtn.style.display = 'inline-flex';
-                        likeCountContainer.style.display = 'inline-flex';
+                        if(likeInteractiveWrapper) likeInteractiveWrapper.style.display = 'flex';
                     }
 
                     // Update Bookmark Button
@@ -403,10 +417,15 @@
                             let html = "";
                             data.interestedPosts.forEach(p => {
                                 html += `
-                                <a href="/blog/${encodeURIComponent(p.slug)}" class="theme-medium all-border theme-medium-btn text-color-lightest px-4 py-3 rounded-lg transition hover:scale-105 fade-in">
-                                    <h3 class="text-lg font-semibold mb-2">${escapeHtml(p.title)}</h3>
-                                    <p class="text-sm text-color-lightest mb-2">Category: ${escapeHtml(p.category)}</p>
-                                    <p class="text-sm text-color-lightest">${escapeHtml(p.summary)}</p>
+                                <a href="/blog/${encodeURIComponent(p.slug)}" class="bg-white rounded-xl hover:shadow-lg transition relative fade-in block h-full group" style="border-left: 4px solid var(--theme-base);">
+                                    <div class="p-5 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
+                                        <div class="text-xs font-medium mb-1" style="color: var(--theme-base);">
+                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes
+                                        </div>
+                                        <h3 class="text-lg font-semibold mb-1 text-color-darkest group-hover:text-[var(--theme-base)] transition">${escapeHtml(p.title)}</h3>
+                                        <p class="text-sm mb-2" style="color: #6b7280; font-weight: 500;">Category: ${escapeHtml(p.category)}</p>
+                                        <p class="text-sm" style="color: #4b5563;">${escapeHtml(p.summary)}</p>
+                                    </div>
                                 </a>`;
                             });
                             interestedContainer.innerHTML = html;
@@ -414,6 +433,32 @@
                             interestedHeading.classList.remove('hidden');
                             interestedHr.classList.remove('hidden');
                         }
+                    }
+
+                    // ── Scroll Restoration ──
+                    let savedProgress = 0;
+                    if (window.USER_IS_AUTHENTICATED) {
+                        savedProgress = data.scroll_progress || 0;
+                    } else {
+                        try {
+                            const raw = localStorage.getItem('articlio_history');
+                            if (raw) {
+                                const entries = JSON.parse(raw);
+                                const entry = entries.find(e => e.sno == postSno);
+                                if (entry) savedProgress = entry.scroll_progress || 0;
+                            }
+                        } catch(e) {}
+                    }
+                    if (savedProgress > 1) {
+                        // Delay slightly to let the page render fully
+                        setTimeout(() => {
+                            const contentArea = document.querySelector('.ql-editor');
+                            if (!contentArea) return;
+                            const contentTop = contentArea.getBoundingClientRect().top + window.scrollY;
+                            const contentHeight = contentArea.offsetHeight;
+                            const scrollTarget = contentTop + (savedProgress / 100) * contentHeight - window.innerHeight;
+                            window.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+                        }, 500);
                     }
                 })
                 .catch(err => {
@@ -431,13 +476,82 @@
                     if(likeCountContainer) likeCountContainer.style.display = 'inline-flex';
                 });
 
+            // ── History: Scroll Tracking (based on .ql-editor content area only) ──
+            const contentEl = document.querySelector('.ql-editor');
+            function getScrollProgress() {
+                if (!contentEl) return 0;
+                const rect = contentEl.getBoundingClientRect();
+                const contentTop = rect.top + window.scrollY;
+                const contentHeight = contentEl.offsetHeight;
+                if (contentHeight <= 0) return 0;
+                const scrolledIntoContent = window.scrollY + window.innerHeight - contentTop;
+                const progress = (scrolledIntoContent / contentHeight) * 100;
+                return Math.min(100, Math.max(0, Math.round(progress)));
+            }
+
+            let scrollTrackTimer = null;
+            let lastSyncedProgress = -1;
+
+            function syncScrollProgress() {
+                const progress = getScrollProgress();
+                if (progress === lastSyncedProgress) return;
+                lastSyncedProgress = progress;
+
+                if (window.USER_IS_AUTHENTICATED) {
+                    // POST to server
+                    fetch('/blog/api/history/track/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': window.CSRF_TOKEN
+                        },
+                        body: JSON.stringify({
+                            post_sno: postSno,
+                            scroll_progress: progress
+                        })
+                    }).catch(() => {});
+                } else {
+                    // Save to localStorage
+                    try {
+                        const HISTORY_LS_KEY = 'articlio_history';
+                        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+                        const raw = localStorage.getItem(HISTORY_LS_KEY);
+                        let entries = raw ? JSON.parse(raw) : [];
+                        const cutoff = Date.now() - SEVEN_DAYS_MS;
+                        entries = entries.filter(e => e.ts >= cutoff);
+                        const idx = entries.findIndex(e => e.sno == postSno);
+                        const entry = { sno: parseInt(postSno), scroll_progress: progress, ts: Date.now(), slug: slug };
+                        if (idx >= 0) {
+                            entries[idx] = entry;
+                        } else {
+                            entries.unshift(entry);
+                        }
+                        localStorage.setItem(HISTORY_LS_KEY, JSON.stringify(entries));
+                    } catch(e) {}
+                }
+            }
+
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTrackTimer);
+                scrollTrackTimer = setTimeout(syncScrollProgress, 2000);
+            });
+
+            // Also sync on page unload to capture final position
+            window.addEventListener('beforeunload', () => {
+                syncScrollProgress();
+            });
+
+            // Sync once on load to record the visit
+            syncScrollProgress();
+
+
             // 2. Shared comment renderer
             function renderComment(c, isOwn) {
                 let repliesHtml = "";
                 c.replies.forEach(r => {
                     repliesHtml += `
                     <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                        <img src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
+                        <img loading="lazy" src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
                         <div>
                             <div class="flex items-center gap-2">
                                 <b class="text-color-darkest font-semibold">${escapeHtml(r.username)}</b>
@@ -467,7 +581,7 @@
                 <div class="comment-item bg-white rounded-xl mb-6 card-shadow fade-in" data-comment-sno="${c.sno}" style="border-left: 4px solid var(--theme-base);">
                     <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
                         <div class="flex items-start gap-4">
-                            <img src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
+                            <img loading="lazy" src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                     <b class="font-semibold text-color-darkest">${escapeHtml(c.username)} ${isOwn ? '(You)' : ''}</b>

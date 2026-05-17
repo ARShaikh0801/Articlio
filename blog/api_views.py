@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Post, BlogComment, Like, Bookmark
+from .models import Post, BlogComment, Like, Bookmark, History
 import time
 
 
@@ -149,18 +149,30 @@ def api_post_state(request, slug):
 
     liked = False
     bookmarked = False
+    scroll_progress = 0.0
     if request.user.is_authenticated:
         liked = Like.objects.filter(post=post, user=request.user).exists()
         bookmarked = Bookmark.objects.filter(post=post, user=request.user).exists()
+        history_entry = History.objects.filter(post=post, user=request.user).first()
+        if history_entry:
+            scroll_progress = history_entry.scroll_progress
 
-    # Related posts
-    interested = Post.objects.filter(draft=False, category=post.category).exclude(sno=post.sno)[:4]
+    # Related posts: Prioritize same category by popularity, fallback to overall popularity
+    interested = list(Post.objects.filter(draft=False, category=post.category).exclude(sno=post.sno).order_by('-views', '-likes')[:4])
+    if len(interested) < 4:
+        exclude_snos = [p.sno for p in interested] + [post.sno]
+        fallback_posts = Post.objects.filter(draft=False).exclude(sno__in=exclude_snos).order_by('-views', '-likes')[:4 - len(interested)]
+        interested.extend(fallback_posts)
+
     interested_data = [
         {
             'title': p.title,
             'slug': p.slug,
             'category': p.category,
             'summary': p.summary[:100] + '…' if len(p.summary) > 100 else p.summary,
+            'likes': p.likes,
+            'views': p.views,
+            'timestamp': p.timestamp.strftime('%b. %d, %Y').replace(' 0', ' ') if p.timestamp else '',
         }
         for p in interested
     ]
@@ -170,6 +182,7 @@ def api_post_state(request, slug):
         'bookmarked': bookmarked,
         'likes': post.likes,
         'views': post.views,
+        'scroll_progress': scroll_progress,
         'interestedPosts': interested_data,
     })
 
@@ -265,8 +278,17 @@ def api_my_blogs(request):
     if tab not in ('drafts', 'published'):
         tab = 'drafts'
 
+    query = request.GET.get('query', '').strip()
+
     drafts_qs = Post.objects.filter(author=request.user.name, draft=True)
     published_qs = Post.objects.filter(author=request.user.name, draft=False)
+    
+    if query:
+        from django.db.models import Q
+        search_filter = Q(title__icontains=query) | Q(content__icontains=query) | Q(category__icontains=query)
+        drafts_qs = drafts_qs.filter(search_filter)
+        published_qs = published_qs.filter(search_filter)
+
     total_drafts = drafts_qs.count()
     total_published = published_qs.count()
     has_drafts = total_drafts > 0
@@ -312,3 +334,158 @@ def api_my_blogs(request):
         'has_next': page_obj.has_next() if paginator.num_pages > 0 else False,
         'has_previous': page_obj.has_previous() if paginator.num_pages > 0 else False,
     })
+
+
+def api_track_history(request):
+    """Save or update a history entry (scroll progress + viewed_at) for authenticated users."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'ok', 'stored': 'client'})
+
+    import json
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    post_sno = data.get('post_sno')
+    scroll_progress = data.get('scroll_progress', 0.0)
+
+    # Handle clear all history
+    if data.get('clear_all'):
+        History.objects.filter(user=request.user).delete()
+        return JsonResponse({'status': 'ok', 'cleared': True})
+
+    # Handle remove single entry
+    remove_sno = data.get('remove_sno')
+    if remove_sno:
+        History.objects.filter(user=request.user, post__sno=remove_sno).delete()
+        return JsonResponse({'status': 'ok', 'removed': True})
+
+    if not post_sno:
+        return JsonResponse({'error': 'post_sno required'}, status=400)
+
+    try:
+        post = Post.objects.get(sno=post_sno, draft=False)
+    except Post.DoesNotExist:
+        return JsonResponse({'error': 'Post not found'}, status=404)
+
+    try:
+        scroll_progress = float(scroll_progress)
+    except (TypeError, ValueError):
+        scroll_progress = 0.0
+
+    History.objects.update_or_create(
+        post=post,
+        user=request.user,
+        defaults={'scroll_progress': scroll_progress},
+    )
+
+    # Cleanup: delete entries older than 90 days for this user
+    from django.utils import timezone
+    import datetime
+    cutoff = timezone.now() - datetime.timedelta(days=90)
+    History.objects.filter(user=request.user, viewed_at__lt=cutoff).delete()
+
+    return JsonResponse({'status': 'ok', 'stored': 'server'})
+
+
+def api_history(request):
+    """Return history posts.
+    Authenticated: paginated from DB.
+    Unauthenticated: POST with list of SNOs from localStorage.
+    """
+    if request.user.is_authenticated:
+        # GET: paginated history from DB
+        from django.utils import timezone
+        import datetime
+        cutoff = timezone.now() - datetime.timedelta(days=90)
+
+        # Cleanup old entries
+        History.objects.filter(user=request.user, viewed_at__lt=cutoff).delete()
+
+        history_qs = History.objects.filter(
+            user=request.user,
+            viewed_at__gte=cutoff,
+        ).select_related('post')
+
+        # Apply sorting
+        sort_param = request.GET.get('sort', 'recent')
+        now = timezone.now()
+        if sort_param == 'oldest':
+            history_qs = history_qs.order_by('viewed_at')
+        elif sort_param == 'progress-high':
+            history_qs = history_qs.order_by('-scroll_progress')
+        elif sort_param == 'progress-low':
+            history_qs = history_qs.order_by('scroll_progress')
+        elif sort_param == 'unfinished':
+            history_qs = history_qs.filter(scroll_progress__lt=100).order_by('-viewed_at')
+        elif sort_param == '1-month-older':
+            one_month_ago = now - datetime.timedelta(days=30)
+            history_qs = history_qs.filter(viewed_at__lt=one_month_ago).order_by('-viewed_at')
+        elif sort_param == '2-months-older':
+            two_months_ago = now - datetime.timedelta(days=60)
+            history_qs = history_qs.filter(viewed_at__lt=two_months_ago).order_by('-viewed_at')
+        else:  # 'recent'
+            history_qs = history_qs.order_by('-viewed_at')
+
+        page = _safe_page(request)
+        paginator = Paginator(history_qs, 8)
+        try:
+            page_obj = paginator.page(page)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages) if paginator.num_pages > 0 else paginator.page(1)
+
+        bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
+
+        posts_data = []
+        for h in page_obj:
+            p = h.post
+            if p.draft:
+                continue
+            d = _serialize_post(p, bookmarked_ids)
+            d['scroll_progress'] = h.scroll_progress
+            d['viewed_at'] = h.viewed_at.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if h.viewed_at else ''
+            posts_data.append(d)
+
+        return JsonResponse({
+            'posts': posts_data,
+            'authenticated': True,
+            'page': page_obj.number if paginator.num_pages > 0 else 1,
+            'total_pages': paginator.num_pages,
+            'has_next': page_obj.has_next() if paginator.num_pages > 0 else False,
+            'has_previous': page_obj.has_previous() if paginator.num_pages > 0 else False,
+            'total_posts': paginator.count,
+        })
+    else:
+        # Unauthenticated: accept POST with list of SNOs
+        if request.method != 'POST':
+            return JsonResponse({'posts': [], 'authenticated': False})
+
+        import json
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        sno_list = data.get('snos', [])
+        if not isinstance(sno_list, list):
+            return JsonResponse({'posts': [], 'authenticated': False})
+
+        # Only take first 50 to prevent abuse
+        sno_list = sno_list[:50]
+        posts = Post.objects.filter(sno__in=sno_list, draft=False)
+
+        # Maintain the order from the client (most recent first)
+        post_map = {p.sno: p for p in posts}
+        posts_data = []
+        for sno in sno_list:
+            if sno in post_map:
+                posts_data.append(_serialize_post(post_map[sno]))
+
+        return JsonResponse({
+            'posts': posts_data,
+            'authenticated': False,
+        })

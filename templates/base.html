@@ -269,7 +269,7 @@
     <nav class="fixed top-0 w-full" id="main-nav">
 
         <!-- ── TOP BAR ── -->
-        <div class="theme-darkest nav-top">
+        <div class="theme-darkest nav-top" style="position: relative; z-index: 50;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center nav-top-inner" style="height: 56px; gap: 12px;">
 
                 <!-- Logo (balanced) -->
@@ -280,9 +280,9 @@
                 </div>
 
                 <!-- Search (desktop) -->
-                <div class="nav-search-desktop" style="flex: 1.5; display: flex; justify-content: center;">
-                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 500px;" id="nav-search-form">
-                        <input type="search" name="query" id="query" class="search-input" placeholder="Search articles…"
+                <div class="nav-search-desktop" style="flex: 1.5; display: flex; justify-content: center; position: relative;">
+                    <form method="get" action="/search" class="relative" style="width: 100%; max-width: 500px;" id="nav-search-form" autocomplete="off">
+                        <input type="search" name="query" id="query" class="search-input" placeholder="Search articles…" autocomplete="off"
                         style="width:100%; padding: 7px 40px 7px 16px; border-radius: 999px; border: 1px solid var(--theme-medium); background: var(--theme-dark); color: var(--theme-lightest); font-size: 0.85rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;">
                         <button type="submit" name="search" id="search-btn" title="Search"
                             style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
@@ -294,6 +294,12 @@
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                             </svg>
                         </button>
+                        
+                        <!-- Suggestion box -->
+                        <div id="search-suggestions" class="hidden absolute left-0 right-0 mt-2 rounded-lg shadow-2xl border overflow-hidden z-[10000]" style="top: 100%; background: var(--theme-darkest); border-color: var(--theme-medium);">
+                            <ul id="suggestions-list" class="max-h-[60vh] overflow-y-auto m-0 p-0 list-none">
+                            </ul>
+                        </div>
                     </form>
                 </div>
 
@@ -341,6 +347,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center nav-bottom-links" style="height: 42px; gap: 2px; overflow-x: auto;">
                 <a href="/" class="{% block homeactive %}{% endblock homeactive %} nav-link">Home</a>
                 <a href="/blog" class="{% block blogactive %}{% endblock blogactive %} nav-link">Blogs</a>
+                <a href="/blog/history" class="{% block historyactive %}{% endblock historyactive %} nav-link">History</a>
                 {% if user.is_authenticated %}
                 <a href="/blog/bookmarks" class="{% block bookmarkactive %}{% endblock bookmarkactive %} nav-link">Bookmarks</a>
                 {% if request.user.role == "author" %}
@@ -372,6 +379,7 @@
         <!-- Mobile nav links -->
         <a href="/" class="{% block homeactive_m %}{% endblock %} nav-link">Home</a>
         <a href="/blog" class="{% block blogactive_m %}{% endblock %} nav-link">Blogs</a>
+        <a href="/blog/history" class="nav-link">History</a>
         {% if user.is_authenticated %}
         <a href="/blog/bookmarks" class="nav-link">Bookmarks</a>
         {% if request.user.role == "author" %}
@@ -504,13 +512,13 @@
             if (!container) return;
             if (totalPages <= 1) { container.innerHTML = ''; return; }
 
-            let html = '<div class="flex flex-wrap items-center justify-center gap-3 mt-10 mb-6 pt-6 pagination-controls" style="border-top: 1px solid rgba(0,0,0,0.08);">';
+            let html = '<div class="flex flex-wrap items-center justify-center gap-1 sm:gap-3 mt-10 mb-6 pt-6 pagination-controls" style="border-top: 1px solid rgba(0,0,0,0.08);">';
 
             // Previous button
             if (currentPage > 1) {
-                html += `<button data-page="${currentPage - 1}" class="pagination-btn px-5 py-2.5 rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Previous page">&laquo; Prev</button>`;
+                html += `<button data-page="${currentPage - 1}" class="pagination-btn px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Previous page">&laquo; Prev</button>`;
             } else {
-                html += `<button disabled class="px-5 py-2.5 rounded-full text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">&laquo; Prev</button>`;
+                html += `<button disabled class="px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">&laquo; Prev</button>`;
             }
 
             // Page numbers with ellipsis
@@ -529,32 +537,32 @@
             }
 
             if (startPage > 1) {
-                html += `<button data-page="1" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">1</button>`;
+                html += `<button data-page="1" class="pagination-btn w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center rounded-full text-xs sm:text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">1</button>`;
                 if (startPage > 2) {
-                    html += `<span class="px-2 text-color-dark font-bold select-none text-lg">…</span>`;
+                    html += `<span class="px-0.5 sm:px-2 text-color-dark font-bold select-none text-sm sm:text-lg">…</span>`;
                 }
             }
 
             for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
-                    html += `<button class="w-11 h-11 flex items-center justify-center rounded-full text-base font-bold all-border theme-darkest text-color-lightest cursor-default shadow-md transform scale-110">${i}</button>`;
+                    html += `<button class="w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center rounded-full text-xs sm:text-base font-bold all-border theme-darkest text-color-lightest cursor-default shadow-md transform scale-110">${i}</button>`;
                 } else {
-                    html += `<button data-page="${i}" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${i}</button>`;
+                    html += `<button data-page="${i}" class="pagination-btn w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center rounded-full text-xs sm:text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${i}</button>`;
                 }
             }
 
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
-                    html += `<span class="px-2 text-color-dark font-bold select-none text-lg">…</span>`;
+                    html += `<span class="px-0.5 sm:px-2 text-color-dark font-bold select-none text-sm sm:text-lg">…</span>`;
                 }
-                html += `<button data-page="${totalPages}" class="pagination-btn w-11 h-11 flex items-center justify-center rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${totalPages}</button>`;
+                html += `<button data-page="${totalPages}" class="pagination-btn w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center rounded-full text-xs sm:text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm">${totalPages}</button>`;
             }
 
             // Next button
             if (currentPage < totalPages) {
-                html += `<button data-page="${currentPage + 1}" class="pagination-btn px-5 py-2.5 rounded-full text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Next page">Next &raquo;</button>`;
+                html += `<button data-page="${currentPage + 1}" class="pagination-btn px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-base font-semibold transition all-border theme-medium text-color-lightest cursor-pointer hover:opacity-80 shadow-sm" aria-label="Next page">Next &raquo;</button>`;
             } else {
-                html += `<button disabled class="px-5 py-2.5 rounded-full text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">Next &raquo;</button>`;
+                html += `<button disabled class="px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-base font-semibold all-border opacity-40 cursor-not-allowed theme-medium text-color-lightest">Next &raquo;</button>`;
             }
 
             html += '</div>';
@@ -568,7 +576,7 @@
             });
         };
     </script>
-    <script nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+    <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
     <script nonce="{{ request.csp_nonce }}">
         // Logout form
         const logoutBtn = document.getElementById('logoutBtn')
@@ -591,6 +599,30 @@
             if (loader) loader.remove();
         });
 
+        // Smart go back
+        function goBackOrHome() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                window.location.href = '/blog';
+            }
+        }
+
+        document.querySelectorAll('.go-back-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                goBackOrHome();
+            });
+        });
+        
+        // Reset search loader on bfcache restore
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                document.querySelectorAll('.animate-spin').forEach(loader => loader.classList.add('hidden'));
+                document.querySelectorAll('svg#search-icon').forEach(icon => icon.classList.remove('hidden'));
+            }
+        });
+
         // Search loading
         const searchForms = document.querySelectorAll('form[action="/search"]');
         searchForms.forEach(form => {
@@ -601,6 +633,89 @@
                 if(loader) loader.classList.remove("hidden");
             });
         });
+
+        // Search Auto-suggest with Debounce
+        const navSearchInput = document.getElementById('query');
+        const suggestionsBox = document.getElementById('search-suggestions');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const mainSearchIcon = document.getElementById('search-icon');
+        const mainSearchLoader = document.getElementById('search-loader');
+
+        if (navSearchInput && suggestionsBox && suggestionsList) {
+            let debounceTimer;
+
+            navSearchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+
+                if (query.length <= 4) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                if(mainSearchIcon) mainSearchIcon.classList.add('hidden');
+                if(mainSearchLoader) mainSearchLoader.classList.remove('hidden');
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/api/search/?query=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if(mainSearchLoader) mainSearchLoader.classList.add('hidden');
+                            if(mainSearchIcon) mainSearchIcon.classList.remove('hidden');
+
+                            if (data.error) return;
+
+                            suggestionsList.innerHTML = '';
+                            if (data.posts && data.posts.length > 0) {
+                                data.posts.slice(0, 5).forEach(post => {
+                                    const li = document.createElement('li');
+                                    li.style.borderBottom = '1px solid var(--theme-medium)';
+                                    li.innerHTML = `
+                                        <a href="/blog/${post.slug}" class="block px-4 py-3 text-color-lightest no-underline transition" style="hover:background:var(--theme-medium);">
+                                            <div class="font-semibold text-sm mb-1" style="color: var(--theme-lightest);">${escapeHtml(post.title)}</div>
+                                            <div class="text-xs" style="color: var(--theme-light); opacity: 0.8;">${escapeHtml(post.category)}</div>
+                                        </a>
+                                    `;
+                                    // Basic hover effect through JS since inline styles pseudo-classes don't work
+                                    const aTag = li.querySelector('a');
+                                    aTag.addEventListener('mouseenter', () => { aTag.style.background = 'var(--theme-medium)'; });
+                                    aTag.addEventListener('mouseleave', () => { aTag.style.background = 'transparent'; });
+                                    
+                                    suggestionsList.appendChild(li);
+                                });
+                                suggestionsBox.classList.remove('hidden');
+                            } else {
+                                const li = document.createElement('li');
+                                li.className = 'px-4 py-3 text-sm italic';
+                                li.style.color = 'var(--theme-light)';
+                                li.style.opacity = '0.7';
+                                li.textContent = 'No suggestions found';
+                                suggestionsList.appendChild(li);
+                                suggestionsBox.classList.remove('hidden');
+                            }
+                        })
+                        .catch(err => {
+                            if(mainSearchLoader) mainSearchLoader.classList.add('hidden');
+                            if(mainSearchIcon) mainSearchIcon.classList.remove('hidden');
+                            console.error('Search suggestion error:', err);
+                        });
+                }, 400);
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!navSearchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.classList.add('hidden');
+                }
+            });
+
+            // Reshow suggestions on focus if query isn't empty
+            navSearchInput.addEventListener('focus', function() {
+                if (this.value.trim().length > 4 && suggestionsList.innerHTML.trim() !== '') {
+                    suggestionsBox.classList.remove('hidden');
+                }
+            });
+        }
 
         // Flash messages
         document.querySelectorAll('.close-msg').forEach(button => {
