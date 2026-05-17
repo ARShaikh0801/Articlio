@@ -308,12 +308,12 @@
                 <div class="actions-container" style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
                     <div class="nav-pills-desktop theme-pills-wrap" id="theme-pills"></div>
                     
-                    <div class="nav-auth-desktop" style="display: flex; align-items: center; gap: 10px;">
+                    <div class="nav-auth-desktop" style="display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0;">
                         {% if user.is_authenticated %}
-                            <span style="font-size:0.8rem; color:var(--theme-light);">Hi, {{ request.user }}</span>
-                            <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0;">
+                            <span style="font-size:0.8rem; color:var(--theme-light); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;" title="{{ request.user }}">Hi, {{ request.user }}</span>
+                            <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0; flex-shrink: 0;">
                                 <input type="hidden" value="{{ request.get_full_path }}" name="next">
-                                <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px;">
+                                <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px; white-space: nowrap; flex-shrink: 0;">
                                     <span id="logout-text">Log Out</span>
                                     <svg id="logout-spinner" class="animate-spin hidden" style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />

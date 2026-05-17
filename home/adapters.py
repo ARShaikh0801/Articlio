@@ -9,7 +9,7 @@ class ArticlioSocialAccountAdapter(DefaultSocialAccountAdapter):
     """
     Custom adapter for social (OAuth) logins.
 
-    When a brand-new user signs up via Google / GitHub / Facebook we need to:
+    When a brand-new user signs up via Google / GitHub we need to:
     1. Populate `name` and `username` from what the provider gives us.
     2. Set `verified = True` - the provider already verified the email.
     3. Default `role` to 'reader' (the user will choose on the next page).

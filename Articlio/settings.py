@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
-    'allauth.socialaccount.providers.facebook',
 ]
 
 MIDDLEWARE = [
@@ -203,6 +202,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 SOCIALACCOUNT_ADAPTER = 'home.adapters.ArticlioSocialAccountAdapter'
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -221,14 +221,4 @@ SOCIALACCOUNT_PROVIDERS = {
             'key': ''
         }
     },
-    'facebook': {
-        'APP': {
-            'client_id': os.environ.get('FACEBOOK_CLIENT_ID', ''),
-            'secret': os.environ.get('FACEBOOK_CLIENT_SECRET', ''),
-            'key': ''
-        },
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'VERSION': 'v13.0',
-    }
 }
