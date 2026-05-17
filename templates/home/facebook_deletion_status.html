@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Deletion Status - Articlio{% endblock title %}
+{% block meta_description %}Check the status of your Facebook data deletion request from Articlio.{% endblock meta_description %}
+{% block meta_robots %}noindex,nofollow{% endblock meta_robots %}
+
+{% block body %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <div class="rounded-2xl p-8 shadow-lg" style="background: var(--theme-dark); border: 1px solid var(--theme-medium);">
+        
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: var(--theme-medium);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--theme-lightest);">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold" style="color: var(--theme-lightest); margin: 0;">Data Deletion Confirmed</h1>
+                <p class="text-sm" style="color: var(--theme-light); margin: 0; opacity: 0.8;">Facebook Data Removal</p>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div class="rounded-xl p-5 mb-6" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
+            <p class="font-semibold mb-2" style="color: #4ade80; margin-top: 0;">✓ Your data has been deleted</p>
+            <p class="text-sm" style="color: var(--theme-lightest); opacity: 0.9; margin-bottom: 0;">
+                All Facebook-related data associated with your account has been successfully removed from Articlio. 
+                This includes your Facebook login connection and associated tokens.
+            </p>
+        </div>
+
+        <!-- Confirmation Code -->
+        {% if confirmation_code %}
+        <div class="rounded-xl p-5 mb-6" style="background: var(--theme-darkest); border: 1px solid var(--theme-medium);">
+            <p class="text-sm font-semibold mb-2" style="color: var(--theme-light); margin-top: 0;">Confirmation Code</p>
+            <code class="text-lg font-mono font-bold" style="color: var(--theme-lightest); letter-spacing: 0.1em;">{{ confirmation_code }}</code>
+        </div>
+        {% endif %}
+
+        <!-- Info -->
+        <div class="text-sm" style="color: var(--theme-light); opacity: 0.8;">
+            <p class="mb-2"><strong>What was deleted:</strong></p>
+            <ul style="padding-left: 20px; margin-bottom: 16px;">
+                <li>Facebook social login connection</li>
+                <li>Facebook authentication tokens</li>
+                <li>Facebook user ID association</li>
+            </ul>
+            <p class="mb-1">
+                <strong>Note:</strong> Your Articlio account and any content you created (posts, comments, bookmarks) 
+                remain intact. If you wish to delete your entire account, please 
+                <a href="/contact" style="color: var(--theme-lightest); text-decoration: underline;">contact us</a>.
+            </p>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="mt-8 text-center">
+            <a href="/" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition" 
+               style="background: var(--theme-medium); color: var(--theme-lightest); border: 1px solid var(--theme-light); text-decoration: none;">
+                ← Back to Articlio
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock body %}
