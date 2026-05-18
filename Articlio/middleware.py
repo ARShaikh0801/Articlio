@@ -25,3 +25,27 @@ class CSPMiddleware:
         )
 
         return response
+
+from django.shortcuts import redirect
+from django.urls import reverse
+
+class ProfileCompletionMiddleware:
+    """
+    Ensures that OAuth users who haven't completed their profile
+    are redirected to the profile completion page.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            if hasattr(request.user, 'social_profile_completed') and not request.user.social_profile_completed:
+                allowed_paths = [
+                    reverse('complete_profile'),
+                    reverse('handleLogout'),
+                ]
+                if request.path not in allowed_paths and not request.path.startswith('/static/') and not request.path.startswith('/admin/'):
+                    return redirect('complete_profile')
+                    
+        response = self.get_response(request)
+        return response

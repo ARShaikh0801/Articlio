@@ -589,7 +589,7 @@
                     logoutBtn.disabled = true;
                     logoutBtn.classList.add("opacity-80", "cursor-not-allowed");
                 }
-                if(logoutText) logoutText.innerHTML = "Logging out...&nbsp;";
+                if(logoutText) logoutText.classList.add("hidden");
                 if(logoutSpinner) logoutSpinner.classList.remove("hidden");
             })
         }

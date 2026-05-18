@@ -1,8 +1,22 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from allauth.account.adapter import DefaultAccountAdapter
 from django.contrib.auth import get_user_model
 import re
 
 User = get_user_model()
+
+
+class ArticlioAccountAdapter(DefaultAccountAdapter):
+    """
+    Custom account adapter.
+    Redirects first-time OAuth users to the profile-completion page.
+    """
+
+    def get_login_redirect_url(self, request):
+        user = request.user
+        if hasattr(user, 'social_profile_completed') and not user.social_profile_completed:
+            return '/complete-profile'
+        return '/'
 
 
 class ArticlioSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -15,6 +29,10 @@ class ArticlioSocialAccountAdapter(DefaultSocialAccountAdapter):
     3. Default `role` to 'reader' (the user will choose on the next page).
     4. Mark `social_profile_completed = False` so middleware redirects them
        to the profile-completion page on their first login.
+
+    For returning users whose email already exists, we auto-connect the
+    social account to the existing user (skipping allauth's ugly default
+    signup form).
     """
 
     def _generate_username(self, extra_data, email):
@@ -40,10 +58,37 @@ class ArticlioSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         return username
 
+    def pre_social_login(self, request, sociallogin):
+        """
+        Auto-connect a social login to an existing user with the same email.
+
+        Without this, allauth shows its default '/accounts/3rdparty/signup/'
+        page when the email already exists, asking the user to manually link
+        accounts. Since OAuth providers verify emails, it's safe to auto-merge.
+        """
+        if sociallogin.is_existing:
+            return
+
+        email = None
+        if sociallogin.account.extra_data.get('email'):
+            email = sociallogin.account.extra_data['email']
+        elif sociallogin.email_addresses:
+            email = sociallogin.email_addresses[0].email
+
+        if not email:
+            return
+
+        try:
+            existing_user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return  # New user — let save_user handle it
+
+        # Auto-connect the social account to the existing user
+        sociallogin.connect(request, existing_user)
+
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form)
 
-        # Pull data from social account extra_data
         extra_data = sociallogin.account.extra_data
         social_name = (
             extra_data.get('name')
@@ -54,17 +99,9 @@ class ArticlioSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         user.name = social_name
         user.username = self._generate_username(extra_data, user.email)
-        user.verified = True          # OAuth emails are already verified
-        user.role = 'reader'          # Default - user picks on next page
+        user.verified = True
+        user.role = 'reader'
         user.social_profile_completed = False
         user.save()
 
         return user
-
-    def get_login_redirect_url(self, request):
-        """Redirect first-time social users to the profile completion page."""
-        user = request.user
-        if hasattr(user, 'social_profile_completed') and not user.social_profile_completed:
-            return '/complete-profile'
-        return '/'
-
