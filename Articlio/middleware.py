@@ -17,7 +17,7 @@ class CSPMiddleware:
             "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; "
             "img-src 'self' https: data:; "
             "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
-            "connect-src 'self'; "
+            "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "frame-src https://googleads.g.doubleclick.net;"
             "object-src 'none'; "
             "base-uri 'self'; "

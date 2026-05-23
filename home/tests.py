@@ -1,3 +1,3 @@
 from django.test import TestCase
 
-# Create your tests here.
+# Define unit and integration tests for the home application here.

@@ -117,10 +117,29 @@ WSGI_APPLICATION = 'Articlio.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=0,
+        conn_max_age=600,
         conn_health_checks=True,
     )
 }
+
+# Caches configuration (use Redis for shared production cache, LocMem for local dev)
+if not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "articlio-local-cache",
+        }
+    }
 
 
 
@@ -226,3 +245,21 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     },
 }
+
+# Production security adjustments
+if not DEBUG:
+    # SSL/HTTPS Redirect
+    SECURE_SSL_REDIRECT = True
+    
+    # Secure Cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Additional Security Headers
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"

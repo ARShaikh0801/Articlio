@@ -1,11 +1,13 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Post,BlogComment,Like,Bookmark,History
+from .models import Post,BlogComment,Like,Bookmark
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
 import random
-from django.conf import settings
+import time
+from home.utils import send_verification_email
+
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils.text import slugify
@@ -16,24 +18,40 @@ import re
 
 
 def blogHome(request):
+    """
+    Renders the main blog homepage showing all posts, authors, and categories.
+    """
     return render(request, 'blog/blogHome.html', {'filter': 'all', 'selectedAuthor': 'all', 'selectedCategory': 'all'})
 
 def filteredBlogs(request):
+    """
+    Filters and renders the blog list page based on request query parameters.
+    """
     filtered = request.GET.get("filter", "all")
     authorsFilter = request.GET.get("authors", "all")
     categoryFilter = request.GET.get("category", "all")
     return render(request, 'blog/blogHome.html', {'filter': filtered, 'selectedAuthor': authorsFilter, 'selectedCategory': categoryFilter})
 
 def bookmarks(request):
+    """
+    Renders the page containing the user's bookmarked blog posts.
+    """
     if request.user.is_authenticated:
         return render(request, 'blog/bookmarkBlog.html')
     else:
         return redirect('blogHome')
 
 def history(request):
+    """
+    Renders the page containing the user's reading history.
+    """
     return render(request, 'blog/historyBlog.html')
 
 def blogPost(request,slug):
+    """
+    Renders the full post view for a specific article. Increments the view count
+    if the user is opening it for the first time in their active session.
+    """
     post=get_object_or_404(Post, slug=slug, draft=False)
     
     viewed_posts = request.session.get("viewed_posts", [])
@@ -279,41 +297,55 @@ def emailVerification(request):
         return redirect(next_url or 'home')
 
     if request.method == "GET":
+        stored_code = request.session.get('email_verification_code')
+        stored_email = request.session.get('email_verification_email')
+        stored_time = request.session.get('email_verification_time')
+
+        # If there is a valid verification code in the session, show the verify step
+        if stored_code and stored_email == request.user.email and stored_time and (time.time() - stored_time <= 1800):
+            return render(request, 'blog/emailVerification.html', {
+                "step": "verify",
+                "next": next_url
+            })
+
         return render(request, 'blog/emailVerification.html', {
             "step": "send",
             "next": next_url
         })
 
     if request.method == "POST":
+        action = request.POST.get('action')
 
-        if 'emailcode' not in request.POST:
-
+        if action == 'resend' or 'emailcode' not in request.POST:
             verification_code = str(random.randint(100000, 999999))
 
             request.session['email_verification_code'] = verification_code
             request.session['email_verification_email'] = request.user.email
+            request.session['email_verification_time'] = time.time()
             request.session.modified = True
 
-            send_mail(
-                subject="Articlio Email Verification Code",
-                message=f"Your verification code is: {verification_code}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[request.user.email],
-                fail_silently=False,
-            )
+            send_verification_email(request.user, verification_code, 'verify_email', request)
 
             messages.success(request, "Verification code sent to your email")
 
-            return render(request, 'blog/emailVerification.html', {
-                "step": "verify",
-                "next": next_url
-            })
+            # Redirect to GET to prevent resending code on page refresh
+            redirect_url = reverse('emailVerification')
+            if next_url:
+                redirect_url += f"?next={next_url}"
+            return redirect(redirect_url)
+
         entered_code = request.POST.get('emailcode')
         stored_code = request.session.get('email_verification_code')
         stored_email = request.session.get('email_verification_email')
+        stored_time = request.session.get('email_verification_time')
 
-        if not stored_code or stored_email != request.user.email:
+        # Validate that verification session is not expired (30 minutes)
+        if not stored_code or stored_email != request.user.email or not stored_time or (time.time() - stored_time > 1800):
             messages.error(request, "Verification session expired. Please try again.")
+            request.session.pop('email_verification_code', None)
+            request.session.pop('email_verification_email', None)
+            request.session.pop('email_verification_time', None)
+            request.session.modified = True
             redirect_url = reverse('emailVerification')
             if next_url:
                 redirect_url += f"?next={next_url}"
@@ -331,6 +363,7 @@ def emailVerification(request):
 
         request.session.pop('email_verification_code', None)
         request.session.pop('email_verification_email', None)
+        request.session.pop('email_verification_time', None)
         request.session.modified = True
 
         messages.success(request, "Email verified successfully")

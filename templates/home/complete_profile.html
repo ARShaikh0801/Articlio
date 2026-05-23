@@ -14,10 +14,83 @@
     <style>
         * { font-family: 'Inter', system-ui, sans-serif; }
         .close-msg { cursor: pointer; }
+
+        /* ── Loader ── */
+        #page-loader {
+            position: fixed; inset: 0;
+            background: var(--theme-base-faded);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+        #page-loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .creative-loader {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+        }
+        .creative-loader div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            animation: creative-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        .creative-loader div:nth-child(1) {
+            border-top-color: var(--theme-base);
+            animation-delay: -0.45s;
+        }
+        .creative-loader div:nth-child(2) {
+            border-top-color: var(--theme-medium);
+            animation-delay: -0.3s;
+        }
+        .creative-loader div:nth-child(3) {
+            border-top-color: var(--theme-light);
+            animation-delay: -0.15s;
+        }
+        @keyframes creative-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--theme-light) 0%, var(--theme-base) 50%, var(--theme-dark) 100%);
+            box-shadow: 0 0 8px var(--theme-base), 0 0 12px var(--theme-light);
+            z-index: 100000;
+            width: 50%;
+            opacity: 1;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body class="theme-base-faded">
+    <div id="top-progress-bar"></div>
+    <div id="page-loader">
+        <div class="creative-loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <p class="text-color-lightest font-semibold tracking-wider text-sm">Loading Articlio...</p>
+    </div>
+
+
     <div class="max-w-xl mx-auto px-4 py-12">
 
         {% for message in messages %}
@@ -64,7 +137,7 @@
                             class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
                             value="{{ request.user.username }}" placeholder="Choose a username" required>
                         <p class="text-color-lightest text-sm mt-1 opacity-70">Max 10 characters, letters & numbers only.</p>
-                        <p class="mt-1 text-sm hidden" id="usernameError"></p>
+                        <p id="username-feedback" class="mt-2 text-sm hidden font-medium flex items-center gap-1"></p>
                     </div>
 
                     <div>
@@ -120,34 +193,70 @@
             }
         });
 
-        // Live username validation
+        // --- Real-time Username Checker (Bloom Filter) ---
         const usernameInput = document.getElementById('username');
-        const usernameError = document.getElementById('usernameError');
+        const usernameFeedback = document.getElementById('username-feedback');
         const completeBtn = document.getElementById('completeBtn');
+        let usernameTimeout = null;
 
         usernameInput.addEventListener('input', () => {
-            const val = usernameInput.value;
-            usernameError.classList.add('hidden');
-
-            if (val.length > 10) {
-                usernameError.textContent = "Must be 10 characters or less.";
-                usernameError.className = "mt-1 text-sm text-red-500";
+            clearTimeout(usernameTimeout);
+            const val = usernameInput.value.trim();
+            
+            if (val.length === 0) {
+                usernameFeedback.classList.add('hidden');
+                completeBtn.disabled = true;
+                completeBtn.classList.add("opacity-60", "cursor-not-allowed");
+                return;
+            }
+            
+            // Basic frontend validation first
+            if (val.length > 10 || !/^[a-zA-Z0-9]+$/.test(val)) {
+                usernameFeedback.classList.remove('hidden', 'text-green-500');
+                usernameFeedback.classList.add('text-red-500');
+                usernameFeedback.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Invalid format (alphanumeric, max 10 chars)`;
                 completeBtn.disabled = true;
                 completeBtn.classList.add("opacity-60", "cursor-not-allowed");
                 return;
             }
 
-            if (val && !(/^[a-zA-Z0-9]*$/.test(val))) {
-                usernameError.textContent = "Letters and numbers only.";
-                usernameError.className = "mt-1 text-sm text-red-500";
-                completeBtn.disabled = true;
-                completeBtn.classList.add("opacity-60", "cursor-not-allowed");
-                return;
-            }
+            usernameFeedback.classList.remove('hidden', 'text-red-500', 'text-green-500');
+            usernameFeedback.classList.add('text-gray-400');
+            usernameFeedback.innerHTML = `<svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg> Checking...`;
+            completeBtn.disabled = true; // disable until we know it's available
+            completeBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-            completeBtn.disabled = false;
-            completeBtn.classList.remove("opacity-60", "cursor-not-allowed");
+            // Debounce for 400ms
+            usernameTimeout = setTimeout(() => {
+                fetch(`/api/check-username/?username=${encodeURIComponent(val)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        usernameFeedback.classList.remove('text-gray-400');
+                        if (data.available || val === "{{ request.user.username }}") {
+                            // If it's available OR it's their current username
+                            usernameFeedback.classList.remove('text-red-500');
+                            usernameFeedback.classList.add('text-green-500');
+                            usernameFeedback.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Username available!`;
+                            completeBtn.disabled = false;
+                            completeBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                        } else {
+                            usernameFeedback.classList.remove('text-green-500');
+                            usernameFeedback.classList.add('text-red-500');
+                            usernameFeedback.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Username already taken`;
+                            completeBtn.disabled = true;
+                            completeBtn.classList.add("opacity-60", "cursor-not-allowed");
+                        }
+                    })
+                    .catch(err => {
+                        usernameFeedback.classList.add('hidden');
+                        console.error("Username check failed", err);
+                        // Fallback: enable button and let backend handle it if api fails
+                        completeBtn.disabled = false;
+                        completeBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                    });
+            }, 400);
         });
+        // -------------------------------------------------
 
         // Submit spinner
         const completeText = document.getElementById('complete-text');
@@ -157,6 +266,95 @@
             completeBtn.classList.add('opacity-80', 'cursor-not-allowed');
             completeText.innerHTML = 'Setting Up...&nbsp;';
             completeSpinner.classList.remove('hidden');
+            showLoader();
+        });
+
+        // Loader controls
+        function showLoader() {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.remove("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "1";
+                progressBar.style.width = "30%";
+                let width = 30;
+                const interval = setInterval(() => {
+                    if (width < 90) {
+                        width += 5;
+                        progressBar.style.width = width + "%";
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 200);
+            }
+        }
+
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.add("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.width = "100%";
+                setTimeout(() => {
+                    progressBar.style.opacity = "0";
+                    setTimeout(() => {
+                        progressBar.style.width = "0%";
+                    }, 300);
+                }, 300);
+            }
+        });
+
+        window.addEventListener("pageshow", () => {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.add("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "0";
+                progressBar.style.width = "0%";
+            }
+            
+            // Restore submit button state
+            const completeBtn = document.getElementById("completeBtn");
+            const completeText = document.getElementById("complete-text");
+            const completeSpinner = document.getElementById("complete-spinner");
+            if (completeBtn) {
+                completeBtn.disabled = false;
+                completeBtn.classList.remove("opacity-80", "cursor-not-allowed");
+            }
+            if (completeText) {
+                completeText.innerHTML = "Continue to Articlio";
+            }
+            if (completeSpinner) {
+                completeSpinner.classList.add("hidden");
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            const target = link.getAttribute('target');
+            
+            if (!href) return;
+            if (target === '_blank') return;
+            if (href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (link.hasAttribute('download')) return;
+            
+            if (link.closest('.close-msg')) return;
+
+            const lowercaseHref = href.toLowerCase();
+            if (lowercaseHref.includes('/login') || lowercaseHref.includes('/signup') || lowercaseHref.includes('/complete-profile') || lowercaseHref.includes('/resetpass') || lowercaseHref.includes('/verification')) {
+                showLoader();
+            } else {
+                showProgressBar();
+            }
         });
     </script>
 </body>

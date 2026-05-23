@@ -1,106 +1,503 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{% static 'img/articlio logo.png' %}">
-    <meta name="description" content="Articlio Blog - Verify your email to complete the registration process and access all features.">
+    <meta name="description"
+        content="Articlio Blog - Verify your email to complete the registration process and access all features.">
     <title>Articlio | Email Verification</title>
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <style>
-        * { font-family: 'Inter', system-ui, sans-serif; }
+        * {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .close-msg {
+            cursor: pointer;
+        }
+
+        /* ── Loader ── */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--theme-base-faded);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #page-loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .creative-loader {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+        }
+
+        .creative-loader div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            animation: creative-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .creative-loader div:nth-child(1) {
+            border-top-color: var(--theme-base);
+            animation-delay: -0.45s;
+        }
+
+        .creative-loader div:nth-child(2) {
+            border-top-color: var(--theme-medium);
+            animation-delay: -0.3s;
+        }
+
+        .creative-loader div:nth-child(3) {
+            border-top-color: var(--theme-light);
+            animation-delay: -0.15s;
+        }
+
+        @keyframes creative-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--theme-light) 0%, var(--theme-base) 50%, var(--theme-dark) 100%);
+            box-shadow: 0 0 8px var(--theme-base), 0 0 12px var(--theme-light);
+            z-index: 100000;
+            width: 50%;
+            opacity: 1;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body class="theme-base-faded">
+    <div id="top-progress-bar"></div>
+    <div id="page-loader">
+        <div class="creative-loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <p class="text-color-lightest font-semibold tracking-wider text-sm">Loading Articlio...</p>
+    </div>
 
-<div class="max-w-xl mx-auto px-4 py-12">
+    <div class="max-w-xl mx-auto px-4 py-12">
 
-    {% for message in messages %}
-    <div class="my-3 p-4 rounded-lg flex justify-between
+        {% for message in messages %}
+        <div class="my-3 p-4 rounded-lg flex justify-between
         {% if message.tags == 'success' %}bg-green-200 text-green-700{% endif %}
         {% if message.tags == 'danger' %}bg-red-200 text-red-700{% endif %}
         {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-700{% endif %}">
-        {{ message }}
-        <button type="button" class="close-msg text-xl">&times;</button>
-    </div>
-    {% endfor %}
-<main>
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-color-darkest">
-            Verify Your Email
-        </h2>
-        <p class="text-color-darkest mt-2">
-            We will send a verification code to your email
-        </p>
-    </div>
-
-    <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
-
-        <form method="post" action="{% url 'emailVerification' %}" class="space-y-6">
-            {% csrf_token %}
-
-            <input type="hidden" name="next" value="{{ next }}">
-
-            <div>
-                <label class="block text-color-lightest font-medium mb-1">
-                    Email
-                </label>
-                <input type="email" aria-label="email"
-                       class="w-full rounded-lg theme-dark all-border text-color-lightest input-box px-4 py-2 "
-                       value="{{ request.user.email }}"
-                       readonly>
+            {{ message }}
+            <button type="button" class="close-msg text-xl">&times;</button>
+        </div>
+        {% endfor %}
+        <main>
+            <div class="mb-6 flex justify-start">
+                <a
+                    class="go-back-btn theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+                    </svg>
+                    Go Back
+                </a>
+            </div>
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-color-darkest">
+                    Verify Your Email
+                </h2>
+                <p class="text-color-darkest mt-2">
+                    We will send a verification code to your email
+                </p>
             </div>
 
-            {% if step == "verify" %}
-            <div>
-                <label for="emailcode" class="block text-color-lightest font-medium mb-1">
-                    Verification Code
-                </label>
-                <input type="text" aria-label="emailcode"
-                       id="emailcode"
-                       name="emailcode"
-                       class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 input-box focus:outline-none"
-                       placeholder="Enter the code sent to your email"
-                       required>
+            <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+
+                <form method="post" action="{% url 'emailVerification' %}" class="space-y-6">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <input type="hidden" name="action" id="form-action" value="">
+
+                    <div>
+                        <label class="block text-color-lightest font-medium mb-1">
+                            Email
+                        </label>
+                        <input type="email" aria-label="email"
+                            class="w-full rounded-lg theme-dark all-border text-color-lightest input-box px-4 py-2 "
+                            value="{{ request.user.email }}" readonly>
+                    </div>
+
+                    {% if step == "verify" %}
+                    <div>
+                        <label class="block text-color-lightest font-medium mb-2 text-center">
+                            Verification Code
+                        </label>
+                        <div class="flex justify-center gap-2 sm:gap-3 my-4" id="otp-container">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 1">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 2">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 3">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 4">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 5">
+                            <input type="text" pattern="[0-9]" inputmode="numeric" maxlength="1"
+                                class="otp-box focus:outline-none" required aria-label="Digit 6">
+                        </div>
+                        <input type="hidden" id="emailcode" name="emailcode" value="{{ emailcode|default:'' }}"
+                            required>
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center">
+                        {% if step == "verify" %}
+                        <button type="submit" id="verifyBtn" aria-label="verify email button"
+                            class="px-8 py-3 all-border flex items-center justify-center mx-auto rounded-lg font-medium transition bg-gray-400 hover:bg-gray-500 text-gray-200 cursor-not-allowed opacity-60">
+                            <span id="verify-text" class="text-color-lightest font-semibold">Verify Email</span>
+                            <svg id="verify-spinner" class="w-4 h-4 animate-spin hidden ml-2" viewBox="0 0 24 24"
+                                fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                        
+                        <div class="mt-4 text-center">
+                            <span id="cooldown-container" class="text-sm text-color-lightest opacity-80">
+                                Resend code in <span id="cooldown-timer" class="font-semibold">05:00</span>
+                            </span>
+                            <button type="button" id="resendBtn" class="hidden text-sm font-semibold underline hover:opacity-80 transition cursor-pointer focus:outline-none" style="color: var(--theme-base); background: none; border: none; padding: 0;">
+                                Resend Code
+                            </button>
+                        </div>
+                        {% else %}
+                        <button type="submit" id="sendBtn" aria-label="send verification code button"
+                            class="theme-medium theme-medium-btn all-border text-color-lightest px-8 py-3 rounded-lg font-medium transition flex items-center justify-center mx-auto">
+                            <span id="send-text" class="text-color-lightest font-semibold">Send Verification Code</span>
+                            <svg id="send-spinner" class="w-4 h-4 animate-spin hidden ml-2" viewBox="0 0 24 24"
+                                fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+
+                </form>
+
             </div>
-            {% endif %}
-
-            <div class="text-center">
-                {% if step == "verify" %}
-                    <button type="submit" aria-label="verify email button"
-                        class="theme-medium theme-medium-btn all-border text-color-lightest px-8 py-3 rounded-lg font-medium transition">
-                        Verify Email
-                    </button>
-                {% else %}
-                    <button type="submit" aria-label="send verification code button"
-                        class="theme-medium theme-medium-btn all-border text-color-lightest px-8 py-3 rounded-lg font-medium transition">
-                        Send Verification Code
-                    </button>
-                {% endif %}
-            </div>
-
-        </form>
-
+        </main>
     </div>
-    </main>
-</div>
-<script nonce="{{ request.csp_nonce }}">
+    <script nonce="{{ request.csp_nonce }}">
         window.CURRENT_USER = "{{ request.user.username }}";
         window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
         window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
         window.CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     </script>
     <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
-<script nonce="{{ request.csp_nonce }}">
-    document.querySelectorAll('.close-msg').forEach(button => {
-        button.addEventListener('click', () => {
-            button.parentElement.remove();
+    <script nonce="{{ request.csp_nonce }}">
+        document.querySelectorAll('.close-msg').forEach(button => {
+            button.addEventListener('click', () => {
+                button.parentElement.remove();
+            });
         });
-    });
-</script>
+
+        const otpInputsArray = Array.from(document.querySelectorAll('#otp-container .otp-box'));
+        const emailCodeHidden = document.getElementById('emailcode');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const verifyText = document.getElementById('verify-text');
+        const verifySpinner = document.getElementById('verify-spinner');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendText = document.getElementById('send-text');
+        const sendSpinner = document.getElementById('send-spinner');
+
+        function updateHiddenInput() {
+            if (!emailCodeHidden || otpInputsArray.length === 0) return;
+            let code = '';
+            otpInputsArray.forEach(input => {
+                code += input.value;
+            });
+            emailCodeHidden.value = code;
+            checkVerifyForm();
+        }
+
+        if (otpInputsArray.length > 0) {
+            otpInputsArray.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    input.value = input.value.replace(/[^0-9]/g, '');
+                    if (input.value.length === 1 && index < otpInputsArray.length - 1) {
+                        otpInputsArray[index + 1].focus();
+                    }
+                    updateHiddenInput();
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace') {
+                        if (input.value.length === 0 && index > 0) {
+                            otpInputsArray[index - 1].focus();
+                            otpInputsArray[index - 1].value = '';
+                            updateHiddenInput();
+                        } else {
+                            input.value = '';
+                            updateHiddenInput();
+                        }
+                        e.preventDefault();
+                    }
+                });
+
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedText = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
+                    const digits = pastedText.split('').slice(0, 6);
+                    digits.forEach((digit, idx) => {
+                        if (otpInputsArray[idx]) {
+                            otpInputsArray[idx].value = digit;
+                        }
+                    });
+                    const focusIdx = Math.min(digits.length, 5);
+                    otpInputsArray[focusIdx].focus();
+                    updateHiddenInput();
+                });
+            });
+
+            if (emailCodeHidden && emailCodeHidden.value.length === 6) {
+                otpInputsArray.forEach((input, index) => {
+                    input.value = emailCodeHidden.value[index] || '';
+                });
+            }
+        }
+
+        function checkVerifyForm() {
+            if (!verifyBtn) return;
+            const isOtpValid = emailCodeHidden && emailCodeHidden.value.length === 6 && /^\d{6}$/.test(emailCodeHidden.value);
+
+            if (isOtpValid) {
+                verifyBtn.disabled = false;
+                verifyBtn.classList.remove("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60", "hover:bg-gray-500");
+                verifyBtn.classList.add("theme-medium", "theme-medium-btn", "text-color-lightest");
+            } else {
+                verifyBtn.disabled = true;
+                verifyBtn.classList.add("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60", "hover:bg-gray-500");
+                verifyBtn.classList.remove("theme-medium", "theme-medium-btn", "text-color-lightest");
+            }
+        }
+        checkVerifyForm();
+
+        // --- Cooldown Timer & Resend Handling ---
+        const cooldownContainer = document.getElementById('cooldown-container');
+        const cooldownTimerText = document.getElementById('cooldown-timer');
+        const resendBtn = document.getElementById('resendBtn');
+        const formActionInput = document.getElementById('form-action');
+
+        if (cooldownContainer && cooldownTimerText && resendBtn) {
+            const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+            const storageKey = 'articlio_verification_cooldown_expiry';
+            
+            let expiry = localStorage.getItem(storageKey);
+            if (!expiry) {
+                expiry = Date.now() + COOLDOWN_MS;
+                localStorage.setItem(storageKey, expiry);
+            } else {
+                expiry = parseInt(expiry, 10);
+            }
+
+            function updateTimer() {
+                const remaining = expiry - Date.now();
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    cooldownContainer.classList.add('hidden');
+                    resendBtn.classList.remove('hidden');
+                } else {
+                    const totalSecs = Math.ceil(remaining / 1000);
+                    const mins = Math.floor(totalSecs / 60);
+                    const secs = totalSecs % 60;
+                    cooldownTimerText.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                }
+            }
+
+            let timerInterval = setInterval(updateTimer, 1000);
+            updateTimer(); // initial run
+
+            resendBtn.addEventListener('click', () => {
+                if (formActionInput) {
+                    formActionInput.value = 'resend';
+                }
+                // Clear validation requirements on inputs to allow blank submission
+                otpInputsArray.forEach(input => {
+                    input.removeAttribute('required');
+                });
+                if (emailCodeHidden) {
+                    emailCodeHidden.removeAttribute('required');
+                }
+                localStorage.removeItem(storageKey);
+                
+                // Show loader / disable buttons
+                if (verifyBtn) {
+                    verifyBtn.disabled = true;
+                }
+                resendBtn.disabled = true;
+                resendBtn.innerHTML = "Sending Code...";
+                showLoader();
+                
+                // Submit the form
+                const form = document.querySelector('form');
+                if (form) {
+                    form.submit();
+                }
+            });
+        } else {
+            localStorage.removeItem('articlio_verification_cooldown_expiry');
+        }
+
+        const submitForm = document.querySelector('form');
+        if (submitForm) {
+            submitForm.addEventListener('submit', function () {
+                if (sendBtn && !sendBtn.disabled) {
+                    sendBtn.disabled = true;
+                    sendBtn.classList.add("opacity-80", "cursor-not-allowed");
+                    if (sendText) sendText.innerHTML = "Sending Code...&nbsp;";
+                    if (sendSpinner) sendSpinner.classList.remove("hidden");
+                }
+                if (verifyBtn && !verifyBtn.disabled) {
+                    verifyBtn.disabled = true;
+                    verifyBtn.classList.add("opacity-80", "cursor-not-allowed");
+                    if (verifyText) verifyText.innerHTML = "Verifying Code...&nbsp;";
+                    if (verifySpinner) verifySpinner.classList.remove("hidden");
+                }
+                showLoader();
+            });
+        }
+
+        // Loader controls
+        function showProgressBar() {
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "1";
+                progressBar.style.width = "30%";
+                let width = 30;
+                const interval = setInterval(() => {
+                    if (width < 90) {
+                        width += 5;
+                        progressBar.style.width = width + "%";
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 200);
+            }
+        }
+
+        function showLoader() {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.remove("fade-out");
+            }
+            showProgressBar();
+        }
+
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.add("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.width = "100%";
+                setTimeout(() => {
+                    progressBar.style.opacity = "0";
+                    setTimeout(() => {
+                        progressBar.style.width = "0%";
+                    }, 300);
+                }, 300);
+            }
+        });
+
+        window.addEventListener("pageshow", () => {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.add("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "0";
+                progressBar.style.width = "0%";
+            }
+        });
+
+        function goBackOrHome() {
+            showLoader();
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                window.location.href = '/blog';
+            }
+        }
+
+        document.querySelectorAll('.go-back-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                goBackOrHome();
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            const target = link.getAttribute('target');
+
+            if (!href) return;
+            if (target === '_blank') return;
+            if (href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (link.hasAttribute('download')) return;
+            if (link.closest('.close-msg')) return;
+
+            const lowercaseHref = href.toLowerCase();
+            if (lowercaseHref.includes('/login') || lowercaseHref.includes('/signup') || lowercaseHref.includes('/complete-profile') || lowercaseHref.includes('/resetpass') || lowercaseHref.includes('/verification')) {
+                showLoader();
+            } else {
+                showProgressBar();
+            }
+        });
+    </script>
 </body>
+
 </html>

@@ -44,6 +44,19 @@
     margin: 0.5rem 0;
 }
 
+.related-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+    pointer-events: none;
+}
 </style>
 {% endblock css %}
 {% block body %}
@@ -690,6 +703,25 @@
                     const commentsContainer = document.getElementById('comments-container');
                     if (commentsContainer) commentsContainer.innerHTML = '<p class="text-color-darkest mb-6">Failed to load comments.</p>';
                 });
+
+            // 4. Click delegation for related post cards overlay
+            const interestedContainer = document.getElementById('interested-posts-container');
+            if (interestedContainer) {
+                interestedContainer.addEventListener('click', function(e) {
+                    const card = e.target.closest('a');
+                    if (card && !card.querySelector('.related-card-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'related-card-overlay';
+                        overlay.innerHTML = `
+                            <svg class="w-8 h-8 animate-spin text-[var(--theme-base)]" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        `;
+                        card.appendChild(overlay);
+                    }
+                });
+            }
         });
     </script>
 {% endblock body %}

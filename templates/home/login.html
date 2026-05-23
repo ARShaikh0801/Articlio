@@ -10,15 +10,110 @@
     <meta name="description" content="Articlio Blog - Login to access your account and explore our content.">
     <title>Articlio-Login</title>
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <style>
-        * { font-family: 'Inter', system-ui, sans-serif; }
-        .close-msg { cursor: pointer; }
+        * {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .close-msg {
+            cursor: pointer;
+        }
+
+        /* ── Loader ── */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--theme-base-faded);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #page-loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .creative-loader {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+        }
+
+        .creative-loader div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            animation: creative-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .creative-loader div:nth-child(1) {
+            border-top-color: var(--theme-base);
+            animation-delay: -0.45s;
+        }
+
+        .creative-loader div:nth-child(2) {
+            border-top-color: var(--theme-medium);
+            animation-delay: -0.3s;
+        }
+
+        .creative-loader div:nth-child(3) {
+            border-top-color: var(--theme-light);
+            animation-delay: -0.15s;
+        }
+
+        @keyframes creative-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--theme-light) 0%, var(--theme-base) 50%, var(--theme-dark) 100%);
+            box-shadow: 0 0 8px var(--theme-base), 0 0 12px var(--theme-light);
+            z-index: 100000;
+            width: 50%;
+            opacity: 1;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body class="theme-base-faded">
+    <div id="top-progress-bar"></div>
+    <div id="page-loader">
+        <div class="creative-loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <p class="text-color-lightest font-semibold tracking-wider text-sm">Loading Articlio...</p>
+    </div>
+
+
     <div class="max-w-xl mx-auto px-4 py-12">
         {% for message in messages %}
         <div class="max-w-4xl mx-auto my-3 px-4">
@@ -30,77 +125,119 @@
             </div>
         </div>
         {% endfor %}
-<main>
-        <div class="text-center mb-10">
-            <h2 class="text-3xl font-bold text-color-darkest">
-                Login
-            </h2>
-            <p class="text-color-darkest mt-3">
-                Don't have an account? <a href="/signup" class="text-color-darkest underline">Sign Up</a>
-            </p>
-        </div>
-
-        <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
-            <div class="mb-6 space-y-3">
-                <a href="{% provider_login_url 'google' %}" class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
-                    <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Continue with Google
-                </a>
-                <a href="{% provider_login_url 'github' %}" class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" /></svg>
-                    Continue with GitHub
+        <main>
+            <div class="mb-6 flex justify-start">
+                <a
+                    class="go-back-btn theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+                    </svg>
+                    Go Back
                 </a>
             </div>
-            <div class="flex items-center my-6">
-                <div class="flex-grow border-t border-gray-600"></div>
-                <span class="mx-4 text-color-lightest text-sm uppercase">Or</span>
-                <div class="flex-grow border-t border-gray-600"></div>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-color-darkest">
+                    Login
+                </h2>
+                <p class="text-color-darkest mt-3">
+                    Don't have an account? <a href="/signup" class="text-color-darkest underline">Sign Up</a>
+                </p>
             </div>
-            <form action="/login" method="post" class="space-y-6" id="loginForm">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.GET.next }}">
 
-                <div>
-                    <label for="loginusername" class="block text-color-lightest font-medium mb-1">
-                        Username
-                    </label>
-                    <input type="text" id="loginusername" name="loginusername"
-                        class="w-full theme-dark all-border text-color-lightest rounded-lg px-4 py-2 focus:outline-none input-box"
-                        placeholder="Enter Username" required>
-                </div>
-
-                <div>
-                    <label for="loginpass" class="block text-color-lightest font-medium mb-1">
-                        Password
-                    </label>
-                    <input type="password" id="loginpass" name="loginpass"
-                        class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
-                        placeholder="Enter Password" required>
-                </div>
-                <div class="text-center"><a href="{% url 'resetPassword' %}" class="text-color-lightest underline">Forgot Password?</a></div>
-                <div class="text-center">
-                    <button type="submit"
-                        class="theme-medium theme-medium-btn all-border flex items-center text-white px-8 py-3 rounded-lg font-medium transition" id="loginBtn">
-                        <span id="login-text" class="text-color-lightest font-semibold">Login</span>
-                        <svg id="login-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+                <div class="mb-6 space-y-3">
+                    <a href="{% provider_login_url 'google' %}"
+                        class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48">
+                            <path fill="#EA4335"
+                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                            <path fill="#4285F4"
+                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                            <path fill="#FBBC05"
+                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                            <path fill="#34A853"
+                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                         </svg>
-                    </button>
+                        Continue with Google
+                    </a>
+                    <a href="{% provider_login_url 'github' %}"
+                        class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd"
+                                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Continue with GitHub
+                    </a>
                 </div>
-            </form>
-        </div>
-    </main>
+                <div class="flex items-center my-6">
+                    <div class="flex-grow border-t border-gray-600"></div>
+                    <span class="mx-4 text-color-lightest text-sm uppercase">Or</span>
+                    <div class="flex-grow border-t border-gray-600"></div>
+                </div>
+                <form action="/login" method="post" class="space-y-6" id="loginForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+                    <div>
+                        <label for="loginusername" class="block text-color-lightest font-medium mb-1">
+                            Username
+                        </label>
+                        <input type="text" id="loginusername" name="loginusername"
+                            class="w-full theme-dark all-border text-color-lightest rounded-lg px-4 py-2 focus:outline-none input-box"
+                            placeholder="Enter Username" value="{{ loginusername|default:'' }}" required>
+                    </div>
+
+                    <div>
+                        <label for="loginpass" class="block text-color-lightest font-medium mb-1">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" id="loginpass" name="loginpass"
+                                class="w-full rounded-lg theme-dark all-border text-color-lightest pl-4 pr-10 py-2 focus:outline-none input-box"
+                                placeholder="Enter Password" required>
+                            <button type="button"
+                                class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none flex items-center justify-center p-1 text-color-light hover:text-color-lightest transition-colors"
+                                data-target="loginpass" aria-label="Toggle Password Visibility">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-5 h-5 eye-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center"><a href="{% url 'resetPassword' %}"
+                            class="text-color-lightest underline">Forgot Password?</a></div>
+                    <div class="text-center">
+                        <button disabled type="submit"
+                            class="px-8 py-3 all-border flex items-center rounded-lg font-medium transition bg-gray-400 hover:bg-gray-500 text-gray-200 cursor-not-allowed opacity-60"
+                            id="loginBtn">
+                            <span id="login-text" class="text-color-lightest font-semibold">Login</span>
+                            <svg id="login-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
 
     </div>
 </body>
-    <script nonce="{{ request.csp_nonce }}">
-        window.CURRENT_USER = "{{ request.user.username }}";
-        window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
-        window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
-        window.CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    </script>
-    <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}">
+    window.CURRENT_USER = "{{ request.user.username }}";
+    window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
+    window.DB_THEME = "{% if user.is_authenticated %}{{ user.theme_preference }}{% endif %}";
+    window.CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+</script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/colorPicker.js' %}"></script>
 <script nonce="{{ request.csp_nonce }}">
     document.querySelectorAll('.close-msg').forEach(button => {
         button.addEventListener('click', () => {
@@ -108,8 +245,29 @@
         });
     });
 
+    // --- Custom Password Visibility Toggle ---
+    document.querySelectorAll('.toggle-password-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+            const eyeIcon = btn.querySelector('.eye-icon');
+            if (targetInput.type === 'password') {
+                targetInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                `;
+            } else {
+                targetInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                `;
+            }
+        });
+    });
+
     // Display URL message param (from rate-limit redirect or bookmark redirect)
-    (function() {
+    (function () {
         const params = new URLSearchParams(window.location.search);
         const msg = params.get('msg');
         if (msg) {
@@ -119,21 +277,151 @@
             const container = document.querySelector('.max-w-xl');
             const firstChild = container.querySelector('main') || container.firstElementChild;
             container.insertBefore(wrapper, firstChild);
-            wrapper.querySelector('.close-msg').addEventListener('click', function() {
+            wrapper.querySelector('.close-msg').addEventListener('click', function () {
                 wrapper.remove();
             });
         }
     })();
-    const loginBtn=document.getElementById('loginBtn')
-    const loginText=document.getElementById('login-text')
-    const loginSpinner=document.getElementById('login-spinner')
+    const loginusername = document.getElementById('loginusername');
+    const loginpass = document.getElementById('loginpass');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('login-text');
+    const loginSpinner = document.getElementById('login-spinner');
+
+    function checkLoginForm() {
+        if (loginusername.value.trim() !== '' && loginpass.value.trim() !== '') {
+            loginBtn.disabled = false;
+            loginBtn.classList.remove("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60", "hover:bg-gray-500");
+            loginBtn.classList.add("theme-medium", "theme-medium-btn", "text-white");
+        } else {
+            loginBtn.disabled = true;
+            loginBtn.classList.add("bg-gray-400", "text-gray-200", "cursor-not-allowed", "opacity-60", "hover:bg-gray-500");
+            loginBtn.classList.remove("theme-medium", "theme-medium-btn", "text-white");
+        }
+    }
+
+    loginusername.addEventListener('input', checkLoginForm);
+    loginpass.addEventListener('input', checkLoginForm);
+    checkLoginForm();
 
     document.getElementById("loginForm").addEventListener("submit", function () {
         loginBtn.disabled = true;
         loginBtn.classList.add("opacity-80", "cursor-not-allowed");
         loginText.innerHTML = "Logging In...&nbsp;";
         loginSpinner.classList.remove("hidden");
-    })
-    
+        showLoader();
+    });
+
+    function showProgressBar() {
+        const progressBar = document.getElementById("top-progress-bar");
+        if (progressBar) {
+            progressBar.style.opacity = "1";
+            progressBar.style.width = "30%";
+            let width = 30;
+            const interval = setInterval(() => {
+                if (width < 90) {
+                    width += 5;
+                    progressBar.style.width = width + "%";
+                } else {
+                    clearInterval(interval);
+                }
+            }, 200);
+        }
+    }
+
+    function showLoader() {
+        const loader = document.getElementById("page-loader");
+        if (loader) {
+            loader.classList.remove("fade-out");
+        }
+        showProgressBar();
+    }
+
+    window.addEventListener("load", () => {
+        const loader = document.getElementById("page-loader");
+        if (loader) {
+            loader.classList.add("fade-out");
+        }
+        const progressBar = document.getElementById("top-progress-bar");
+        if (progressBar) {
+            progressBar.style.width = "100%";
+            setTimeout(() => {
+                progressBar.style.opacity = "0";
+                setTimeout(() => {
+                    progressBar.style.width = "0%";
+                }, 300);
+            }, 300);
+        }
+    });
+
+    window.addEventListener("pageshow", () => {
+        const loader = document.getElementById("page-loader");
+        if (loader) {
+            loader.classList.add("fade-out");
+        }
+        const progressBar = document.getElementById("top-progress-bar");
+        if (progressBar) {
+            progressBar.style.opacity = "0";
+            progressBar.style.width = "0%";
+        }
+
+        // Restore submit button state
+        const loginBtn = document.getElementById("loginBtn");
+        const loginText = document.getElementById("login-text");
+        const loginSpinner = document.getElementById("login-spinner");
+        if (loginBtn) {
+            // Re-evaluate the checkLoginForm function to set appropriate disabled/active state
+            if (typeof checkLoginForm === 'function') {
+                checkLoginForm();
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.classList.remove("opacity-80", "cursor-not-allowed");
+            }
+        }
+        if (loginText) {
+            loginText.innerHTML = "Log In";
+        }
+        if (loginSpinner) {
+            loginSpinner.classList.add("hidden");
+        }
+    });
+
+    function goBackOrHome() {
+        showLoader();
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+        } else {
+            window.location.href = '/blog';
+        }
+    }
+    document.querySelectorAll('.go-back-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            goBackOrHome();
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        const target = link.getAttribute('target');
+
+        if (!href) return;
+        if (target === '_blank') return;
+        if (href.startsWith('#') || href.startsWith('javascript:')) return;
+        if (link.hasAttribute('download')) return;
+
+        if (link.closest('.close-msg')) return;
+
+        const lowercaseHref = href.toLowerCase();
+        if (lowercaseHref.includes('/login') || lowercaseHref.includes('/signup') || lowercaseHref.includes('/complete-profile') || lowercaseHref.includes('/resetpass') || lowercaseHref.includes('/verification')) {
+            showLoader();
+        } else {
+            showProgressBar();
+        }
+    });
 </script>
+
 </html>

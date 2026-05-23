@@ -17,3 +17,4 @@ requests
 PyJWT
 cryptography
 pyjwt
+django-redis==5.4.0

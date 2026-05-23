@@ -1,0 +1,18 @@
+{% load static %}
+{
+  "name": "Articlio Blog",
+  "short_name": "Articlio",
+  "description": "A progressive web app for the Articlio blog.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#212529",
+  "icons": [
+    {
+      "src": "{% static 'img/articlio logo.png' %}",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

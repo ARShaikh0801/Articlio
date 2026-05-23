@@ -4,6 +4,10 @@ User = get_user_model()
 from django.utils.timezone import now
 
 class Post(models.Model):
+    """
+    Represents a blog post. Tracks metadata such as views, likes, category, 
+    and draft status.
+    """
     sno=models.AutoField(primary_key=True)
     title=models.CharField(max_length=200)
     content=models.TextField()
@@ -21,6 +25,9 @@ class Post(models.Model):
         return self.title + ' ' + self.author
     
 class BlogComment(models.Model):
+    """
+    Represents a comment or nested reply left on a blog post.
+    """
     sno=models.AutoField(primary_key=True)
     comment=models.TextField()
     user=models.ForeignKey(User,on_delete=models.CASCADE)
@@ -32,6 +39,9 @@ class BlogComment(models.Model):
         return self.comment[0:13]+"... by "+self.user.username
     
 class Like(models.Model):
+    """
+    Represents a post like mapping a user to a specific post.
+    """
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -42,6 +52,9 @@ class Like(models.Model):
         return f"{self.user.username} liked {self.post.title}"
     
 class Bookmark(models.Model):
+    """
+    Represents a bookmarked post saved to the user's reading list.
+    """
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -52,6 +65,9 @@ class Bookmark(models.Model):
         return f"{self.user.username} Saved {self.post.title}"
     
 class History(models.Model):
+    """
+    Represents the reading history of a user on a post, including scroll progress.
+    """
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     scroll_progress = models.FloatField(default=0.0)

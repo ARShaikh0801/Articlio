@@ -17,4 +17,5 @@ urlpatterns=[
 
     path('api/home/posts/', api_views.api_home_posts, name='api_home_posts'),
     path('api/search/', api_views.api_search, name='api_search'),
+    path('api/check-username/', views.check_username_availability, name='check_username_availability'),
 ]

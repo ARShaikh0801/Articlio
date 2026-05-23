@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="{% static 'img/articlio logo.png' %}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#212529">
 
     <title>{% block title %}{% endblock title %}</title>
     <meta name="description" content="{% block meta_description %}Articlio - Thoughtful articles and tutorials.{% endblock meta_description %}">
@@ -30,18 +32,64 @@
         #page-loader {
             position: fixed; inset: 0;
             background: var(--theme-base-faded);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            z-index: 9999;
+            z-index: 99999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
         }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid var(--theme-lightest);
-            border-top-color: var(--theme-dark);
+        #page-loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .creative-loader {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+        }
+        .creative-loader div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: creative-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .creative-loader div:nth-child(1) {
+            border-top-color: var(--theme-base);
+            animation-delay: -0.45s;
+        }
+        .creative-loader div:nth-child(2) {
+            border-top-color: var(--theme-medium);
+            animation-delay: -0.3s;
+        }
+        .creative-loader div:nth-child(3) {
+            border-top-color: var(--theme-light);
+            animation-delay: -0.15s;
+        }
+        @keyframes creative-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #top-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--theme-light) 0%, var(--theme-base) 50%, var(--theme-darkest) 100%);
+            /* background: linear-gradient(90deg, var(--theme-dark) 0%, var(--theme-base) 50%, var(--theme-light) 100%); */
+            box-shadow: 0 0 8px var(--theme-base), 0 0 12px var(--theme-light);
+            z-index: 100000;
+            width: 50%;
+            opacity: 1;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            pointer-events: none;
+        }
 
         /* ── Theme Pills ── */
         .theme-pills-wrap { display: flex; gap: 6px; align-items: center; }
@@ -262,12 +310,17 @@
 <body class="theme-lightest">
     <div id="main-body" style="display: flex; flex-direction: column; min-height: 100vh;">
     <div id="page-loader">
-        <div class="spinner"></div>
-        <p class="text-color-darkest">Loading…</p>
+        <div class="creative-loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <p class="text-color-lightest font-semibold tracking-wider text-sm">Loading Articlio...</p>
     </div>
 
     <!-- ═══════════════ NAVBAR ═══════════════ -->
     <nav class="fixed top-0 w-full" id="main-nav">
+        <div id="top-progress-bar"></div>
 
         <!-- ── TOP BAR ── -->
         <div class="theme-darkest nav-top" style="position: relative; z-index: 50;">
@@ -595,13 +648,52 @@
         }
 
         // Page loader
+        // Loader controls
+        function showProgressBar() {
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "1";
+                progressBar.style.width = "30%";
+                let width = 30;
+                const interval = setInterval(() => {
+                    if (width < 90) {
+                        width += 5;
+                        progressBar.style.width = width + "%";
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 200);
+            }
+        }
+
+        function showLoader() {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.remove("fade-out");
+            }
+            showProgressBar();
+        }
+
         window.addEventListener("load", () => {
             const loader = document.getElementById("page-loader");
-            if (loader) loader.remove();
+            if (loader) {
+                loader.classList.add("fade-out");
+            }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.width = "100%";
+                setTimeout(() => {
+                    progressBar.style.opacity = "0";
+                    setTimeout(() => {
+                        progressBar.style.width = "0%";
+                    }, 300);
+                }, 300);
+            }
         });
 
         // Smart go back
         function goBackOrHome() {
+            showLoader();
             if (document.referrer && document.referrer.includes(window.location.host)) {
                 window.history.back();
             } else {
@@ -616,12 +708,35 @@
             });
         });
         
-        // Reset search loader on bfcache restore
+        // Reset search loader and continue reading buttons on bfcache restore
         window.addEventListener('pageshow', function(e) {
-            if (e.persisted) {
-                document.querySelectorAll('.animate-spin').forEach(loader => loader.classList.add('hidden'));
-                document.querySelectorAll('svg#search-icon').forEach(icon => icon.classList.remove('hidden'));
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+                loader.classList.add("fade-out");
             }
+            const progressBar = document.getElementById("top-progress-bar");
+            if (progressBar) {
+                progressBar.style.opacity = "0";
+                progressBar.style.width = "0%";
+            }
+
+            document.querySelectorAll('.animate-spin').forEach(loader => {
+                if (loader.id !== 'page-loader' && !loader.closest('.creative-loader')) {
+                    loader.classList.add('hidden');
+                }
+            });
+            document.querySelectorAll('svg#search-icon').forEach(icon => icon.classList.remove('hidden'));
+            
+            // Restore continue reading buttons
+            document.querySelectorAll('.loading-continue-btn').forEach(a => {
+                a.style.width = '';
+                a.style.pointerEvents = '';
+                a.innerHTML = 'Continue reading';
+                a.classList.remove('loading-continue-btn');
+            });
+
+            // Restore related blog card overlays
+            document.querySelectorAll('.related-card-overlay').forEach(overlay => overlay.remove());
         });
 
         // Search loading
@@ -747,6 +862,94 @@
         if (hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
         if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
         if (mobileOverlay) mobileOverlay.addEventListener('click', closeDrawer);
+
+        // Spinner and search redirection event delegation
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            // 1. "Continue reading" or blog title clicks: show spinner in the button
+            const card = link.closest('.bg-white.rounded-xl');
+            if (card) {
+                const isTitle = link.closest('h3');
+                const isContinueReading = link.textContent.trim().toLowerCase().includes('continue reading');
+                if (isTitle || isContinueReading) {
+                    const continueReadingBtn = Array.from(card.querySelectorAll('a')).find(a => 
+                        a.textContent.trim().toLowerCase().includes('continue reading')
+                    );
+                    if (continueReadingBtn && !continueReadingBtn.classList.contains('loading-continue-btn')) {
+                        const btnWidth = continueReadingBtn.offsetWidth;
+                        continueReadingBtn.style.width = btnWidth + 'px';
+                        continueReadingBtn.classList.add('loading-continue-btn');
+                        continueReadingBtn.style.pointerEvents = 'none';
+                        continueReadingBtn.innerHTML = `
+                            <span class="flex items-center justify-center w-full h-full">
+                                <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                </svg>
+                            </span>
+                        `;
+                    }
+                }
+            }
+
+            // 2. Author or category links: fill query and show header search spinner
+            const href = link.getAttribute('href');
+            if (href && (href.startsWith('/search?query=') || href.startsWith('/search/?query='))) {
+                try {
+                    const url = new URL(link.href, window.location.origin);
+                    const queryVal = url.searchParams.get('query');
+                    if (queryVal) {
+                        const queryInput = document.getElementById('query');
+                        if (queryInput) {
+                            queryInput.value = queryVal;
+                        }
+                        const searchIcon = document.getElementById('search-icon');
+                        const searchLoader = document.getElementById('search-loader');
+                        if (searchIcon && searchLoader) {
+                            searchIcon.classList.add('hidden');
+                            searchLoader.classList.remove('hidden');
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            // 3. General links: show page loading animation
+            const target = link.getAttribute('target');
+            if (href && target !== '_blank' && !href.startsWith('#') && !href.startsWith('javascript:') && !link.hasAttribute('download')) {
+                // Ignore purely client-side actions
+                if (!link.closest('.close-msg') && !link.closest('.theme-pill') && !link.closest('.mark-read-btn') && !link.closest('#clearHistoryModal') && !link.closest('.saveSVG') && !link.classList.contains('close-msg')) {
+                    const lowercaseHref = href.toLowerCase();
+                    if (lowercaseHref.includes('/login') || lowercaseHref.includes('/signup') || lowercaseHref.includes('/complete-profile') || lowercaseHref.includes('/resetpass') || lowercaseHref.includes('/verification')) {
+                        showLoader();
+                    } else {
+                        showProgressBar();
+                    }
+                }
+            }
+        });
+
+        // Form submit loading overlay
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (!form.hasAttribute('data-ajax') && !form.classList.contains('ajax-form')) {
+                showLoader();
+            }
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(function(err) {
+                    console.error('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     </script>
     {% block js %}{% endblock js %}
     </div>

@@ -172,3 +172,38 @@
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* Hide browser-native password reveal/clear icons */
+input::-ms-reveal,
+input::-ms-clear,
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* OTP Boxes styling */
+.otp-box {
+  width: 3rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: 2px solid var(--theme-light);
+  background-color: var(--theme-dark);
+  color: var(--theme-lightest);
+  transition: all 0.2s ease;
+}
+
+.otp-box:focus {
+  border-color: var(--theme-lightest) !important;
+  box-shadow: 0 0 0 3px hsla(from var(--theme-base) h s l / 0.25) !important;
+  outline: none;
+}
+
+@media (min-width: 640px) {
+  .otp-box {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
