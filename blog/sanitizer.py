@@ -28,7 +28,12 @@ ALLOWED_STYLES = [
     'font-style',
     'text-decoration',
     'border',
+    'border-left',
+    'border-bottom',
+    'border-radius',
     'margin',
+    'margin-top',
+    'margin-bottom',
     'padding',
     'width',
     'height'
