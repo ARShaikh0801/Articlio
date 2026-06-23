@@ -26,23 +26,30 @@
     .like-box {
         transform: translateY(-1px);
     }
+    .ql-editor {
+        font-size: var(--ql-font-size, 16px) !important;
+        transition: font-size 0.2s ease-in-out;
+    }
+
     .ql-editor h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 1rem 0;
-}
+        font-size: 2.25em;
+        font-weight: 700;
+    }
 
-.ql-editor h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0.75rem 0;
-}
+    .ql-editor h2 {
+        font-size: 1.75em;
+        font-weight: 600;
+    }
 
-.ql-editor h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0.5rem 0;
-}
+    .ql-editor h3 {
+        font-size: 1.35em;
+        font-weight: 600;
+    }
+
+    .font-control-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
 
 .related-card-overlay {
     position: absolute;
@@ -57,9 +64,380 @@
     z-index: 10;
     pointer-events: none;
 }
+
+    .reading-progress-container {
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: transparent;
+        z-index: 10000;
+        pointer-events: none;
+    }
+
+    #reading-progress-bar {
+        position: relative;
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(
+            90deg, 
+            var(--theme-light) 0%, 
+            var(--theme-base) 25%, 
+            #ffffff 50%, 
+            var(--theme-base) 75%, 
+            var(--theme-light) 100%
+        );
+        background-size: 200% 100%;
+        box-shadow: 
+            0 0 10px var(--theme-base),
+            0 0 20px var(--theme-light),
+            0 0 30px var(--theme-base);
+        animation: glitter-flow 2s linear infinite;
+        transition: width 0.1s ease-out;
+    }
+
+    #reading-progress-bar::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: -4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 
+            0 0 10px #ffffff,
+            0 0 20px var(--theme-base),
+            0 0 30px var(--theme-light);
+        animation: spark-pulse 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glitter-flow {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
+    @keyframes spark-pulse {
+        0% { transform: scale(0.8); opacity: 0.8; }
+        100% { transform: scale(1.4); opacity: 1; }
+    }
+
+    /* Focus Mode Styles */
+    .focus-mode-active #main-nav,
+    .focus-mode-active footer,
+    .focus-mode-active #fab-btn,
+    .focus-mode-active .ad-sidebar,
+    .focus-mode-active #interested-posts-hr,
+    .focus-mode-active #interested-posts-heading,
+    .focus-mode-active #interested-posts-container,
+    .focus-mode-active #comments-section,
+    .focus-mode-active form[action="/blog/postComment"],
+    .focus-mode-active .comments-login-prompt,
+    .focus-mode-active #comments-container,
+    .focus-mode-active #read-more-container,
+    .focus-mode-active .go-back-btn,
+    .focus-mode-active .saveSVG,
+    .focus-mode-active hr {
+        display: none !important;
+    }
+
+    /* Adjust margins/paddings when in focus mode */
+    .focus-mode-active main {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    .focus-mode-active .max-w-5xl {
+        max-width: 48rem !important; /* 768px - optimal reading width */
+    }
+
+    /* Floating Exit Button for Focus Mode */
+    #focus-mode-exit-float {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+        backdrop-filter: blur(20px) saturate(1.8);
+        -webkit-backdrop-filter: blur(20px) saturate(1.8);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            0 0 0 1px rgba(255,255,255,0.18) inset,
+            0 1px 0 rgba(255,255,255,0.25) inset;
+        color: var(--theme-darkest);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #focus-mode-exit-float:hover {
+        transform: translateY(-3px);
+        box-shadow:
+            0 16px 48px rgba(0, 0, 0, 0.18),
+            0 0 0 1px rgba(255,255,255,0.25) inset,
+            0 0 24px -4px var(--theme-base);
+    }
+    #focus-mode-exit-float:active {
+        transform: translateY(-1px);
+    }
+    .focus-mode-active #focus-mode-exit-float {
+        display: flex !important;
+    }
+    .dark #focus-mode-exit-float {
+        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+        color: var(--text-main);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255,255,255,0.08) inset,
+            0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+    .dark #focus-mode-exit-float:hover {
+        box-shadow:
+            0 16px 48px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255,255,255,0.12) inset,
+            0 0 30px -4px hsl(from var(--theme-base) h s 50% / 0.4);
+    }
+
+    /* ── Focus Mode Toggle Button (premium) ── */
+    #focus-mode-toggle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, var(--theme-base) 0%, var(--theme-dark) 100%);
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow:
+            0 4px 15px -3px rgba(0,0,0,0.2),
+            0 0 0 1px rgba(255,255,255,0.15) inset;
+    }
+    #focus-mode-toggle::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    #focus-mode-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 25px -3px rgba(0,0,0,0.25),
+            0 0 0 1px rgba(255,255,255,0.2) inset,
+            0 0 20px -4px var(--theme-base);
+    }
+    #focus-mode-toggle:hover::before {
+        opacity: 1;
+    }
+    #focus-mode-toggle:active {
+        transform: translateY(0);
+    }
+    .dark #focus-mode-toggle {
+        background: linear-gradient(135deg, var(--theme-base) 0%, hsl(from var(--theme-base) h calc(s * 0.8) 30%) 100%);
+        box-shadow:
+            0 4px 15px -3px rgba(0,0,0,0.4),
+            0 0 0 1px rgba(255,255,255,0.08) inset;
+    }
+    .dark #focus-mode-toggle:hover {
+        box-shadow:
+            0 8px 25px -3px rgba(0,0,0,0.5),
+            0 0 0 1px rgba(255,255,255,0.12) inset,
+            0 0 25px -4px hsl(from var(--theme-base) h s 50% / 0.5);
+    }
+
+    /* Smooth content width transition */
+    .max-w-5xl {
+        transition: max-width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Light mode warm reading surface is now in input.css */
+
+    /* ── Focus Transition Overlay (cinematic curtain) ── */
+    #focus-transition-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-body);
+        z-index: 100000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #focus-transition-overlay.active {
+        opacity: 1;
+    }
+    .dark #focus-transition-overlay {
+        background: var(--bg-body) !important;
+    }
+
+    /* ── Focus Reading Progress Bar ── */
+    #focus-progress-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: transparent;
+        z-index: 10001;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease 0.4s;
+    }
+    .focus-mode-active #focus-progress-container {
+        opacity: 1;
+    }
+    #focus-progress-bar {
+        position: relative;
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            var(--theme-light) 0%,
+            var(--theme-base) 25%,
+            #ffffff 50%,
+            var(--theme-base) 75%,
+            var(--theme-light) 100%
+        );
+        background-size: 200% 100%;
+        box-shadow: 0 0 10px var(--theme-base), 0 0 20px var(--theme-light);
+        animation: glitter-flow 2s linear infinite;
+        transition: width 0.15s ease-out;
+    }
+    #focus-progress-bar::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: -3px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 0 8px #ffffff, 0 0 16px var(--theme-base);
+        animation: spark-pulse 1.2s ease-in-out infinite alternate;
+    }
+    .dark #focus-progress-bar {
+        background: linear-gradient(90deg, var(--theme-base) 0%, hsl(from var(--theme-base) h s 65%) 50%, var(--theme-base) 100%) !important;
+        background-size: 200% 100% !important;
+        box-shadow: 0 0 8px var(--theme-base), 0 0 16px hsl(from var(--theme-base) h s 50% / 0.5), 0 0 32px hsl(from var(--theme-base) h s 50% / 0.2) !important;
+    }
+
+    /* ── Time Remaining Indicator ── */
+    #focus-time-remaining {
+        position: fixed;
+        bottom: 2rem;
+        right: 11.5rem;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 20px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+        backdrop-filter: blur(20px) saturate(1.8);
+        -webkit-backdrop-filter: blur(20px) saturate(1.8);
+        color: var(--theme-darkest);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            0 0 0 1px rgba(255,255,255,0.18) inset,
+            0 1px 0 rgba(255,255,255,0.25) inset;
+        border: none;
+        user-select: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .focus-mode-active #focus-time-remaining {
+        display: flex !important;
+    }
+    .dark #focus-time-remaining {
+        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%) !important;
+        color: var(--text-main) !important;
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255,255,255,0.08) inset,
+            0 1px 0 rgba(255,255,255,0.1) inset !important;
+        border: none !important;
+    }
+    @media (max-width: 640px) {
+        #focus-mode-exit-float {
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 10px 18px;
+            font-size: 0.78rem;
+            gap: 6px;
+        }
+        #focus-mode-exit-float svg {
+            width: 14px;
+            height: 14px;
+        }
+        #focus-time-remaining {
+            bottom: 4.8rem;
+            right: 1.5rem;
+            padding: 10px 18px;
+            font-size: 0.78rem;
+            gap: 6px;
+        }
+        #focus-time-remaining svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+    @media (max-width: 576px) {
+        #focus-mode-toggle {
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        #focus-mode-toggle span {
+            display: none;
+        }
+        #focus-mode-toggle svg {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+        .font-size-control span {
+            display: none !important;
+        }
+        .font-size-control {
+            gap: 4px;
+            padding: 2px;
+        }
+        .font-control-btn {
+            width: 30px !important;
+            height: 30px !important;
+        }
+        #font-reset {
+            width: auto !important;
+            min-width: 44px !important;
+            padding: 0 6px !important;
+        }
+    }
 </style>
 {% endblock css %}
 {% block body %}
+<div class="reading-progress-container">
+    <div id="reading-progress-bar"></div>
+</div>
 
 <div class="max-w-5xl mx-auto px-4 py-10" >
     <div class="flex justify-between items-start w-full">
@@ -93,6 +471,7 @@
             {{ post.author }}
         </a>
         <span id="post-views-container"><span class="skeleton inline-block align-middle rounded ml-1" style="width: 4rem; height: 1rem;"></span></span>
+        <span style="white-space: nowrap;">· <span style="display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>{{ post.reading_time }} min</span></span>
     </p>
 
     <script nonce="{{ request.csp_nonce }}" type="application/ld+json">
@@ -107,17 +486,45 @@
       "description": "{{ post.content|striptags|truncatechars:160|escapejs }}",
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/user.webp' %}"
     }
-    </script>    <div id="like-skeleton-wrapper" class="flex items-center gap-2 mb-4">
-        <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
-        <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
-    </div>
+    </script>    <div class="flex justify-between items-center mb-4 w-full flex-wrap gap-3">
+        <div class="flex items-center">
+            <div id="like-skeleton-wrapper" class="flex items-center gap-2">
+                <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
+                <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
+            </div>
 
-    <div id="like-interactive-wrapper" class="flex items-center gap-2 mb-4" style="height: 2.5rem; display: none;">
-        <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
-        </button>
+            <div id="like-interactive-wrapper" class="flex items-center gap-2" style="height: 2.5rem; display: none;">
+                <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
+                </button>
 
-        <div class="like-box items-center align-middle h-full flex" id="like-container">
-            <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+                <div class="like-box items-center align-middle h-full flex" id="like-container">
+                    <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button id="focus-mode-toggle" title="Toggle Focus Mode (press F)" aria-label="Toggle Focus Mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
+                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                </svg>
+                <span>Focus Mode</span>
+            </button>
+
+            <div class="reading-theme-selector" id="reading-theme-selector" aria-label="Reading Theme">
+                <span class="reading-theme-selector-label">Theme</span>
+                <button class="reading-theme-dot reading-theme-dot--light active" data-theme="light" title="Light" aria-label="Light reading theme"></button>
+                <button class="reading-theme-dot reading-theme-dot--sepia" data-theme="sepia" title="Sepia" aria-label="Sepia reading theme"></button>
+                <button class="reading-theme-dot reading-theme-dot--dark" data-theme="dark" title="Dark" aria-label="Dark reading theme"></button>
+            </div>
+
+            <div class="font-size-control flex items-center gap-2 p-1 rounded-lg border">
+                <span class="text-xs font-semibold px-2 text-color-dark" style="user-select: none;">Font Size</span>
+                <button id="font-dec" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
+                <button id="font-reset" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
+                <button id="font-inc" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
+            </div>
         </div>
     </div>
 
@@ -163,7 +570,7 @@
         </button>
     </form>
     {% else %}
-        <p class="text-color-dark font-medium mb-6">
+        <p class="text-color-dark font-medium mb-6 comments-login-prompt">
             Please log in to post a comment.
         </p>
     {% endif %}
@@ -181,6 +588,30 @@
         </button>
     </div>
     <button class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-50"  type="button" id="toTopBtn" style="bottom: 80px;">^</button>
+    <button id="focus-mode-exit-float" type="button" title="Exit Focus Mode (Esc)" aria-label="Exit Focus Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>Exit Focus</span>
+    </button>
+
+    <!-- Focus Mode: Transition Overlay -->
+    <div id="focus-transition-overlay"></div>
+
+    <!-- Focus Mode: Standalone Reading Progress Bar -->
+    <div id="focus-progress-container">
+        <div id="focus-progress-bar"></div>
+    </div>
+
+    <!-- Focus Mode: Time Remaining Indicator -->
+    <div id="focus-time-remaining" data-total-time="{{ post.reading_time }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+        </svg>
+        <span id="focus-time-text">~{{ post.reading_time }} min left</span>
+    </div>
 
     
     
@@ -192,7 +623,7 @@
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
 </div>
-<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="right: 20px ;width: max-content; height: 350px; text-align: center;">
+<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="right: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
@@ -433,7 +864,7 @@
                                 <a href="/blog/${encodeURIComponent(p.slug)}" class="bg-white rounded-xl hover:shadow-lg transition relative fade-in block h-full group" style="border-left: 4px solid var(--theme-base);">
                                     <div class="p-5 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
                                         <div class="text-xs font-medium mb-1" style="color: var(--theme-base);">
-                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes
+                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes <span style="white-space: nowrap;">· <span style='display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;'><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${p.reading_time} min</span></span>
                                         </div>
                                         <h3 class="text-lg font-semibold mb-1 text-color-darkest group-hover:text-[var(--theme-base)] transition">${escapeHtml(p.title)}</h3>
                                         <p class="text-sm mb-2" style="color: #6b7280; font-weight: 500;">Category: ${escapeHtml(p.category)}</p>
@@ -544,9 +975,87 @@
                 }
             }
 
+            // ── Reading Progress Bar ──
+            const progressContainer = document.querySelector('.reading-progress-container');
+            const mainNav = document.getElementById('main-nav');
+            if (mainNav && progressContainer) {
+                mainNav.appendChild(progressContainer);
+            }
+
+            const readingProgressBar = document.getElementById('reading-progress-bar');
+            function updateReadingProgressBar() {
+                if (!contentEl || !readingProgressBar) return;
+                const rect = contentEl.getBoundingClientRect();
+                const contentHeight = contentEl.offsetHeight;
+                
+                const elementTop = rect.top;
+                const elementBottom = rect.bottom;
+                const viewportHeight = window.innerHeight;
+                
+                const startY = 100; // Top boundary (navbar offset)
+                const endY = viewportHeight; // Bottom boundary
+                
+                let progress = 0;
+                if (elementTop > startY) {
+                    progress = 0;
+                } else if (elementBottom < endY) {
+                    progress = 100;
+                } else {
+                    const totalRange = (contentHeight + startY) - endY;
+                    const currentScrolled = startY - elementTop;
+                    progress = (currentScrolled / totalRange) * 100;
+                }
+                
+                readingProgressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+            }
+
+            // ── Focus Mode Reading Indicators ──
+            const focusProgressBar = document.getElementById('focus-progress-bar');
+            const focusTimeText = document.getElementById('focus-time-text');
+            const totalReadingTime = parseInt(document.getElementById('focus-time-remaining')?.dataset.totalTime) || 3;
+
+            window.updateFocusReadingIndicators = function() {
+                if (!contentEl) return;
+                const rect = contentEl.getBoundingClientRect();
+                const contentHeight = contentEl.offsetHeight;
+                const viewportHeight = window.innerHeight;
+                let progress = 0;
+                if (rect.top > 0) {
+                    progress = 0;
+                } else if (rect.bottom < viewportHeight) {
+                    progress = 100;
+                } else {
+                    const totalRange = contentHeight - viewportHeight;
+                    if (totalRange > 0) {
+                        progress = (-rect.top / totalRange) * 100;
+                    }
+                }
+                progress = Math.min(100, Math.max(0, progress));
+                if (focusProgressBar) {
+                    focusProgressBar.style.width = progress + '%';
+                }
+                if (focusTimeText) {
+                    const remaining = Math.max(0, Math.ceil(totalReadingTime * (1 - progress / 100)));
+                    if (progress >= 98) {
+                        focusTimeText.textContent = 'Finished!';
+                    } else if (remaining < 1) {
+                        focusTimeText.textContent = '< 1 min left';
+                    } else {
+                        focusTimeText.textContent = '~' + remaining + ' min left';
+                    }
+                }
+            };
+
             window.addEventListener('scroll', () => {
+                updateReadingProgressBar();
+                window.updateFocusReadingIndicators();
                 clearTimeout(scrollTrackTimer);
                 scrollTrackTimer = setTimeout(syncScrollProgress, 2000);
+            });
+
+            window.addEventListener('resize', () => {
+                updateReadingProgressBar();
+                window.updateFocusReadingIndicators();
             });
 
             // Also sync on page unload to capture final position
@@ -554,8 +1063,10 @@
                 syncScrollProgress();
             });
 
-            // Sync once on load to record the visit
+            // Sync once on load to record the visit and init progress bar
             syncScrollProgress();
+            updateReadingProgressBar();
+            window.updateFocusReadingIndicators();
 
 
             // 2. Shared comment renderer
@@ -907,6 +1418,237 @@
         document.getElementById("like-btn-{{ post.sno }}").classList.remove("bg-gray-400","hover:bg-gray-700","cursor-not-allowed","text-white");
         document.getElementById("like-btn-{{ post.sno }}").classList.add("theme-medium","theme-medium-btn","text-color-lightest");
     }
+
+    // ── Font Size Control Logic ──
+    (function() {
+        const qlEditor = document.querySelector('.ql-editor');
+        const fontDecBtn = document.getElementById('font-dec');
+        const fontIncBtn = document.getElementById('font-inc');
+        const fontResetBtn = document.getElementById('font-reset');
+
+        const minSize = 12; // px
+        const maxSize = 24; // px
+        const defaultSize = 16; // px
+        const step = 2; // px
+
+        let currentFontSize = defaultSize;
+
+        try {
+            const savedSize = localStorage.getItem('articlio_font_size');
+            if (savedSize) {
+                const parsed = parseInt(savedSize, 10);
+                if (!isNaN(parsed) && parsed >= minSize && parsed <= maxSize) {
+                    currentFontSize = parsed;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to load font size from localStorage', e);
+        }
+
+        function updateFontSize(size) {
+            currentFontSize = size;
+            if (qlEditor) {
+                qlEditor.style.setProperty('--ql-font-size', `${currentFontSize}px`);
+            }
+
+            if (fontDecBtn) fontDecBtn.disabled = (currentFontSize <= minSize);
+            if (fontIncBtn) fontIncBtn.disabled = (currentFontSize >= maxSize);
+            if (fontResetBtn) {
+                const percentage = Math.round((currentFontSize / defaultSize) * 100);
+                fontResetBtn.innerText = `${percentage}%`;
+            }
+
+            try {
+                localStorage.setItem('articlio_font_size', currentFontSize.toString());
+            } catch (e) {}
+        }
+
+        if (fontDecBtn) {
+            fontDecBtn.addEventListener('click', () => {
+                if (currentFontSize > minSize) {
+                    updateFontSize(currentFontSize - step);
+                }
+            });
+        }
+
+        if (fontIncBtn) {
+            fontIncBtn.addEventListener('click', () => {
+                if (currentFontSize < maxSize) {
+                    updateFontSize(currentFontSize + step);
+                }
+            });
+        }
+
+        if (fontResetBtn) {
+            fontResetBtn.addEventListener('click', () => {
+                updateFontSize(defaultSize);
+            });
+        }
+
+        // Initialize
+        updateFontSize(currentFontSize);
+    })();
+
+    // ── Focus Mode Logic ──
+    (function() {
+        const toggleBtn = document.getElementById('focus-mode-toggle');
+        const floatExitBtn = document.getElementById('focus-mode-exit-float');
+        const transitionOverlay = document.getElementById('focus-transition-overlay');
+
+        // ── Reading Theme Selector Logic ──
+        const READING_THEME_KEY = 'articlio_reading_theme';
+        let currentReadingTheme = 'light'; // 'light' | 'sepia' | 'dark'
+        // Track the dark mode state the user had BEFORE entering focus mode
+        let darkModeBeforeFocus = document.documentElement.classList.contains('dark');
+
+        function applyReadingTheme(theme, saveToStorage) {
+            if (saveToStorage === undefined) saveToStorage = true;
+            currentReadingTheme = theme;
+            const html = document.documentElement;
+
+            // Remove sepia class
+            html.classList.remove('reading-theme-sepia');
+
+            if (theme === 'sepia') {
+                // Sepia: remove dark mode, add sepia class
+                html.classList.remove('dark');
+                html.classList.add('reading-theme-sepia');
+            } else if (theme === 'dark') {
+                // Dark: add dark mode
+                html.classList.add('dark');
+            } else {
+                // Light: remove dark mode
+                html.classList.remove('dark');
+            }
+
+            // Update active state on dots
+            document.querySelectorAll('.reading-theme-dot').forEach(function(dot) {
+                dot.classList.toggle('active', dot.dataset.theme === theme);
+            });
+
+            if (saveToStorage) {
+                try {
+                    localStorage.setItem(READING_THEME_KEY, theme);
+                } catch (e) {}
+            }
+        }
+
+        // Bind reading theme dot clicks
+        document.querySelectorAll('.reading-theme-dot').forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                applyReadingTheme(this.dataset.theme);
+            });
+        });
+
+        function setFocusMode(active, animate) {
+            if (animate === undefined) animate = true;
+            function doApply() {
+                if (active) {
+                    // Save the user's dark mode state before focus mode takes over
+                    darkModeBeforeFocus = document.documentElement.classList.contains('dark');
+                    document.documentElement.classList.add('focus-mode-active');
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                            </svg>
+                            <span>Exit Focus</span>
+                        `;
+                    }
+                    // Apply the saved reading theme
+                    try {
+                        var savedTheme = localStorage.getItem(READING_THEME_KEY);
+                        if (savedTheme && ['light', 'sepia', 'dark'].indexOf(savedTheme) !== -1) {
+                            applyReadingTheme(savedTheme, false);
+                        } else {
+                            // Auto-detect: if user was in dark mode, default to dark reading theme
+                            var detectedTheme = darkModeBeforeFocus ? 'dark' : 'light';
+                            applyReadingTheme(detectedTheme, false);
+                        }
+                    } catch (e) {
+                        var detectedTheme = darkModeBeforeFocus ? 'dark' : 'light';
+                        applyReadingTheme(detectedTheme, false);
+                    }
+                } else {
+                    document.documentElement.classList.remove('focus-mode-active');
+                    document.documentElement.classList.remove('reading-theme-sepia');
+                    // Restore the dark mode state the user had before focus mode
+                    if (darkModeBeforeFocus) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                            </svg>
+                            <span>Focus Mode</span>
+                        `;
+                    }
+                }
+                try {
+                    localStorage.setItem('articlio_focus_mode', active ? 'true' : 'false');
+                } catch (e) {}
+                if (typeof window.updateFocusReadingIndicators === 'function') {
+                    setTimeout(window.updateFocusReadingIndicators, 100);
+                }
+            }
+
+            if (animate && transitionOverlay) {
+                transitionOverlay.classList.add('active');
+                setTimeout(function() {
+                    doApply();
+                    setTimeout(function() {
+                        transitionOverlay.classList.remove('active');
+                    }, 50);
+                }, 350);
+            } else {
+                doApply();
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const isActive = document.documentElement.classList.contains('focus-mode-active');
+                setFocusMode(!isActive);
+            });
+        }
+
+        if (floatExitBtn) {
+            floatExitBtn.addEventListener('click', () => {
+                setFocusMode(false);
+            });
+        }
+
+        // Keyboard shortcuts: Escape to exit, F to toggle
+        document.addEventListener('keydown', function(e) {
+            var tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+            if (document.activeElement && document.activeElement.isContentEditable) return;
+
+            if (e.key === 'Escape' && document.documentElement.classList.contains('focus-mode-active')) {
+                e.preventDefault();
+                setFocusMode(false);
+            }
+
+            if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                var isActive = document.documentElement.classList.contains('focus-mode-active');
+                setFocusMode(!isActive);
+            }
+        });
+
+        // Initialize from localStorage (no animation on page load)
+        try {
+            const savedFocus = localStorage.getItem('articlio_focus_mode');
+            if (savedFocus === 'true') {
+                setFocusMode(true, false);
+            }
+        } catch (e) {}
+    })();
 </script>
 {% endblock js %}
 

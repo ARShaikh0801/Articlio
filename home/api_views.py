@@ -15,6 +15,7 @@ def _serialize_post(post, bookmarked_ids=None):
         'category': post.category,
         'views': post.views,
         'likes': post.likes,
+        'reading_time': post.reading_time,
         'timestamp': post.timestamp.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.timestamp else '',
         'bookmarked': post.sno in bookmarked_ids if bookmarked_ids else False,
     }

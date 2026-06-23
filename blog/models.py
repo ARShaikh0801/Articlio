@@ -1,7 +1,9 @@
+import re
 from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils.timezone import now
+from django.utils.html import strip_tags
 
 class Post(models.Model):
     """
@@ -20,6 +22,15 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     likes=models.IntegerField(default=0,editable=False)
     draft=models.BooleanField(default=False)
+
+    @property
+    def reading_time(self):
+        """Estimated reading time in minutes (based on ~200 words per minute)."""
+        text = strip_tags(self.content or '')
+        text = re.sub(r'\s+', ' ', text).strip()
+        word_count = len(text.split())
+        minutes = max(1, round(word_count / 200))
+        return minutes
 
     def __str__(self):
         return self.title + ' ' + self.author

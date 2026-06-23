@@ -135,4 +135,45 @@ document.addEventListener('DOMContentLoaded', () => {
     renderThemePills('theme-pills');
     renderThemePills('theme-pills-mobile');
     setActivePill(saved);
+
+    // Initialize creative dark mode toggler
+    initDarkModeToggle();
 });
+
+/** Dark mode toggle logic */
+function initDarkModeToggle() {
+    const desktopBtn = document.getElementById('dark-mode-toggle-desktop');
+    const mobileBtn = document.getElementById('dark-mode-toggle-mobile');
+
+    function updateToggleButtonsState(isDark) {
+        [desktopBtn, mobileBtn].forEach(btn => {
+            if (!btn) return;
+            btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+            btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        });
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('articlio_dark_mode', isDark ? 'true' : 'false');
+        updateToggleButtonsState(isDark);
+        
+        if (typeof window.applyDarkModeTextColors === 'function') {
+            if (isDark) {
+                window.applyDarkModeTextColors('.ql-editor');
+            } else {
+                window.restoreDarkModeTextColors('.ql-editor');
+            }
+        }
+    }
+
+    const currentIsDark = document.documentElement.classList.contains('dark');
+    updateToggleButtonsState(currentIsDark);
+    if (currentIsDark && typeof window.applyDarkModeTextColors === 'function') {
+        window.applyDarkModeTextColors('.ql-editor');
+    }
+
+    if (desktopBtn) desktopBtn.addEventListener('click', toggleDarkMode);
+    if (mobileBtn) mobileBtn.addEventListener('click', toggleDarkMode);
+}
+

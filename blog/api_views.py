@@ -43,6 +43,7 @@ def _serialize_post(post, bookmarked_ids=None):
         'category': post.category,
         'views': post.views,
         'likes': post.likes,
+        'reading_time': post.reading_time,
         'timestamp': post.timestamp.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.timestamp else '',
         'updated_at': post.updated_at.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.updated_at else '',
         'bookmarked': post.sno in bookmarked_ids if bookmarked_ids else False,
@@ -172,6 +173,7 @@ def api_post_state(request, slug):
             'summary': p.summary[:100] + '…' if len(p.summary) > 100 else p.summary,
             'likes': p.likes,
             'views': p.views,
+            'reading_time': p.reading_time,
             'timestamp': p.timestamp.strftime('%b. %d, %Y').replace(' 0', ' ') if p.timestamp else '',
         }
         for p in interested
@@ -182,6 +184,7 @@ def api_post_state(request, slug):
         'bookmarked': bookmarked,
         'likes': post.likes,
         'views': post.views,
+        'reading_time': post.reading_time,
         'scroll_progress': scroll_progress,
         'interestedPosts': interested_data,
     })
@@ -317,6 +320,7 @@ def api_my_blogs(request):
         if not b.draft:
             data['views'] = b.views
             data['likes'] = b.likes
+            data['reading_time'] = b.reading_time
         return data
 
     blogs_data = [serialize_blog(b) for b in page_obj]
