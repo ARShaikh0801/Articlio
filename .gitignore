@@ -39,3 +39,6 @@ yarn-error.log*
 blog/management/commands/seed_posts.py
 blog/management/commands/seed_articlio_post.py
 
+# Task review documents
+focus_mode_improvements.md
+
