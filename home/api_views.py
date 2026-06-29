@@ -74,7 +74,7 @@ def api_search(request):
 
     posts_data = [_serialize_post(p, bookmarked_ids) for p in page_obj]
 
-    message = 'No Search Result Found' if total_results == 0 else ''
+    message = 'We searched far and wide but could not find a match. Try searching with different keywords!' if total_results == 0 else ''
 
     return JsonResponse({
         'posts': posts_data,

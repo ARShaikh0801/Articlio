@@ -215,7 +215,7 @@ function attachCardListeners() {
                 const container = document.getElementById('history-container');
                 if (container && container.querySelectorAll('.history-card').length === 0) {
                     if (currentSort === 'recent' && historyCurrentPage === 1) {
-                        container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No reading history yet...</p>';
+                        container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No tracks left behind yet! Explore some great stories and they will show up right here.</p>';
                         const controls = document.getElementById('history-controls');
                         if (controls) controls.style.display = 'none';
                     } else {
@@ -270,7 +270,7 @@ function fetchHistory() {
 
                 if (!data.posts || data.posts.length === 0) {
                     if (currentSort === 'recent' && historyCurrentPage === 1) {
-                        container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No reading history yet...</p>';
+                        container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No tracks left behind yet! Explore some great stories and they will show up right here.</p>';
                         if (controls) controls.style.display = 'none';
                     } else {
                         container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No posts found for this filter.</p>';
@@ -296,7 +296,7 @@ function fetchHistory() {
     } else {
         let allEntries = getLocalHistory();
         if (allEntries.length === 0) {
-            container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No reading history yet...</p>';
+            container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No tracks left behind yet! Explore some great stories and they will show up right here.</p>';
             if (controls) controls.style.display = 'none';
             return;
         }
@@ -343,7 +343,7 @@ function fetchHistory() {
             container.innerHTML = '';
 
             if (!data.posts || data.posts.length === 0) {
-                container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No reading history yet...</p>';
+                container.innerHTML = '<p class="text-color-darkest col-span-2 text-center font-semibold">No tracks left behind yet! Explore some great stories and they will show up right here.</p>';
                 return;
             }
 

@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="mt-6 max-w-md mx-auto relative flex items-center">
-            <input type="text" id="search-input" placeholder="Search your blogs..." class="w-full px-4 py-2 rounded-lg all-border theme-base-faded input-box text-color-darkest focus:outline-none pr-10" style="border: 2px solid var(--theme-medium);">
+            <input type="text" id="search-input" placeholder="Search your creations..." class="w-full px-4 py-2 rounded-lg all-border theme-base-faded input-box text-color-darkest focus:outline-none pr-10" style="border: 2px solid var(--theme-medium);">
             <button id="clear-search" class="absolute right-4 top-1/2 -translate-y-1/2 text-color-dark hover:text-color-darkest hidden cursor-pointer flex items-center justify-center" title="Clear search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                   <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
@@ -188,7 +188,7 @@
         if (blogs.length === 0) {
             html = `
             <div class="theme-medium all-border rounded-lg p-6 text-color-lightest text-center" style="grid-column: 1 / -1;">
-                ${type === 'drafts' ? 'No drafts found.' : "No published blogs found."}
+                ${type === 'drafts' ? 'Got a story brewing? Click Post Blog whenever inspiration strikes!' : "The stage is all yours! You haven't published any stories yet, click Post Blog to share your work with the world."}
             </div>`;
         } else {
             blogs.forEach(blog => {
