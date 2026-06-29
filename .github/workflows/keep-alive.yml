@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Articlio health endpoint
-        run: curl -s -o /dev/null -w "Status: %{http_code}\n" https://articlio.onrender.com/health/
+        run: 'curl -s -o /dev/null -w "Status: %{http_code}\n" https://articlio.onrender.com/health/'
