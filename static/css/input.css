@@ -161,6 +161,7 @@ body {
 .font-size-control {
   background-color: var(--theme-lightest);
   border-color: var(--theme-medium) !important;
+  flex-shrink: 0;
 }
 
 
@@ -894,8 +895,8 @@ input::-webkit-credentials-auto-fill-button {
     color: #ffffff !important;
 }
 
-.reading-theme-sepia.focus-mode-active #focus-mode-toggle span,
-.reading-theme-sepia.focus-mode-active #focus-mode-exit-float span {
+.reading-theme-sepia.focus-mode-active button span,
+.reading-theme-sepia.focus-mode-active button span:not([style]) {
     color: inherit !important;
 }
 
@@ -957,6 +958,7 @@ input::-webkit-credentials-auto-fill-button {
     border: 2px solid var(--theme-medium);
     background-color: var(--theme-lightest);
     user-select: none;
+    flex-shrink: 0;
 }
 
 .reading-theme-selector-label {
@@ -1065,5 +1067,311 @@ input::-webkit-credentials-auto-fill-button {
     .reading-theme-dot {
         width: 20px;
         height: 20px;
+    }
+}
+
+/* ── Spacing Selector — Pill UI ── */
+.spacing-selector {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    border: 2px solid var(--theme-medium);
+    background-color: var(--theme-lightest);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.focus-mode-active .spacing-selector {
+    display: flex !important;
+}
+
+.spacing-selector-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--theme-darkest);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    padding: 0 4px 0 2px;
+}
+
+.spacing-btn,
+.width-btn {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--theme-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.spacing-btn:hover,
+.width-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.spacing-btn.active,
+.width-btn.active {
+    background-color: var(--theme-base);
+    color: #ffffff;
+}
+
+/* Dark mode spacing & width selector */
+.dark .spacing-selector,
+.dark .width-selector {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dark .spacing-selector-label,
+.dark .width-selector-label {
+    color: var(--text-main) !important;
+}
+
+.dark .spacing-btn,
+.dark .width-btn {
+    color: var(--text-muted);
+}
+
+.dark .spacing-btn:hover,
+.dark .width-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .spacing-btn.active,
+.dark .width-btn.active {
+    background-color: var(--theme-base) !important;
+    color: #ffffff !important;
+}
+
+/* Sepia reading theme spacing & width selector */
+.reading-theme-sepia.focus-mode-active .spacing-selector,
+.reading-theme-sepia.focus-mode-active .width-selector {
+    background-color: #f0e6cc !important;
+    border-color: #c4a96a !important;
+}
+
+.reading-theme-sepia.focus-mode-active .spacing-selector-label,
+.reading-theme-sepia.focus-mode-active .width-selector-label {
+    color: #5b4636 !important;
+}
+
+.reading-theme-sepia.focus-mode-active .spacing-btn,
+.reading-theme-sepia.focus-mode-active .width-btn {
+    color: #5b4636;
+}
+
+.reading-theme-sepia.focus-mode-active .spacing-btn:hover,
+.reading-theme-sepia.focus-mode-active .width-btn:hover {
+    background-color: rgba(139, 110, 65, 0.1);
+}
+
+.reading-theme-sepia.focus-mode-active .spacing-btn.active,
+.reading-theme-sepia.focus-mode-active .width-btn.active {
+    background-color: #a0784c !important;
+    color: #ffffff !important;
+}
+
+/* Mobile responsive for spacing & width selector */
+@media (max-width: 576px) {
+    .spacing-selector-label,
+    .width-selector-label {
+        display: none;
+    }
+}
+
+/* ── Reader Settings Trigger ── */
+#reader-settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 2px solid var(--theme-medium);
+    background-color: var(--theme-lightest);
+    color: var(--theme-darkest);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+#reader-settings-toggle:hover {
+    background-color: var(--theme-light);
+}
+
+.dark #reader-settings-toggle {
+    background-color: var(--bg-card);
+    border-color: var(--border-color) !important;
+    color: var(--text-main);
+}
+
+.dark #reader-settings-toggle:hover {
+    background-color: var(--bg-card-hover);
+}
+
+.reading-theme-sepia.focus-mode-active #reader-settings-toggle {
+    background-color: #f0e6cc;
+    border-color: #c4a96a !important;
+    color: #5b4636;
+}
+
+.reading-theme-sepia.focus-mode-active #reader-settings-toggle:hover {
+    background-color: #e5dac0;
+}
+
+/* ── Reader Settings Dropdown ── */
+.reader-settings-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 
+        0 10px 30px -10px rgba(0, 0, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reader-settings-dropdown.active {
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.dropdown-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dropdown-section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--theme-dark);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* Sub-selectors styling inside dropdown */
+.reader-settings-dropdown .reading-theme-selector,
+.reader-settings-dropdown .spacing-selector,
+.reader-settings-dropdown .width-selector {
+    display: flex !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: 100%;
+}
+
+.reader-settings-dropdown .spacing-selector,
+.reader-settings-dropdown .width-selector {
+    gap: 4px;
+}
+
+.reader-settings-dropdown .spacing-btn,
+.reader-settings-dropdown .width-btn {
+    flex: 1;
+    text-align: center;
+    border-radius: 6px;
+    padding: 6px 0;
+}
+
+.reader-settings-dropdown .font-size-control {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100%;
+    gap: 8px;
+}
+
+.reader-settings-dropdown .font-control-btn {
+    flex: 1;
+    border-radius: 6px;
+}
+
+/* Dark mode for dropdown */
+.dark .reader-settings-dropdown {
+    background: rgba(20, 24, 33, 0.9);
+    border-color: var(--border-color) !important;
+    box-shadow: 
+        0 20px 40px -15px rgba(0, 0, 0, 0.5),
+        0 0 0 1px var(--border-color);
+}
+
+.dark .dropdown-section-label {
+    color: var(--text-muted);
+}
+
+/* Sepia mode overrides for dropdown */
+.reading-theme-sepia.focus-mode-active .reader-settings-dropdown {
+    background: rgba(240, 230, 204, 0.95);
+    border-color: #c4a96a !important;
+    box-shadow: 0 10px 30px -10px rgba(139, 110, 65, 0.25);
+}
+
+.reading-theme-sepia.focus-mode-active .dropdown-section-label {
+    color: #6b5540;
+}
+
+.reading-theme-sepia.focus-mode-active .reader-settings-dropdown .spacing-btn,
+.reading-theme-sepia.focus-mode-active .reader-settings-dropdown .width-btn {
+    color: #5b4636;
+}
+
+.reading-theme-sepia.focus-mode-active .reader-settings-dropdown .spacing-btn.active,
+.reading-theme-sepia.focus-mode-active .reader-settings-dropdown .width-btn.active {
+    background-color: #a0784c !important;
+    color: #ffffff !important;
+}
+
+/* Focus mode overrides to ensure the inline controls don't show, but settings dropdown controls do */
+.focus-mode-active .reading-theme-selector {
+    display: none !important;
+}
+
+.focus-mode-active .reader-settings-dropdown .reading-theme-selector {
+    display: flex !important;
+}
+
+.focus-mode-active .spacing-selector,
+.focus-mode-active .width-selector {
+    display: none !important;
+}
+
+.focus-mode-active .reader-settings-dropdown .spacing-selector,
+.focus-mode-active .reader-settings-dropdown .width-selector {
+    display: flex !important;
+}
+
+.focus-mode-active .font-size-control {
+    display: none !important;
+}
+
+.focus-mode-active .reader-settings-dropdown .font-size-control {
+    display: flex !important;
+}
+
+@media (max-width: 768px) {
+    .width-dropdown-section {
+        display: none !important;
     }
 }

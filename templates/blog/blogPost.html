@@ -28,7 +28,8 @@
     }
     .ql-editor {
         font-size: var(--ql-font-size, 16px) !important;
-        transition: font-size 0.2s ease-in-out;
+        line-height: var(--ql-line-height, 1.75) !important;
+        transition: font-size 0.2s ease-in-out, line-height 0.2s ease-in-out;
     }
 
     .ql-editor h1 {
@@ -138,6 +139,7 @@
     .focus-mode-active #read-more-container,
     .focus-mode-active .go-back-btn,
     .focus-mode-active .saveSVG,
+    .focus-mode-active .font-size-control,
     .focus-mode-active hr {
         display: none !important;
     }
@@ -149,7 +151,7 @@
     }
 
     .focus-mode-active .max-w-5xl {
-        max-width: 48rem !important; /* 768px - optimal reading width */
+        max-width: var(--focus-content-width, 48rem) !important; /* 768px - optimal reading width */
     }
 
     /* Floating Exit Button for Focus Mode */
@@ -161,50 +163,101 @@
         display: none;
         align-items: center;
         gap: 8px;
-        padding: 12px 22px;
+        padding: 10px 20px;
         border-radius: 999px;
-        border: none;
-        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
-        backdrop-filter: blur(20px) saturate(1.8);
-        -webkit-backdrop-filter: blur(20px) saturate(1.8);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(16px) saturate(1.8);
+        -webkit-backdrop-filter: blur(16px) saturate(1.8);
         box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.12),
-            0 0 0 1px rgba(255,255,255,0.18) inset,
-            0 1px 0 rgba(255,255,255,0.25) inset;
+            0 10px 30px rgba(0, 0, 0, 0.08),
+            0 1px 0 rgba(255, 255, 255, 0.6) inset;
         color: var(--theme-darkest);
         font-size: 0.82rem;
         font-weight: 700;
         letter-spacing: 0.02em;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    background-color 0.2s ease,
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease;
     }
     #focus-mode-exit-float:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px) scale(1.02);
+        background: rgba(255, 255, 255, 0.75);
+        border-color: rgba(255, 255, 255, 0.65);
         box-shadow:
-            0 16px 48px rgba(0, 0, 0, 0.18),
-            0 0 0 1px rgba(255,255,255,0.25) inset,
-            0 0 24px -4px var(--theme-base);
+            0 14px 40px rgba(0, 0, 0, 0.12),
+            0 0 20px -2px var(--theme-base);
     }
     #focus-mode-exit-float:active {
-        transform: translateY(-1px);
+        transform: translateY(0) scale(0.98);
     }
     .focus-mode-active #focus-mode-exit-float {
         display: flex !important;
     }
+    .focus-mode-active #focus-mode-exit-float.is-idle {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(10px) scale(0.95) !important;
+    }
     .dark #focus-mode-exit-float {
-        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         color: var(--text-main);
         box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(255,255,255,0.08) inset,
-            0 1px 0 rgba(255,255,255,0.1) inset;
+            0 10px 30px rgba(0, 0, 0, 0.35),
+            0 1px 0 rgba(255, 255, 255, 0.1) inset;
     }
     .dark #focus-mode-exit-float:hover {
+        background: rgba(15, 23, 42, 0.85);
+        border-color: rgba(255, 255, 255, 0.25);
         box-shadow:
-            0 16px 48px rgba(0, 0, 0, 0.5),
-            0 0 0 1px rgba(255,255,255,0.12) inset,
-            0 0 30px -4px hsl(from var(--theme-base) h s 50% / 0.4);
+            0 14px 40px rgba(0, 0, 0, 0.5),
+            0 0 24px -2px hsl(from var(--theme-base) h s 50% / 0.4);
     }
+
+    /* Floating Tooltip */
+    #focus-mode-exit-float .focus-exit-tooltip {
+        position: absolute;
+        bottom: calc(100% + 10px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: rgba(15, 23, 42, 0.88);
+        color: #ffffff;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.73rem;
+        font-weight: 600;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.1) inset;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    #focus-mode-exit-float .focus-exit-tooltip kbd {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 0.68rem;
+        font-family: inherit;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    }
+    #focus-mode-exit-float:hover .focus-exit-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
 
     /* ── Focus Mode Toggle Button (premium) ── */
     #focus-mode-toggle {
@@ -226,6 +279,8 @@
         box-shadow:
             0 4px 15px -3px rgba(0,0,0,0.2),
             0 0 0 1px rgba(255,255,255,0.15) inset;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     #focus-mode-toggle::before {
         content: '';
@@ -512,18 +567,70 @@
                 <span>Focus Mode</span>
             </button>
 
-            <div class="reading-theme-selector" id="reading-theme-selector" aria-label="Reading Theme">
-                <span class="reading-theme-selector-label">Theme</span>
-                <button class="reading-theme-dot reading-theme-dot--light active" data-theme="light" title="Light" aria-label="Light reading theme"></button>
-                <button class="reading-theme-dot reading-theme-dot--sepia" data-theme="sepia" title="Sepia" aria-label="Sepia reading theme"></button>
-                <button class="reading-theme-dot reading-theme-dot--dark" data-theme="dark" title="Dark" aria-label="Dark reading theme"></button>
+            <div class="relative" id="settings-container">
+                <button id="reader-settings-toggle" class="font-semibold" title="Reader Settings" aria-label="Reader Settings" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
+                        <line x1="4" y1="21" x2="4" y2="14"/>
+                        <line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/>
+                        <line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/>
+                        <line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="17" y1="12" x2="23" y2="12"/>
+                    </svg>
+                    <span>Appearance</span>
+                </button>
+
+                <div class="reader-settings-dropdown" id="reader-settings-dropdown">
+                    <!-- Theme Selector -->
+                    <div class="dropdown-section">
+                        <span class="dropdown-section-label">Theme</span>
+                        <div class="reading-theme-selector" id="reading-theme-selector" aria-label="Reading Theme">
+                            <button class="reading-theme-dot reading-theme-dot--light active" data-theme="light" title="Light" aria-label="Light reading theme"></button>
+                            <button class="reading-theme-dot reading-theme-dot--sepia" data-theme="sepia" title="Sepia" aria-label="Sepia reading theme"></button>
+                            <button class="reading-theme-dot reading-theme-dot--dark" data-theme="dark" title="Dark" aria-label="Dark reading theme"></button>
+                        </div>
+                    </div>
+
+                    <!-- Spacing Selector -->
+                    <div class="dropdown-section">
+                        <span class="dropdown-section-label">Spacing</span>
+                        <div class="spacing-selector" id="spacing-selector" aria-label="Line Spacing">
+                            <button class="spacing-btn" data-spacing="compact" title="Compact" aria-label="Compact spacing">Compact</button>
+                            <button class="spacing-btn active" data-spacing="comfortable" title="Comfortable" aria-label="Comfortable spacing">Comfortable</button>
+                            <button class="spacing-btn" data-spacing="spacious" title="Spacious" aria-label="Spacious spacing">Spacious</button>
+                        </div>
+                    </div>
+
+                    <!-- Width Selector -->
+                    <div class="dropdown-section width-dropdown-section">
+                        <span class="dropdown-section-label">Content Width</span>
+                        <div class="width-selector" id="width-selector" aria-label="Content Width">
+                            <button class="width-btn" data-width="narrow" title="Narrow" aria-label="Narrow width">Narrow</button>
+                            <button class="width-btn active" data-width="medium" title="Medium" aria-label="Medium width">Medium</button>
+                            <button class="width-btn" data-width="wide" title="Wide" aria-label="Wide width">Wide</button>
+                        </div>
+                    </div>
+
+                    <!-- Font Size Selector -->
+                    <div class="dropdown-section">
+                        <span class="dropdown-section-label">Font Size</span>
+                        <div class="font-size-control flex items-center justify-between p-1 rounded-lg border">
+                            <button id="font-dec" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
+                            <button id="font-reset" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
+                            <button id="font-inc" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="font-size-control flex items-center gap-2 p-1 rounded-lg border">
                 <span class="text-xs font-semibold px-2 text-color-dark" style="user-select: none;">Font Size</span>
-                <button id="font-dec" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
-                <button id="font-reset" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
-                <button id="font-inc" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
+                <button id="font-dec-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
+                <button id="font-reset-main" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
+                <button id="font-inc-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
             </div>
         </div>
     </div>
@@ -588,12 +695,13 @@
         </button>
     </div>
     <button class="all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 hidden fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-50"  type="button" id="toTopBtn" style="bottom: 80px;">^</button>
-    <button id="focus-mode-exit-float" type="button" title="Exit Focus Mode (Esc)" aria-label="Exit Focus Mode">
+    <button id="focus-mode-exit-float" type="button" aria-label="Exit Focus Mode">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
         <span>Exit Focus</span>
+        <span class="focus-exit-tooltip">Exit Focus Mode <kbd>Esc</kbd></span>
     </button>
 
     <!-- Focus Mode: Transition Overlay -->
@@ -1422,9 +1530,9 @@
     // ── Font Size Control Logic ──
     (function() {
         const qlEditor = document.querySelector('.ql-editor');
-        const fontDecBtn = document.getElementById('font-dec');
-        const fontIncBtn = document.getElementById('font-inc');
-        const fontResetBtn = document.getElementById('font-reset');
+        const fontDecBtns = document.querySelectorAll('#font-dec, #font-dec-main');
+        const fontIncBtns = document.querySelectorAll('#font-inc, #font-inc-main');
+        const fontResetBtns = document.querySelectorAll('#font-reset, #font-reset-main');
 
         const minSize = 12; // px
         const maxSize = 24; // px
@@ -1451,42 +1559,171 @@
                 qlEditor.style.setProperty('--ql-font-size', `${currentFontSize}px`);
             }
 
-            if (fontDecBtn) fontDecBtn.disabled = (currentFontSize <= minSize);
-            if (fontIncBtn) fontIncBtn.disabled = (currentFontSize >= maxSize);
-            if (fontResetBtn) {
-                const percentage = Math.round((currentFontSize / defaultSize) * 100);
-                fontResetBtn.innerText = `${percentage}%`;
-            }
+            fontDecBtns.forEach(btn => btn.disabled = (currentFontSize <= minSize));
+            fontIncBtns.forEach(btn => btn.disabled = (currentFontSize >= maxSize));
+            
+            const percentage = Math.round((currentFontSize / defaultSize) * 100);
+            fontResetBtns.forEach(btn => {
+                btn.innerText = `${percentage}%`;
+            });
 
             try {
                 localStorage.setItem('articlio_font_size', currentFontSize.toString());
             } catch (e) {}
         }
 
-        if (fontDecBtn) {
-            fontDecBtn.addEventListener('click', () => {
+        fontDecBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
                 if (currentFontSize > minSize) {
                     updateFontSize(currentFontSize - step);
                 }
             });
-        }
+        });
 
-        if (fontIncBtn) {
-            fontIncBtn.addEventListener('click', () => {
+        fontIncBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
                 if (currentFontSize < maxSize) {
                     updateFontSize(currentFontSize + step);
                 }
             });
-        }
+        });
 
-        if (fontResetBtn) {
-            fontResetBtn.addEventListener('click', () => {
+        fontResetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
                 updateFontSize(defaultSize);
             });
-        }
+        });
 
         // Initialize
         updateFontSize(currentFontSize);
+    })();
+
+    // ── Spacing Control Logic ──
+    (function() {
+        const qlEditor = document.querySelector('.ql-editor');
+        const spacingSelector = document.getElementById('spacing-selector');
+        if (!spacingSelector) return;
+
+        const SPACING_KEY = 'articlio_line_spacing';
+        const spacingMap = {
+            'compact': 1.4,
+            'comfortable': 1.75,
+            'spacious': 2.1
+        };
+
+        let currentSpacing = 'comfortable';
+
+        try {
+            const savedSpacing = localStorage.getItem(SPACING_KEY);
+            if (savedSpacing && spacingMap[savedSpacing] !== undefined) {
+                currentSpacing = savedSpacing;
+            }
+        } catch (e) {}
+
+        function applySpacing(spacing, saveToStorage) {
+            if (saveToStorage === undefined) saveToStorage = true;
+            currentSpacing = spacing;
+            const height = spacingMap[spacing];
+
+            if (qlEditor) {
+                qlEditor.style.setProperty('--ql-line-height', height);
+            }
+
+            // Update active class on spacing buttons
+            spacingSelector.querySelectorAll('.spacing-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.spacing === spacing);
+            });
+
+            if (saveToStorage) {
+                try {
+                    localStorage.setItem(SPACING_KEY, spacing);
+                } catch (e) {}
+            }
+        }
+
+        // Bind clicks
+        spacingSelector.querySelectorAll('.spacing-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                applySpacing(this.dataset.spacing);
+            });
+        });
+
+        // Initialize
+        applySpacing(currentSpacing, false);
+    })();
+
+    // ── Content Width Control Logic ──
+    (function() {
+        const maxW5xl = document.querySelector('.max-w-5xl');
+        const widthSelector = document.getElementById('width-selector');
+        if (!widthSelector) return;
+
+        const WIDTH_KEY = 'articlio_content_width';
+        const widthMap = {
+            'narrow': '40rem',
+            'medium': '48rem',
+            'wide': '56rem'
+        };
+
+        let currentWidth = 'medium';
+
+        try {
+            const savedWidth = localStorage.getItem(WIDTH_KEY);
+            if (savedWidth && widthMap[savedWidth] !== undefined) {
+                currentWidth = savedWidth;
+            }
+        } catch (e) {}
+
+        function applyWidth(width, saveToStorage) {
+            if (saveToStorage === undefined) saveToStorage = true;
+            currentWidth = width;
+            const remValue = widthMap[width];
+
+            if (maxW5xl) {
+                maxW5xl.style.setProperty('--focus-content-width', remValue);
+            }
+
+            // Update active class on width buttons
+            widthSelector.querySelectorAll('.width-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.width === width);
+            });
+
+            if (saveToStorage) {
+                try {
+                    localStorage.setItem(WIDTH_KEY, width);
+                } catch (e) {}
+            }
+        }
+
+        // Bind clicks
+        widthSelector.querySelectorAll('.width-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                applyWidth(this.dataset.width);
+            });
+        });
+
+        // Initialize
+        applyWidth(currentWidth, false);
+    })();
+
+    // ── Reader Settings Dropdown Toggle ──
+    (function() {
+        const toggleBtn = document.getElementById('reader-settings-toggle');
+        const dropdown = document.getElementById('reader-settings-dropdown');
+        if (!toggleBtn || !dropdown) return;
+
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function() {
+            dropdown.classList.remove('active');
+        });
     })();
 
     // ── Focus Mode Logic ──
@@ -1540,13 +1777,56 @@
             });
         });
 
+        // ── Inactivity Auto-Hide Logic ──
+        let exitBtnTimer = null;
+        let isHoveredOnExitBtn = false;
+
+        function resetExitBtnTimer() {
+            if (!floatExitBtn) return;
+            floatExitBtn.classList.remove('is-idle');
+            if (exitBtnTimer) clearTimeout(exitBtnTimer);
+            
+            const isActive = document.documentElement.classList.contains('focus-mode-active');
+            if (isActive && !isHoveredOnExitBtn) {
+                exitBtnTimer = setTimeout(function() {
+                    if (document.documentElement.classList.contains('focus-mode-active') && !isHoveredOnExitBtn) {
+                        floatExitBtn.classList.add('is-idle');
+                    }
+                }, 3000);
+            }
+        }
+
+        const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+        function onUserActivity() {
+            resetExitBtnTimer();
+        }
+
+        function enableActivityListeners() {
+            activityEvents.forEach(function(evt) {
+                window.addEventListener(evt, onUserActivity, { passive: true });
+            });
+            resetExitBtnTimer();
+        }
+
+        function disableActivityListeners() {
+            activityEvents.forEach(function(evt) {
+                window.removeEventListener(evt, onUserActivity);
+            });
+            if (exitBtnTimer) clearTimeout(exitBtnTimer);
+            if (floatExitBtn) floatExitBtn.classList.remove('is-idle');
+        }
+
         function setFocusMode(active, animate) {
             if (animate === undefined) animate = true;
             function doApply() {
+                const settingsToggleBtn = document.getElementById('reader-settings-toggle');
+                const dropdown = document.getElementById('reader-settings-dropdown');
                 if (active) {
                     // Save the user's dark mode state before focus mode takes over
                     darkModeBeforeFocus = document.documentElement.classList.contains('dark');
                     document.documentElement.classList.add('focus-mode-active');
+                    enableActivityListeners();
+                    if (settingsToggleBtn) settingsToggleBtn.style.display = 'flex';
                     if (toggleBtn) {
                         toggleBtn.innerHTML = `
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -1573,6 +1853,9 @@
                 } else {
                     document.documentElement.classList.remove('focus-mode-active');
                     document.documentElement.classList.remove('reading-theme-sepia');
+                    disableActivityListeners();
+                    if (settingsToggleBtn) settingsToggleBtn.style.display = 'none';
+                    if (dropdown) dropdown.classList.remove('active');
                     // Restore the dark mode state the user had before focus mode
                     if (darkModeBeforeFocus) {
                         document.documentElement.classList.add('dark');
@@ -1618,6 +1901,15 @@
         }
 
         if (floatExitBtn) {
+            floatExitBtn.addEventListener('mouseenter', () => {
+                isHoveredOnExitBtn = true;
+                floatExitBtn.classList.remove('is-idle');
+                if (exitBtnTimer) clearTimeout(exitBtnTimer);
+            });
+            floatExitBtn.addEventListener('mouseleave', () => {
+                isHoveredOnExitBtn = false;
+                resetExitBtnTimer();
+            });
             floatExitBtn.addEventListener('click', () => {
                 setFocusMode(false);
             });
