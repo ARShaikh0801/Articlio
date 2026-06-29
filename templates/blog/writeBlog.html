@@ -206,25 +206,36 @@
             autosaveTimer = setTimeout(autoSave, AUTOSAVE_INTERVAL);
         }
 
+        let centerScrollRaf = null;
+
         function centerCursor() {
-            const range = quill.getSelection();
-            if (range) {
+            if (centerScrollRaf) return;
+            centerScrollRaf = requestAnimationFrame(() => {
+                centerScrollRaf = null;
+                const range = quill.getSelection();
+                if (!range) return;
+
                 const bounds = quill.getBounds(range.index);
                 const editorContainer = document.querySelector('.ql-container');
+                if (!editorContainer) return;
+                
                 const editorRect = editorContainer.getBoundingClientRect();
+                const cursorViewportY = editorRect.top + bounds.top + ((bounds.height || 20) / 2);
+                const viewportHeight = window.innerHeight;
+                const targetCenterY = viewportHeight / 2;
                 
-                // Calculate absolute position of cursor on the page
-                const absoluteY = window.scrollY + editorRect.top + bounds.top;
-                
-                // Calculate target scroll position to center the cursor
-                const targetScrollY = absoluteY - (window.innerHeight / 2);
-                
-                // Smoothly scroll to the target position
-                window.scrollTo({
-                    top: targetScrollY,
-                    behavior: 'smooth'
-                });
-            }
+                // Comfort deadzone threshold (100px) to eliminate jitter while typing on current lines
+                const offsetFromCenter = Math.abs(cursorViewportY - targetCenterY);
+                if (offsetFromCenter > 100) {
+                    const absoluteY = window.scrollY + cursorViewportY;
+                    const targetScrollY = Math.max(0, absoluteY - targetCenterY);
+                    
+                    window.scrollTo({
+                        top: targetScrollY,
+                        behavior: 'smooth'
+                    });
+                }
+            });
         }
 
         quill.on("text-change", (delta, oldDelta, source) => {

@@ -31,6 +31,7 @@
     --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-gray-50: oklch(98.5% 0.002 247.839);
+    --color-gray-100: oklch(96.7% 0.003 264.542);
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-300: oklch(87.2% 0.01 258.338);
     --color-gray-400: oklch(70.7% 0.022 261.325);
@@ -1261,6 +1262,25 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+  .dark\:bg-gray-700 {
+    @media (prefers-color-scheme: dark) {
+      background-color: var(--color-gray-700);
+    }
+  }
+  .dark\:text-gray-100 {
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-gray-100);
+    }
+  }
+  .dark\:hover\:bg-gray-600 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-gray-600);
+        }
+      }
+    }
+  }
 }
 @layer base {
   :root {
@@ -1632,6 +1652,83 @@ input::-webkit-credentials-auto-fill-button {
 .dark .input-box:focus {
   border-color: hsl(from var(--theme-base) h s 45%) !important;
 }
+.dark #editor-overlay,
+.dark #editor {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+.dark .ql-toolbar.ql-snow {
+  background-color: hsl(from var(--theme-base) h calc(s * 0.25) 16%) !important;
+  border-color: var(--border-color) !important;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+.dark .ql-container.ql-snow {
+  border-color: var(--border-color) !important;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+.dark .ql-snow .ql-stroke {
+  stroke: #e2e8f0 !important;
+  transition: stroke 0.15s ease;
+}
+.dark .ql-snow .ql-fill {
+  fill: #e2e8f0 !important;
+  transition: fill 0.15s ease;
+}
+.dark .ql-snow .ql-picker {
+  color: #e2e8f0 !important;
+}
+.dark .ql-snow .ql-picker-label {
+  border-color: transparent !important;
+  color: #e2e8f0 !important;
+}
+.dark .ql-snow .ql-picker-label::before {
+  color: #e2e8f0 !important;
+}
+.dark .ql-snow.ql-toolbar button:hover,
+.dark .ql-snow.ql-toolbar button:focus,
+.dark .ql-snow.ql-toolbar .ql-picker-label:hover,
+.dark .ql-snow.ql-toolbar .ql-picker-label.ql-active {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px;
+  color: #ffffff !important;
+}
+.dark .ql-snow.ql-toolbar button:hover .ql-stroke,
+.dark .ql-snow.ql-toolbar button:focus .ql-stroke,
+.dark .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.dark .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke {
+  stroke: #38bdf8 !important;
+}
+.dark .ql-snow.ql-toolbar button:hover .ql-fill,
+.dark .ql-snow.ql-toolbar button:focus .ql-fill,
+.dark .ql-snow.ql-toolbar button.ql-active .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+.dark .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill {
+  fill: #38bdf8 !important;
+}
+.dark .ql-snow.ql-toolbar button.ql-active,
+.dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected {
+  background-color: rgba(56, 189, 248, 0.2) !important;
+  border-radius: 4px;
+  color: #38bdf8 !important;
+}
+.dark .ql-snow .ql-picker-options {
+  background-color: hsl(from var(--theme-base) h calc(s * 0.25) 14%) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 8px;
+  padding: 6px 0;
+}
+.dark .ql-snow .ql-picker-item {
+  color: #cbd5e1 !important;
+  padding: 4px 12px;
+}
+.dark .ql-snow .ql-picker-item:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
 .dark .ql-editor {
   background-color: var(--bg-card) !important;
   background-image: linear-gradient(
@@ -1643,6 +1740,10 @@ input::-webkit-credentials-auto-fill-button {
   border-color: var(--border-color) !important;
   box-shadow: inset 0 1px 3px hsl(0 0% 0% / 0.15),
                 0 0 0 1px var(--border-subtle) !important;
+}
+.dark .ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-style: italic;
 }
 .dark .font-size-control {
   background-color: var(--bg-card) !important;
@@ -1763,9 +1864,28 @@ input::-webkit-credentials-auto-fill-button {
 .dark hr {
   border-color: var(--border-color) !important;
 }
-.dark ::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+        180deg,
+        #cbd5e1,
+        hsl(from var(--theme-base) h calc(s * 0.3) 75%)
+    );
+  border-radius: 4px;
+  border: 2px solid #f1f5f9;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+        180deg,
+        #94a3b8,
+        hsl(from var(--theme-base) h calc(s * 0.4) 65%)
+    );
 }
 .dark ::-webkit-scrollbar-track {
   background: var(--bg-body);
@@ -1785,6 +1905,16 @@ input::-webkit-credentials-auto-fill-button {
         hsl(from var(--theme-base) h calc(s * 0.3) 30%),
         hsl(from var(--theme-base) h calc(s * 0.4) 35%)
     );
+}
+.dark #close-delete-modal,
+.dark #cancel-clear-btn {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+.dark #close-delete-modal:hover,
+.dark #cancel-clear-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 .dark .dark-mode-toggle {
   color: var(--text-main) !important;
