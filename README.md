@@ -16,9 +16,11 @@ A modern, responsive, and secure blogging platform built using **Django** and **
 - **Rich Authentication**: Multi-channel login support (standard email/password signup and social sign-in via Google & GitHub).
 - **Profile Customization**: Choose custom roles (`Reader` or `Author`) and update display metrics.
 - **Dynamic Theming Engine**: Select from five beautiful accent themes: Ocean 🔵, Emerald 🟢, Slate 🔘, Crimson 🔴, and Violet 🟣. The user dashboard, emails, and comments adapt instantly.
+- **Immersive Focus Mode**: Distraction-free reading surface with customizable content width (Narrow / Medium / Wide), reading background themes (Sepia, Warm, Light, Dark), and font size adjustments (`A-`, `reset`, `A+`).
+- **Text-to-Speech (TTS) Narrator**: Built-in audio narrator utilizing the Web Speech API with play/pause, playback speed adjustment, and position skipping for hands-free listening.
 - **Blog Publisher**: Manage, draft, edit, and publish posts using modern templates.
 - **Interactive Readers**: Bookmark posts, like articles, and comment with nested threads.
-- **Reading History & Metrics**: Tracks articles viewed by the user and records their scroll/reading progress.
+- **Reading History & Live Metrics**: Tracks article scroll progress with exact resumption and displays real-time estimated time remaining indicators (~X min left).
 - **Bloom Filter Performance**: Employs an in-memory cached Bloom Filter to deliver instant username availability checks on signup.
 - **Security Protections**: Configured Content Security Policy (CSP) with random script nonces and Clickjacking prevention headers.
 
@@ -27,7 +29,7 @@ A modern, responsive, and secure blogging platform built using **Django** and **
 ## 🛠️ Tech Stack
 
 - **Backend**: Django 5.2 (Python 3.11+)
-- **Frontend**: HTML5, Vanilla JavaScript, CSS (Tailwind CSS v4 + PostCSS compile)
+- **Frontend**: HTML5, Vanilla JavaScript (Web Speech API, local storage state persistence), CSS (Tailwind CSS v4 + PostCSS compile)
 - **Database**: SQLite (local development) / PostgreSQL (production)
 - **OAuth Providers**: Google & GitHub (via `django-allauth`)
 - **Assets Manager**: WhiteNoise (compressed static files caching)

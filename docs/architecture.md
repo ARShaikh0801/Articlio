@@ -193,3 +193,27 @@ This nonce is injected into the response headers for `script-src` and `style-src
 
 ### Clickjacking Defense
 The system sets `frame-ancestors 'none';` via CSP, preventing unauthorized framing of the application pages.
+
+---
+
+## 7. Reader UX & Focus Mode Architecture
+
+Articlio includes a rich client-side reading engine designed for high-focus, distraction-free consumption.
+
+### Component Breakdown
+- **DOM Workspace Isolation**: When Focus Mode is toggled, non-essential interface elements (`#main-nav`, footers, sidebar cards, recommendations, and comment sections) are temporarily hidden or transitioned out.
+- **Content Width Bounds**: Users can toggle between `Narrow` (`36rem`), `Medium` (`48rem`), and `Wide` (`64rem`) layouts dynamically. The selection is stored in `localStorage` and applied instantly across post loads.
+- **Reading Surface Themes**: Independent of global accent themes, Focus Mode provides reading surface presets (`Light`, `Sepia`, `Warm`, and `Dark`) with custom background tints and optimized typography contrast ratios.
+- **Progress & Time Estimation**: Real-time listeners compute viewport scroll metrics against article length to display both a minimalist reading progress bar and a dynamic live estimation of remaining reading time (`~X min left`).
+
+---
+
+## 8. Text-to-Speech (TTS) Pipeline
+
+To enhance accessibility and support on-the-go consumption, Articlio integrates a native browser-based audio engine.
+
+### Implementation Details
+- **Engine**: Built on top of the native HTML5 Web Speech API (`window.speechSynthesis` and `SpeechSynthesisUtterance`).
+- **Sanitization & Text Extraction**: Prior to vocalization, post HTML contents are parsed to extract clean text blocks while filtering out hidden markers or raw code blocks.
+- **Playback Controls**: Readers can toggle Play/Pause, jump forward/backward by block intervals, and adjust playback speeds ($0.75\times$ to $2.0\times$).
+- **State Persistence & Clean Teardown**: The controller handles boundary events, audio pauses when navigating away, and synchronizes state across both standard and Focus Mode reader bars.

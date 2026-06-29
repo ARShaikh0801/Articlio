@@ -455,17 +455,18 @@
         }
     }
     @media (max-width: 576px) {
-        #focus-mode-toggle {
+        #focus-mode-toggle, #tts-toggle-btn {
             padding: 0;
             width: 36px;
             height: 36px;
             justify-content: center;
             border-radius: 50%;
+            flex-shrink: 0;
         }
-        #focus-mode-toggle span {
+        #focus-mode-toggle span, #tts-toggle-btn span {
             display: none;
         }
-        #focus-mode-toggle svg {
+        #focus-mode-toggle svg, #tts-toggle-btn svg {
             width: 16px;
             height: 16px;
             margin: 0;
@@ -474,17 +475,20 @@
             display: none !important;
         }
         .font-size-control {
-            gap: 4px;
-            padding: 2px;
+            gap: 3px !important;
+            padding: 2px !important;
+            flex-shrink: 0;
         }
         .font-control-btn {
             width: 30px !important;
             height: 30px !important;
+            flex-shrink: 0;
         }
-        #font-reset {
+        #font-reset, #font-reset-main {
             width: auto !important;
-            min-width: 44px !important;
-            padding: 0 6px !important;
+            min-width: 42px !important;
+            padding: 0 4px !important;
+            flex-shrink: 0;
         }
     }
 </style>
@@ -541,96 +545,150 @@
       "description": "{{ post.content|striptags|truncatechars:160|escapejs }}",
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/user.webp' %}"
     }
-    </script>    <div class="flex justify-between items-center mb-4 w-full flex-wrap gap-3">
-        <div class="flex items-center">
-            <div id="like-skeleton-wrapper" class="flex items-center gap-2">
-                <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
-                <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
-            </div>
+    </script>    <div class="flex items-center mb-4">
+        <div id="like-skeleton-wrapper" class="flex items-center gap-2">
+            <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
+            <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
+        </div>
 
-            <div id="like-interactive-wrapper" class="flex items-center gap-2" style="height: 2.5rem; display: none;">
-                <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
+        <div id="like-interactive-wrapper" class="flex items-center gap-2" style="height: 2.5rem; display: none;">
+            <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
+            </button>
+
+            <div class="like-box items-center align-middle h-full flex" id="like-container">
+                <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="article-toolbar-sticky-container" class="article-sticky-toolbar">
+        <div class="flex justify-end items-center w-full flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <button id="tts-toggle-btn" class="font-semibold" title="Listen to Article" aria-label="Listen to Article">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
+                        <path d="M11.536 14.01A8.47 8.47 0 0 0 14 8a8.47 8.47 0 0 0-2.464-6.01l-.707.707A7.47 7.47 0 0 1 13 8a7.47 7.47 0 0 1-2.171 5.303z"/>
+                        <path d="M10.121 12.596A6.48 6.48 0 0 0 12 8a6.48 6.48 0 0 0-1.879-4.596l-.707.707A5.48 5.48 0 0 1 11 8a5.48 5.48 0 0 1-1.586 3.889z"/>
+                        <path d="M10.025 8a1 1 0 0 1-1 1H7.058l-2.684 2.684A.5.5 0 0 1 3.5 11.328V4.672a.5.5 0 0 1 .874-.354L7.058 7H9.025a1 1 0 0 1 1 1"/>
+                    </svg>
+                    <span>Listen</span>
                 </button>
 
-                <div class="like-box items-center align-middle h-full flex" id="like-container">
-                    <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+                <button id="focus-mode-toggle" title="Toggle Focus Mode (press F)" aria-label="Toggle Focus Mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
+                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                    </svg>
+                    <span>Focus Mode</span>
+                </button>
+
+                <div class="relative" id="settings-container">
+                    <button id="reader-settings-toggle" class="font-semibold" title="Reader Settings" aria-label="Reader Settings" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
+                            <line x1="4" y1="21" x2="4" y2="14"/>
+                            <line x1="4" y1="10" x2="4" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12" y2="3"/>
+                            <line x1="20" y1="21" x2="20" y2="16"/>
+                            <line x1="20" y1="12" x2="20" y2="3"/>
+                            <line x1="1" y1="14" x2="7" y2="14"/>
+                            <line x1="9" y1="8" x2="15" y2="8"/>
+                            <line x1="17" y1="12" x2="23" y2="12"/>
+                        </svg>
+                        <span>Appearance</span>
+                    </button>
+
+                    <div class="reader-settings-dropdown" id="reader-settings-dropdown">
+                        <!-- Theme Selector -->
+                        <div class="dropdown-section">
+                            <span class="dropdown-section-label">Theme</span>
+                            <div class="reading-theme-selector" id="reading-theme-selector" aria-label="Reading Theme">
+                                <button class="reading-theme-dot reading-theme-dot--light active" data-theme="light" title="Light" aria-label="Light reading theme"></button>
+                                <button class="reading-theme-dot reading-theme-dot--sepia" data-theme="sepia" title="Sepia" aria-label="Sepia reading theme"></button>
+                                <button class="reading-theme-dot reading-theme-dot--dark" data-theme="dark" title="Dark" aria-label="Dark reading theme"></button>
+                            </div>
+                        </div>
+
+                        <!-- Spacing Selector -->
+                        <div class="dropdown-section">
+                            <span class="dropdown-section-label">Spacing</span>
+                            <div class="spacing-selector" id="spacing-selector" aria-label="Line Spacing">
+                                <button class="spacing-btn" data-spacing="compact" title="Compact" aria-label="Compact spacing">Compact</button>
+                                <button class="spacing-btn active" data-spacing="comfortable" title="Comfortable" aria-label="Comfortable spacing">Comfortable</button>
+                                <button class="spacing-btn" data-spacing="spacious" title="Spacious" aria-label="Spacious spacing">Spacious</button>
+                            </div>
+                        </div>
+
+                        <!-- Width Selector -->
+                        <div class="dropdown-section width-dropdown-section">
+                            <span class="dropdown-section-label">Content Width</span>
+                            <div class="width-selector" id="width-selector" aria-label="Content Width">
+                                <button class="width-btn" data-width="narrow" title="Narrow" aria-label="Narrow width">Narrow</button>
+                                <button class="width-btn active" data-width="medium" title="Medium" aria-label="Medium width">Medium</button>
+                                <button class="width-btn" data-width="wide" title="Wide" aria-label="Wide width">Wide</button>
+                            </div>
+                        </div>
+
+                        <!-- Font Size Selector -->
+                        <div class="dropdown-section">
+                            <span class="dropdown-section-label">Font Size</span>
+                            <div class="font-size-control flex items-center justify-between p-1 rounded-lg border">
+                                <button id="font-dec" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
+                                <button id="font-reset" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
+                                <button id="font-inc" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="font-size-control flex items-center gap-2 p-1 rounded-lg border">
+                    <span class="text-xs font-semibold px-2 text-color-dark" style="user-select: none;">Font Size</span>
+                    <button id="font-dec-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
+                    <button id="font-reset-main" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
+                    <button id="font-inc-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button id="focus-mode-toggle" title="Toggle Focus Mode (press F)" aria-label="Toggle Focus Mode">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
-                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                </svg>
-                <span>Focus Mode</span>
-            </button>
-
-            <div class="relative" id="settings-container">
-                <button id="reader-settings-toggle" class="font-semibold" title="Reader Settings" aria-label="Reader Settings" style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
-                        <line x1="4" y1="21" x2="4" y2="14"/>
-                        <line x1="4" y1="10" x2="4" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12" y2="3"/>
-                        <line x1="20" y1="21" x2="20" y2="16"/>
-                        <line x1="20" y1="12" x2="20" y2="3"/>
-                        <line x1="1" y1="14" x2="7" y2="14"/>
-                        <line x1="9" y1="8" x2="15" y2="8"/>
-                        <line x1="17" y1="12" x2="23" y2="12"/>
+        <!-- TTS Player Bar -->
+        <div id="tts-player-bar" class="tts-player-bar hidden mt-3 items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all duration-300 flex-wrap sm:flex-nowrap gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <button id="tts-play-pause-btn" class="tts-ctrl-btn tts-main-play-btn" title="Play / Pause" aria-label="Play or Pause text to speech">
+                    <svg id="tts-play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
                     </svg>
-                    <span>Appearance</span>
+                    <svg id="tts-pause-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
+                    </svg>
                 </button>
 
-                <div class="reader-settings-dropdown" id="reader-settings-dropdown">
-                    <!-- Theme Selector -->
-                    <div class="dropdown-section">
-                        <span class="dropdown-section-label">Theme</span>
-                        <div class="reading-theme-selector" id="reading-theme-selector" aria-label="Reading Theme">
-                            <button class="reading-theme-dot reading-theme-dot--light active" data-theme="light" title="Light" aria-label="Light reading theme"></button>
-                            <button class="reading-theme-dot reading-theme-dot--sepia" data-theme="sepia" title="Sepia" aria-label="Sepia reading theme"></button>
-                            <button class="reading-theme-dot reading-theme-dot--dark" data-theme="dark" title="Dark" aria-label="Dark reading theme"></button>
-                        </div>
-                    </div>
+                <button id="tts-skip-btn" class="tts-ctrl-btn" title="Skip to next section" aria-label="Skip forward">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0z"/>
+                    </svg>
+                    <span class="text-xs font-semibold hidden sm:inline">Skip</span>
+                </button>
 
-                    <!-- Spacing Selector -->
-                    <div class="dropdown-section">
-                        <span class="dropdown-section-label">Spacing</span>
-                        <div class="spacing-selector" id="spacing-selector" aria-label="Line Spacing">
-                            <button class="spacing-btn" data-spacing="compact" title="Compact" aria-label="Compact spacing">Compact</button>
-                            <button class="spacing-btn active" data-spacing="comfortable" title="Comfortable" aria-label="Comfortable spacing">Comfortable</button>
-                            <button class="spacing-btn" data-spacing="spacious" title="Spacious" aria-label="Spacious spacing">Spacious</button>
-                        </div>
-                    </div>
-
-                    <!-- Width Selector -->
-                    <div class="dropdown-section width-dropdown-section">
-                        <span class="dropdown-section-label">Content Width</span>
-                        <div class="width-selector" id="width-selector" aria-label="Content Width">
-                            <button class="width-btn" data-width="narrow" title="Narrow" aria-label="Narrow width">Narrow</button>
-                            <button class="width-btn active" data-width="medium" title="Medium" aria-label="Medium width">Medium</button>
-                            <button class="width-btn" data-width="wide" title="Wide" aria-label="Wide width">Wide</button>
-                        </div>
-                    </div>
-
-                    <!-- Font Size Selector -->
-                    <div class="dropdown-section">
-                        <span class="dropdown-section-label">Font Size</span>
-                        <div class="font-size-control flex items-center justify-between p-1 rounded-lg border">
-                            <button id="font-dec" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
-                            <button id="font-reset" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
-                            <button id="font-inc" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
-                        </div>
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <svg id="tts-loader" class="hidden animate-spin h-4 w-4 text-amber-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <div class="tts-status-text text-xs font-medium opacity-80 truncate" id="tts-status-label">
+                        Ready to read aloud
                     </div>
                 </div>
             </div>
 
-            <div class="font-size-control flex items-center gap-2 p-1 rounded-lg border">
-                <span class="text-xs font-semibold px-2 text-color-dark" style="user-select: none;">Font Size</span>
-                <button id="font-dec-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Decrease Font Size" aria-label="Decrease Font Size">A-</button>
-                <button id="font-reset-main" class="font-control-btn px-2 h-8 rounded flex items-center justify-center cursor-pointer font-semibold theme-medium text-color-lightest hover:opacity-85 transition text-xs" title="Reset Font Size" aria-label="Reset Font Size">100%</button>
-                <button id="font-inc-main" class="font-control-btn w-8 h-8 rounded flex items-center justify-center cursor-pointer font-bold theme-medium text-color-lightest hover:opacity-85 transition" title="Increase Font Size" aria-label="Increase Font Size">A+</button>
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                <button id="tts-speed-btn" class="tts-speed-badge" title="Adjust Speed" aria-label="Reading Speed">
+                    <span id="tts-speed-label">1.0x</span>
+                </button>
+
+                <button id="tts-stop-btn" class="tts-ctrl-btn tts-close-btn" title="Stop & Close" aria-label="Stop text to speech">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -1940,6 +1998,277 @@
                 setFocusMode(true, false);
             }
         } catch (e) {}
+    })();
+
+    // ── Text-to-Speech (TTS) Integration ──
+    (function() {
+        const toggleBtn = document.getElementById('tts-toggle-btn');
+        const playerBar = document.getElementById('tts-player-bar');
+        const playPauseBtn = document.getElementById('tts-play-pause-btn');
+        const playIcon = document.getElementById('tts-play-icon');
+        const pauseIcon = document.getElementById('tts-pause-icon');
+        const skipBtn = document.getElementById('tts-skip-btn');
+        const speedBtn = document.getElementById('tts-speed-btn');
+        const speedLabel = document.getElementById('tts-speed-label');
+        const stopBtn = document.getElementById('tts-stop-btn');
+        const statusLabel = document.getElementById('tts-status-label');
+        const loader = document.getElementById('tts-loader');
+
+        if (!toggleBtn || !playerBar) return;
+
+        const speeds = [1.0, 1.25, 1.5, 2.0, 0.8];
+        let currentSpeedIndex = 0;
+        let isPlaying = false;
+        let isPaused = false;
+        let currentIndex = 0;
+        let speechChunks = [];
+        let activeToken = 0;
+        let currentUtterance = null;
+
+        function initChunks() {
+            speechChunks = [];
+            const editor = document.querySelector('.ql-editor');
+            if (!editor) return;
+            const elements = editor.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+            elements.forEach(el => {
+                const txt = el.textContent ? el.textContent.trim() : '';
+                if (txt.length > 0) {
+                    speechChunks.push({ element: el, text: txt });
+                }
+            });
+        }
+
+        function prepareWordSpans(element) {
+            if (element.dataset.ttsOriginal) return;
+            element.dataset.ttsOriginal = element.innerHTML;
+            const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+            const textNodes = [];
+            let node;
+            while (node = walk.nextNode()) {
+                if (node.nodeValue.trim().length > 0) textNodes.push(node);
+            }
+            let wordCount = 0;
+            textNodes.forEach(tNode => {
+                const words = tNode.nodeValue.split(/(\s+)/);
+                const frag = document.createDocumentFragment();
+                words.forEach(w => {
+                    if (w.trim().length > 0) {
+                        const span = document.createElement('span');
+                        span.className = 'tts-word-span';
+                        span.dataset.wordIdx = wordCount++;
+                        span.textContent = w;
+                        frag.appendChild(span);
+                    } else if (w.length > 0) {
+                        frag.appendChild(document.createTextNode(w));
+                    }
+                });
+                if (tNode.parentNode) tNode.parentNode.replaceChild(frag, tNode);
+            });
+        }
+
+        function restoreElementHtml(element) {
+            if (element && element.dataset.ttsOriginal) {
+                element.innerHTML = element.dataset.ttsOriginal;
+                delete element.dataset.ttsOriginal;
+            }
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.tts-reading-highlight').forEach(el => {
+                el.classList.remove('tts-reading-highlight');
+                restoreElementHtml(el);
+            });
+        }
+
+        function showLoader(show) {
+            if (!loader) return;
+            if (show) {
+                loader.classList.remove('hidden');
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function updateUIState() {
+            if (isPlaying && !isPaused) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                toggleBtn.classList.add('active');
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                if (!isPlaying && !isPaused) {
+                    toggleBtn.classList.remove('active');
+                }
+            }
+            if (speedLabel) speedLabel.textContent = speeds[currentSpeedIndex] + 'x';
+        }
+
+        function cancelActiveSpeech() {
+            activeToken++;
+            if (currentUtterance) {
+                currentUtterance.onstart = null;
+                currentUtterance.onend = null;
+                currentUtterance.onerror = null;
+                currentUtterance.onboundary = null;
+                currentUtterance = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function speakCurrentChunk() {
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-Speech is not supported in your browser.');
+                return;
+            }
+
+            cancelActiveSpeech();
+            clearHighlights();
+
+            if (currentIndex < 0 || currentIndex >= speechChunks.length) {
+                stopTTS();
+                if (statusLabel) statusLabel.textContent = 'Finished reading aloud';
+                return;
+            }
+
+            const token = ++activeToken;
+            const chunk = speechChunks[currentIndex];
+            prepareWordSpans(chunk.element);
+            chunk.element.classList.add('tts-reading-highlight');
+            chunk.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            showLoader(true);
+            if (statusLabel) {
+                statusLabel.textContent = `Preparing section ${currentIndex + 1} of ${speechChunks.length}...`;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(chunk.text);
+            utterance.rate = speeds[currentSpeedIndex];
+            currentUtterance = utterance;
+
+            let currentWordIdx = 0;
+            utterance.onboundary = function(e) {
+                if (token !== activeToken) return;
+                const spans = chunk.element.querySelectorAll('.tts-word-span');
+                if (spans.length > 0) {
+                    spans.forEach(s => s.classList.remove('tts-word-active'));
+                    if (spans[currentWordIdx]) {
+                        spans[currentWordIdx].classList.add('tts-word-active');
+                    }
+                    currentWordIdx++;
+                }
+            };
+
+            utterance.onstart = function() {
+                if (token !== activeToken) return;
+                showLoader(false);
+                if (statusLabel) {
+                    statusLabel.textContent = `Reading section ${currentIndex + 1} of ${speechChunks.length}`;
+                }
+            };
+
+            utterance.onend = function() {
+                if (token !== activeToken) return;
+                showLoader(false);
+                restoreElementHtml(chunk.element);
+                if (isPlaying && !isPaused) {
+                    currentIndex++;
+                    speakCurrentChunk();
+                }
+            };
+
+            utterance.onerror = function(e) {
+                if (token !== activeToken) return;
+                console.error('Speech synthesis error:', e);
+                showLoader(false);
+                restoreElementHtml(chunk.element);
+                if (isPlaying && !isPaused) {
+                    currentIndex++;
+                    speakCurrentChunk();
+                }
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startOrToggleTTS() {
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-Speech is not supported in your browser.');
+                return;
+            }
+
+            if (playerBar.classList.contains('hidden')) {
+                playerBar.classList.remove('hidden');
+                playerBar.classList.add('flex');
+            }
+
+            if (!isPlaying && !isPaused) {
+                initChunks();
+                if (speechChunks.length === 0) {
+                    if (statusLabel) statusLabel.textContent = 'No text found to read';
+                    return;
+                }
+                isPlaying = true;
+                isPaused = false;
+                currentIndex = 0;
+                updateUIState();
+                speakCurrentChunk();
+            } else if (isPlaying && !isPaused) {
+                cancelActiveSpeech();
+                isPlaying = false;
+                isPaused = true;
+                showLoader(false);
+                if (statusLabel) statusLabel.textContent = 'Playback paused';
+                updateUIState();
+            } else if (isPaused) {
+                isPlaying = true;
+                isPaused = false;
+                updateUIState();
+                speakCurrentChunk();
+            }
+        }
+
+        function stopTTS() {
+            cancelActiveSpeech();
+            isPlaying = false;
+            isPaused = false;
+            currentIndex = 0;
+            clearHighlights();
+            showLoader(false);
+            updateUIState();
+            playerBar.classList.add('hidden');
+            playerBar.classList.remove('flex');
+            if (statusLabel) statusLabel.textContent = 'Ready to read aloud';
+        }
+
+        function skipForward() {
+            if (!isPlaying && !isPaused) return;
+            currentIndex++;
+            isPaused = false;
+            isPlaying = true;
+            updateUIState();
+            speakCurrentChunk();
+        }
+
+        function cycleSpeed() {
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+            if (speedLabel) speedLabel.textContent = speeds[currentSpeedIndex] + 'x';
+            if (isPlaying && !isPaused) {
+                speakCurrentChunk();
+            }
+        }
+
+        toggleBtn.addEventListener('click', startOrToggleTTS);
+        playPauseBtn.addEventListener('click', startOrToggleTTS);
+        stopBtn.addEventListener('click', stopTTS);
+        skipBtn.addEventListener('click', skipForward);
+        speedBtn.addEventListener('click', cycleSpeed);
+
+        window.addEventListener('beforeunload', function() {
+            cancelActiveSpeech();
+        });
     })();
 </script>
 {% endblock js %}
