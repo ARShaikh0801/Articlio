@@ -530,7 +530,7 @@
             {{ post.author }}
         </a>
         <span id="post-views-container"><span class="skeleton inline-block align-middle rounded ml-1" style="width: 4rem; height: 1rem;"></span></span>
-        <span style="white-space: nowrap;">· <span style="display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>{{ post.reading_time }} min</span></span>
+        <span class="reading-time-container"><span class="reading-time-separator"> · </span><span style="display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>{{ post.reading_time }} min</span></span>
     </p>
 
     <script nonce="{{ request.csp_nonce }}" type="application/ld+json">
@@ -1030,7 +1030,7 @@
                                 <a href="/blog/${encodeURIComponent(p.slug)}" class="bg-white rounded-xl hover:shadow-lg transition relative fade-in block h-full group" style="border-left: 4px solid var(--theme-base);">
                                     <div class="p-5 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
                                         <div class="text-xs font-medium mb-1" style="color: var(--theme-base);">
-                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes <span style="white-space: nowrap;">· <span style='display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;'><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${p.reading_time} min</span></span>
+                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes <span class="reading-time-container"><span class="reading-time-separator"> · </span><span style='display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;'><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${p.reading_time} min</span></span>
                                         </div>
                                         <h3 class="text-lg font-semibold mb-1 text-color-darkest group-hover:text-[var(--theme-base)] transition">${escapeHtml(p.title)}</h3>
                                         <p class="text-sm mb-2" style="color: #6b7280; font-weight: 500;">Category: ${escapeHtml(p.category)}</p>
@@ -2045,23 +2045,30 @@
             const textNodes = [];
             let node;
             while (node = walk.nextNode()) {
-                if (node.nodeValue.trim().length > 0) textNodes.push(node);
+                textNodes.push(node);
             }
-            let wordCount = 0;
+            let globalCharOffset = 0;
             textNodes.forEach(tNode => {
-                const words = tNode.nodeValue.split(/(\s+)/);
+                const nodeText = tNode.nodeValue;
+                const words = nodeText.split(/(\s+)/);
                 const frag = document.createDocumentFragment();
+                let localOffset = 0;
                 words.forEach(w => {
                     if (w.trim().length > 0) {
                         const span = document.createElement('span');
                         span.className = 'tts-word-span';
-                        span.dataset.wordIdx = wordCount++;
+                        const wordStart = globalCharOffset + localOffset;
+                        const wordEnd = wordStart + w.length;
+                        span.dataset.startIdx = wordStart;
+                        span.dataset.endIdx = wordEnd;
                         span.textContent = w;
                         frag.appendChild(span);
-                    } else if (w.length > 0) {
+                    } else {
                         frag.appendChild(document.createTextNode(w));
                     }
+                    localOffset += w.length;
                 });
+                globalCharOffset += nodeText.length;
                 if (tNode.parentNode) tNode.parentNode.replaceChild(frag, tNode);
             });
         }
@@ -2148,16 +2155,20 @@
             utterance.rate = speeds[currentSpeedIndex];
             currentUtterance = utterance;
 
-            let currentWordIdx = 0;
             utterance.onboundary = function(e) {
                 if (token !== activeToken) return;
+                const charIndex = e.charIndex;
                 const spans = chunk.element.querySelectorAll('.tts-word-span');
                 if (spans.length > 0) {
-                    spans.forEach(s => s.classList.remove('tts-word-active'));
-                    if (spans[currentWordIdx]) {
-                        spans[currentWordIdx].classList.add('tts-word-active');
-                    }
-                    currentWordIdx++;
+                    spans.forEach(s => {
+                        const start = parseInt(s.dataset.startIdx, 10);
+                        const end = parseInt(s.dataset.endIdx, 10);
+                        if (charIndex >= start && charIndex < end) {
+                            s.classList.add('tts-word-active');
+                        } else {
+                            s.classList.remove('tts-word-active');
+                        }
+                    });
                 }
             };
 
