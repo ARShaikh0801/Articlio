@@ -12,7 +12,13 @@
       "src": "{% static 'img/articlio logo.png' %}",
       "sizes": "192x192 512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'img/articlio logo maskable.png' %}",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
