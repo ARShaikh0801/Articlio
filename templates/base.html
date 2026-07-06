@@ -652,6 +652,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/microAnimations.js' %}"></script>
     <script nonce="{{ request.csp_nonce }}">
         window.CURRENT_USER = "{{ request.user.username }}";
         window.USER_IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
@@ -959,6 +960,15 @@
             navSearchInput.addEventListener('focus', function() {
                 if (this.value.trim().length > 4 && suggestionsList.innerHTML.trim() !== '') {
                     suggestionsBox.classList.remove('hidden');
+                }
+            });
+
+            // Focus search input when '/' is pressed, unless user is typing in an input/textarea/select
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable) {
+                    e.preventDefault();
+                    navSearchInput.focus();
+                    navSearchInput.select();
                 }
             });
         }

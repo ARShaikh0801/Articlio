@@ -369,3 +369,30 @@ def emailVerification(request):
         messages.success(request, "Email verified successfully")
 
         return redirect(next_url or 'home')
+
+@require_POST
+def toggle_comment_like(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        comment_id = data.get("comment_id")
+        comment = BlogComment.objects.get(sno=comment_id)
+        user = request.user
+
+        if comment.likes.filter(id=user.id).exists():
+            comment.likes.remove(user)
+            status = "unliked"
+        else:
+            comment.likes.add(user)
+            status = "liked"
+
+        return JsonResponse({
+            "status": status,
+            "likes_count": comment.likes.count()
+        })
+    except BlogComment.DoesNotExist:
+        return JsonResponse({"error": "Comment not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)

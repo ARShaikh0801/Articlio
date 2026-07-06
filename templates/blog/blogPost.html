@@ -26,6 +26,217 @@
     .like-box {
         transform: translateY(-1px);
     }
+
+    /* Force Like button transparency and borderless */
+    [id^="like-btn-"], [id^="bottom-like-btn-"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: var(--text-main) !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    [id^="like-btn-"]:hover, [id^="bottom-like-btn-"]:hover {
+        background-color: rgba(from var(--theme-base) r g b / 0.08) !important;
+    }
+
+    /* Comment and Reply Likes CSS */
+    .comment-like-btn {
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 4px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--text-muted, #6b7280);
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .comment-like-btn:hover {
+        color: #ef4444;
+    }
+    .comment-like-btn.liked {
+        color: #ef4444;
+    }
+    .comment-like-btn.liked svg {
+        fill: #ef4444;
+    }
+    .comment-like-btn.bounce svg {
+        animation: heart-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes heart-bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+    }
+    .comment-like-count {
+        font-size: 0.75rem;
+        margin-top: 2px;
+        font-weight: 500;
+    }
+
+    /* Premium Comments Sidebar */
+    #comments-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 10005;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--border-color);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease;
+    }
+    @media (max-width: 639.98px) {
+        #comments-sidebar {
+            top: 98px !important; /* fallback, overridden dynamically in JS */
+            height: calc(100% - 98px) !important;
+            width: 100% !important;
+            border-left: none !important;
+            border-top: 1px solid var(--border-color) !important;
+            border-radius: 20px 20px 0 0 !important;
+            transform: translateY(100%) !important;
+        }
+        #comments-sidebar.translate-x-full {
+            transform: translateY(100%) !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+        }
+        #comments-sidebar:not(.translate-x-full) {
+            transform: translateY(0) !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+        }
+    }
+    @media (min-width: 640px) {
+        #comments-sidebar {
+            width: 450px !important;
+        }
+        #comments-sidebar.translate-x-full {
+            visibility: hidden !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            transform: translateX(100%) !important;
+        }
+        #comments-sidebar:not(.translate-x-full) {
+            visibility: visible !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            transform: translateX(0) !important;
+        }
+    }
+    .dark #comments-sidebar {
+        background: rgba(15, 23, 42, 0.85);
+    }
+
+    #comments-sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4) !important;
+        z-index: 10004;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Sidebar Comment Item Customization */
+    #comments-sidebar .comment-item {
+        background: transparent !important;
+        border-left: none !important;
+        box-shadow: none !important;
+        margin-bottom: 1.25rem !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        border-radius: 0 !important;
+        padding-bottom: 1.25rem !important;
+    }
+    #comments-sidebar .comment-item > div {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    #comments-sidebar .comment-item img {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+    }
+    #comments-sidebar .comment-item b {
+        font-size: 0.85rem !important;
+    }
+    #comments-sidebar .comment-item p {
+        font-size: 0.85rem !important;
+        margin-top: 0.25rem !important;
+    }
+    #comments-sidebar .comment-item details {
+        margin-top: 0.5rem !important;
+    }
+    #comments-sidebar .comment-item details summary {
+        font-size: 0.75rem !important;
+        color: var(--theme-base) !important;
+    }
+    #comments-sidebar .comment-item .ml-8 {
+        margin-left: 1.5rem !important;
+        margin-top: 0.75rem !important;
+        padding-left: 0.75rem !important;
+    }
+    #comments-sidebar .comment-item .w-9 {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+    }
+    #comments-sidebar .comment-item form input[type="text"] {
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 0.375rem !important;
+    }
+    #comments-sidebar .comment-item form button {
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 0.375rem !important;
+    }
+
+    /* Comments Responsive Layout Overrides */
+    @media (max-width: 639.98px) {
+        .comment-item {
+            margin-bottom: 1rem !important;
+        }
+        .comment-item > div {
+            padding: 0.75rem !important;
+        }
+        .comment-item .flex.items-start.gap-4 {
+            gap: 0.75rem !important;
+        }
+        .comment-item img.w-12 {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+        }
+        .comment-item img.w-9 {
+            width: 1.75rem !important;
+            height: 1.75rem !important;
+        }
+        .comment-item .ml-8 {
+            margin-left: 1rem !important;
+            padding-left: 0.5rem !important;
+        }
+    }
+
+    /* Premium visible skeleton loader cards for sidebar */
+    .sidebar-skeleton-card {
+        height: 100px;
+        border-radius: 12px;
+        border-left: 4px solid var(--theme-base);
+        background: linear-gradient(90deg, #d1d5db 25%, #e5e7eb 37%, #f3f4f6 50%, #e5e7eb 63%, #d1d5db 75%) !important;
+        background-size: 400% 100% !important;
+        animation: skeleton-shimmer 1.8s ease-in-out infinite, skeleton-pulse 1.5s ease-in-out infinite !important;
+        margin-bottom: 1.25rem;
+    }
+    .dark .sidebar-skeleton-card {
+        background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #475569 50%, #334155 63%, #1e293b 75%) !important;
+    }
+
     .ql-editor {
         font-size: var(--ql-font-size, 16px) !important;
         line-height: var(--ql-line-height, 1.75) !important;
@@ -40,11 +251,13 @@
     .ql-editor h2 {
         font-size: 1.75em;
         font-weight: 600;
+        scroll-margin-top: 7rem;
     }
 
     .ql-editor h3 {
         font-size: 1.35em;
         font-weight: 600;
+        scroll-margin-top: 7rem;
     }
 
     .font-control-btn:disabled {
@@ -259,8 +472,8 @@
     }
 
 
-    /* ── Focus Mode Toggle Button (premium) ── */
-    #focus-mode-toggle {
+    /* ── Focus Mode & Highlights Buttons (premium) ── */
+    #focus-mode-toggle, #highlights-sidebar-btn {
         position: relative;
         display: flex;
         align-items: center;
@@ -282,7 +495,7 @@
         white-space: nowrap;
         flex-shrink: 0;
     }
-    #focus-mode-toggle::before {
+    #focus-mode-toggle::before, #highlights-sidebar-btn::before {
         content: '';
         position: absolute;
         inset: 0;
@@ -291,26 +504,26 @@
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    #focus-mode-toggle:hover {
+    #focus-mode-toggle:hover, #highlights-sidebar-btn:hover {
         transform: translateY(-2px);
         box-shadow:
             0 8px 25px -3px rgba(0,0,0,0.25),
             0 0 0 1px rgba(255,255,255,0.2) inset,
             0 0 20px -4px var(--theme-base);
     }
-    #focus-mode-toggle:hover::before {
+    #focus-mode-toggle:hover::before, #highlights-sidebar-btn:hover::before {
         opacity: 1;
     }
-    #focus-mode-toggle:active {
+    #focus-mode-toggle:active, #highlights-sidebar-btn:active {
         transform: translateY(0);
     }
-    .dark #focus-mode-toggle {
+    .dark #focus-mode-toggle, .dark #highlights-sidebar-btn {
         background: linear-gradient(135deg, var(--theme-base) 0%, hsl(from var(--theme-base) h calc(s * 0.8) 30%) 100%);
         box-shadow:
             0 4px 15px -3px rgba(0,0,0,0.4),
             0 0 0 1px rgba(255,255,255,0.08) inset;
     }
-    .dark #focus-mode-toggle:hover {
+    .dark #focus-mode-toggle:hover, .dark #highlights-sidebar-btn:hover {
         box-shadow:
             0 8px 25px -3px rgba(0,0,0,0.5),
             0 0 0 1px rgba(255,255,255,0.12) inset,
@@ -455,7 +668,7 @@
         }
     }
     @media (max-width: 576px) {
-        #focus-mode-toggle, #tts-toggle-btn {
+        #focus-mode-toggle, #tts-toggle-btn, #highlights-sidebar-btn {
             padding: 0;
             width: 36px;
             height: 36px;
@@ -463,10 +676,10 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
-        #focus-mode-toggle span, #tts-toggle-btn span {
+        #focus-mode-toggle span, #tts-toggle-btn span, #highlights-sidebar-btn span {
             display: none;
         }
-        #focus-mode-toggle svg, #tts-toggle-btn svg {
+        #focus-mode-toggle svg, #tts-toggle-btn svg, #highlights-sidebar-btn svg {
             width: 16px;
             height: 16px;
             margin: 0;
@@ -491,6 +704,124 @@
             flex-shrink: 0;
         }
     }
+    /* Table of Contents Sidebar styling */
+    #focus-toc-sidebar {
+        position: fixed;
+        top: 8rem;
+        right: calc(50% + var(--focus-content-width, 48rem) / 2 + 3rem);
+        width: 15rem;
+        max-height: calc(100vh - 12rem);
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+        padding-right: 0.75rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--theme-light) transparent;
+        transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #focus-toc-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    #focus-toc-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #focus-toc-sidebar::-webkit-scrollbar-thumb {
+        background: var(--theme-light);
+        border-radius: 4px;
+    }
+
+    .focus-mode-active #focus-toc-sidebar {
+        display: block;
+    }
+
+    #focus-toc-sidebar.no-toc {
+        display: none !important;
+    }
+
+    .focus-toc-header {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        opacity: 0.65;
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+        user-select: none;
+    }
+
+    .focus-toc-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .focus-toc-item {
+        display: block;
+        font-size: 0.82rem;
+        line-height: 1.4;
+        color: var(--text-muted);
+        opacity: 0.75;
+        padding: 0.4rem 0.5rem;
+        border-left: 2px solid var(--theme-light);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .focus-toc-item:hover {
+        color: var(--text-main);
+        opacity: 1;
+        border-left-color: var(--theme-base);
+        padding-left: 0.65rem;
+        background: rgba(from var(--theme-base) r g b / 0.03);
+    }
+
+    .focus-toc-item.active {
+        color: var(--theme-base);
+        font-weight: 600;
+        opacity: 1;
+        border-left-color: var(--theme-base);
+        border-left-width: 3px;
+        background: rgba(from var(--theme-base) r g b / 0.05);
+    }
+
+    .focus-toc-item-h3 {
+        padding-left: 1.25rem;
+        font-size: 0.78rem;
+    }
+
+    .focus-toc-item-h3:hover {
+        padding-left: 1.4rem;
+    }
+
+    .focus-toc-item-h3.active {
+        padding-left: 1.25rem;
+    }
+
+    /* Sepia Theme overrides for premium look */
+    .reading-theme-sepia.focus-mode-active .focus-toc-item.active {
+        color: hsl(25, 70%, 30%);
+        border-left-color: hsl(25, 70%, 35%);
+        background: rgba(139, 69, 19, 0.05);
+    }
+    .reading-theme-sepia.focus-mode-active .focus-toc-item:hover {
+        border-left-color: hsl(25, 70%, 35%);
+        background: rgba(139, 69, 19, 0.03);
+    }
+
+
+
+    /* Hide on screen sizes where space is limited */
+    @media (max-width: 1220px) {
+        #focus-toc-sidebar {
+            display: none !important;
+        }
+    }
 </style>
 {% endblock css %}
 {% block body %}
@@ -507,17 +838,6 @@
             Go Back
         </a>
 
-        {% if request.user.is_authenticated %}
-        <div class="text-lg flex items-center gap-2 cursor-pointer saveSVG" style="display: none;" id="save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
-        </div>
-        {% else %}
-        <a class="text-lg flex items-center gap-2" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
-            <span class="hidden sm:inline">Save</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest"  fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
-                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
-            </svg>
-        </a>
-        {% endif %}
     </div>
     
     <h1 class="text-3xl font-bold text-color-darkest mt-5 mb-2">
@@ -546,18 +866,36 @@
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/user.webp' %}"
     }
     </script>    <div class="flex items-center mb-4">
-        <div id="like-skeleton-wrapper" class="flex items-center gap-2">
-            <div class="skeleton rounded-lg" style="width: 5rem; height: 2.5rem;"></div>
-            <div class="skeleton rounded" style="width: 2rem; height: 1.5rem;"></div>
+        <div id="like-skeleton-wrapper" class="flex items-center gap-4">
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
         </div>
 
-        <div id="like-interactive-wrapper" class="flex items-center gap-2" style="height: 2.5rem; display: none;">
-            <button class="flex theme-medium all-border theme-medium-btn text-color-lightest items-center gap-1 px-4 py-2 rounded-lg transition h-full" type="button" id="like-btn-{{ post.sno }}">
+        <div id="like-interactive-wrapper" class="flex items-center gap-4" style="height: 2.5rem; display: none;">
+            <button class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="like-btn-{{ post.sno }}">
             </button>
 
-            <div class="like-box items-center align-middle h-full flex" id="like-container">
-                <span id="like-count-{{ post.sno }}" class="count text-color-dark"></span>
+            <!-- Comment Skeleton -->
+            <div id="comment-btn-skeleton" class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+
+            <button class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="sidebar-comment-btn" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chat-left" viewBox="0 0 16 16">
+                    <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                </svg>
+                <span id="sidebar-comment-count" class="count text-color-dark">0</span>
+            </button>
+
+            {% if request.user.is_authenticated %}
+            <div class="text-lg flex items-center justify-center cursor-pointer saveSVG px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)]" style="display: none;" id="save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
             </div>
+            {% else %}
+            <a class="text-lg flex items-center justify-center px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" class="text-color-darkest" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                </svg>
+            </a>
+            {% endif %}
         </div>
     </div>
 
@@ -565,10 +903,8 @@
         <div class="flex justify-end items-center w-full flex-wrap gap-3">
             <div class="flex items-center gap-3">
                 <button id="tts-toggle-btn" class="font-semibold" title="Listen to Article" aria-label="Listen to Article">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
-                        <path d="M11.536 14.01A8.47 8.47 0 0 0 14 8a8.47 8.47 0 0 0-2.464-6.01l-.707.707A7.47 7.47 0 0 1 13 8a7.47 7.47 0 0 1-2.171 5.303z"/>
-                        <path d="M10.121 12.596A6.48 6.48 0 0 0 12 8a6.48 6.48 0 0 0-1.879-4.596l-.707.707A5.48 5.48 0 0 1 11 8a5.48 5.48 0 0 1-1.586 3.889z"/>
-                        <path d="M10.025 8a1 1 0 0 1-1 1H7.058l-2.684 2.684A.5.5 0 0 1 3.5 11.328V4.672a.5.5 0 0 1 .874-.354L7.058 7H9.025a1 1 0 0 1 1 1"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-headphones" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));">
+                        <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>
                     </svg>
                     <span>Listen</span>
                 </button>
@@ -580,6 +916,32 @@
                     </svg>
                     <span>Focus Mode</span>
                 </button>
+
+                <div class="relative flex items-center">
+                    <div class="hl-eraser-capsule">
+                        <button id="hl-tool-btn" title="Toggle Highlight Tool" aria-label="Toggle Highlight Tool">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
+                                <path d="m9 11-6 6v3h9l3-3"/>
+                                <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>
+                            </svg>
+                        </button>
+                        <div class="hl-eraser-divider"></div>
+                        <button id="eraser-tool-btn" title="Toggle Eraser Tool" aria-label="Toggle Eraser Tool">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));">
+                                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+                                <path d="M22 21H7"/>
+                                <path d="m5 11 9 9"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Inline color picker container -->
+                    <div id="hl-color-picker" class="hl-color-picker-dropdown hidden">
+                        <button class="hl-color-dot hl-color-dot--yellow active" data-color="yellow" title="Yellow" aria-label="Yellow color option"></button>
+                        <button class="hl-color-dot hl-color-dot--green" data-color="green" title="Green" aria-label="Green color option"></button>
+                        <button class="hl-color-dot hl-color-dot--blue" data-color="blue" title="Blue" aria-label="Blue color option"></button>
+                        <button class="hl-color-dot hl-color-dot--pink" data-color="pink" title="Pink" aria-label="Pink color option"></button>
+                    </div>
+                </div>
 
                 <div class="relative" id="settings-container">
                     <button id="reader-settings-toggle" class="font-semibold" title="Reader Settings" aria-label="Reader Settings" style="display: none;">
@@ -697,6 +1059,40 @@
         {{ post.content|lazy_images|safe }}
     </div>
 
+    <!-- Post-content Interactive Toolbar -->
+    <div id="post-interactive-toolbar" class="flex items-center justify-between mt-6 px-2 py-4 border-t border-b border-[var(--border-color)]">
+        <div class="flex items-center gap-6">
+            <!-- Bottom Like Button Wrapper -->
+            <div id="bottom-like-interactive-wrapper" class="flex items-center gap-2">
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="bottom-like-btn-{{ post.sno }}">
+                </button>
+            </div>
+
+            <!-- Bottom Comment Skeleton -->
+            <div id="bottom-comment-btn-skeleton" class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+
+            <!-- Bottom Comment Button -->
+            <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="bottom-sidebar-comment-btn" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chat-left" viewBox="0 0 16 16">
+                    <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                </svg>
+                <span id="bottom-sidebar-comment-count" class="count text-color-dark">0</span>
+            </button>
+
+            <!-- Bottom Bookmark/Save Button -->
+            {% if request.user.is_authenticated %}
+            <div class="text-lg flex items-center justify-center cursor-pointer saveSVG px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)]" id="bottom-save-btn-{{ post.sno }}" data-sno="{{ post.sno }}">
+            </div>
+            {% else %}
+            <a class="text-lg flex items-center justify-center px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest" href="{% url 'handleLogin' %}?next={{ request.get_full_path|urlencode }}&msg=Please+login+to+save+posts.">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" class="text-color-darkest" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                </svg>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
     <hr class="my-10 all-border" id="interested-posts-hr">
     <h2 class="text-2xl text-color-darkest font-semibold mb-4" id="interested-posts-heading">
         You might also like
@@ -714,7 +1110,7 @@
     </h2>
 
     {% if user.is_authenticated %}
-    <form action="/blog/postComment" method="post" class="mb-8 w-full flex items-stretch gap-2">
+    <form action="/blog/postComment" method="post" class="mb-8 w-full flex items-stretch gap-2" data-ajax>
         {% csrf_token %}
         <input type="hidden" name="postSno" value="{{ post.sno }}">
         <input type="hidden" name="parentSno" value="">
@@ -723,7 +1119,7 @@
             type="text"
             name="comment"
             placeholder="Share your thoughts on this story..."
-            class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-6 py-3 input-box focus:outline-none">
+            class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-3 sm:px-6 py-2 sm:py-3 input-box text-xs sm:text-sm md:text-base placeholder:text-xs sm:placeholder:text-sm md:placeholder:text-base focus:outline-none">
 
         <button
             type="submit"
@@ -762,6 +1158,10 @@
         <span class="focus-exit-tooltip">Exit Focus Mode <kbd>Esc</kbd></span>
     </button>
 
+
+
+
+
     <!-- Focus Mode: Transition Overlay -->
     <div id="focus-transition-overlay"></div>
 
@@ -779,1508 +1179,211 @@
         <span id="focus-time-text">~{{ post.reading_time }} min left</span>
     </div>
 
-    
-    
+    <!-- Focus Mode: Table of Contents Sidebar -->
+    <aside id="focus-toc-sidebar" aria-label="Table of Contents">
+        <div class="focus-toc-header">Table of Contents</div>
+        <ul id="focus-toc-list"></ul>
+    </aside>
+
 </div>
 <!-- Advertisement -->
 
-<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="left: 10px ;width: max-content; height: 350px; text-align: center;">
+<div class="ad-sidebar border border-[var(--border-color)] bg-transparent text-color-darkest px-4 py-2 rounded-lg mb-4 fixed top-1/4" style="left: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
 </div>
-<div class="ad-sidebar all-border theme-medium theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition mb-4 fixed top-1/4" style="right: 10px ;width: max-content; height: 350px; text-align: center;">
+<div class="ad-sidebar border border-[var(--border-color)] bg-transparent text-color-darkest px-4 py-2 rounded-lg mb-4 fixed top-1/4" style="right: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
     <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
 </div>
+
+<!-- Comments Sidebar Drawer -->
+<div id="comments-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl z-[10005] translate-x-full transition-transform duration-300 flex flex-col border-l border-[var(--border-color)]">
+    <div class="p-4 border-b border-[var(--border-color)] flex items-center justify-between">
+        <h3 class="text-lg font-bold text-color-darkest">Comments</h3>
+        <button id="close-comments-sidebar" class="p-1 rounded-lg hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] text-color-darkest focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+        </button>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
+        <div id="sidebar-comments-list" class="space-y-6">
+            <!-- Skeletons will be rendered here on load -->
+            <div class="sidebar-skeleton-card skeleton-comment"></div>
+            <div class="sidebar-skeleton-card skeleton-comment"></div>
+        </div>
+        <div class="text-center mt-4 mb-4" style="display: none;" id="sidebar-read-more-container">
+            <button id="sidebar-read-more-comments" class="all-border theme-medium theme-medium-btn text-color-lightest px-6 py-2 rounded-lg transition font-semibold text-sm">
+                Read More Comments
+            </button>
+        </div>
+    </div>
+
+    <div class="p-4 border-t border-[var(--border-color)] bg-gray-50 dark:bg-[var(--bg-body)]">
+        {% if user.is_authenticated %}
+        <form id="sidebar-comment-form" action="/blog/postComment" method="post" class="flex gap-2" data-ajax>
+            {% csrf_token %}
+            <input type="hidden" name="postSno" value="{{ post.sno }}">
+            <input type="hidden" name="parentSno" value="">
+            <input
+                type="text"
+                name="comment"
+                placeholder="Write a comment..."
+                class="flex-1 border border-[var(--border-color)] bg-white dark:bg-[var(--bg-surface)] text-color-darkest rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[var(--theme-base)]">
+            <button type="submit" class="theme-medium hover:opacity-90 text-white rounded-lg px-5 py-3 text-sm font-semibold transition flex items-center justify-center">
+                Send
+            </button>
+        </form>
+        {% else %}
+        <p class="text-xs text-color-dark text-center">Please log in to post a comment.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Overlay backdrop for sidebar -->
+<div id="comments-sidebar-overlay" class="fixed inset-0 bg-black/40 z-[10004] hidden transition-opacity duration-300"></div>
 
     <script nonce="{{ request.csp_nonce }}">
-        let commentsPage = 1;
-        let commentsHasNext = false;
-        const loadMoreBtn = document.getElementById('read-more-comments');
-        
-        function updateLoadMoreVisibility() {
-            if (loadMoreBtn && loadMoreBtn.parentElement) {
-                if (commentsHasNext) {
-                    loadMoreBtn.parentElement.style.display = 'block';
-                } else {
-                    loadMoreBtn.parentElement.style.display = 'none';
-                }
-            }
-        }
-        
-        // Initial setup
-        updateLoadMoreVisibility();
-        
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', function() {
-                commentsPage++;
-                if (typeof window.loadMoreComments === 'function') {
-                    window.loadMoreComments();
-                }
-            });
-        }
+        // Blog Post Configuration — bridges Django template tags for external JS files
+        window.BlogPostConfig = {
+            slug: "{{ post.slug }}",
+            postSno: "{{ post.sno }}",
+            isAuthenticated: "{{ request.user.is_authenticated }}" === "True",
+            toggleLikeUrl: "{% url 'toggleLike' %}",
+            toggleBookmarkUrl: "{% url 'toggleBookmark' %}",
+            readingTime: {{ post.reading_time|default:3 }},
+        };
+    </script>
 
-        // Handle comment/reply submissions optimistically
-        function handleCommentSubmit(e) {
-            e.preventDefault(); // Stop standard submission
-            
-            const form = e.currentTarget;
-            const commentInput = form.querySelector('input[name="comment"]');
-            const commentText = commentInput.value.trim();
-            if (!commentText) return;
+    <script nonce="{{ request.csp_nonce }}">
+        document.addEventListener('DOMContentLoaded', function() {
+            const topLike = document.getElementById('like-btn-{{ post.sno }}');
+            const bottomLike = document.getElementById('bottom-like-btn-{{ post.sno }}');
+            const topLikeCount = document.getElementById('like-count-{{ post.sno }}');
+            const bottomLikeCount = document.getElementById('bottom-like-count-{{ post.sno }}');
 
-            const parentSnoInput = form.querySelector('input[name="parentSno"]');
-            const parentSno = parentSnoInput ? parentSnoInput.value : null;
-            const postSnoInput = form.querySelector('input[name="postSno"]');
-            const postSno = postSnoInput.value;
-            const username = window.CURRENT_USER || "{{ request.user.username }}";
+            const topCommentBtn = document.getElementById('sidebar-comment-btn');
+            const bottomCommentBtn = document.getElementById('bottom-sidebar-comment-btn');
+            const topCommentCount = document.getElementById('sidebar-comment-count');
+            const bottomCommentCount = document.getElementById('bottom-sidebar-comment-count');
 
-            // Generate a temporary ID for the optimistic element
-            const tempId = "temp-" + Date.now();
-            
-            // Clear the input
-            commentInput.value = "";
+            const topSave = document.getElementById('save-btn-{{ post.sno }}');
+            const bottomSave = document.getElementById('bottom-save-btn-{{ post.sno }}');
 
-            // Construct optimistic HTML
-            let newCommentHTML = "";
-            if (parentSno) {
-                // It's a reply
-                newCommentHTML = `
-                <div id="${tempId}" class="flex gap-3 ml-8 pl-4 opacity-70" style="border-left: 1px solid var(--theme-light)">
-                    <img loading="lazy" src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${username}">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <b class="text-color-darkest font-semibold">${username}</b>
-                            <span class="text-xs text-color-dark">Just now</span>
-                        </div>
-                        <p class="text-color-darkest">${commentText}</p>
-                    </div>
-                </div>`;
-                
-                // Find the parent comment's reply container and append
-                const parentItem = form.closest('.comment-item');
-                if (parentItem) {
-                    const replyContainer = parentItem.querySelector('.mt-4.space-y-4');
-                    if (replyContainer) {
-                        replyContainer.insertAdjacentHTML('beforeend', newCommentHTML);
-                    }
-                }
-                
-                // Optionally close details tag
-                const detailsTag = form.closest('details');
-                if (detailsTag) detailsTag.removeAttribute('open');
-
-            } else {
-                // Top-level comment
-                newCommentHTML = `
-                <div id="${tempId}" class="comment-item bg-white rounded-xl mb-6 card-shadow opacity-70" style="border-left: 4px solid var(--theme-base);">
-                    <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                        <div class="flex items-start gap-4">
-                            <img loading="lazy" src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${username}">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                    <b class="font-semibold text-color-darkest">${username} (You)</b>
-                                    <span class="text-xs text-color-dark">Just now</span>
-                                </div>
-                                <p class="text-color-darkest mt-1">${commentText}</p>
-                                <div class="mt-3">
-                                    <details>
-                                        <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
-                                        <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2 optimistic-form">
-                                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                            <input type="hidden" name="postSno" value="${postSno}">
-                                            <input type="hidden" name="parentSno" value="">
-                                            <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-                                            <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                </svg>
-                                                <span class="hidden sm:inline">Reply</span>
-                                            </button>
-                                        </form>
-                                    </details>
-                                </div>
-                                <div class="mt-4 space-y-4"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                
-                const commentsContainer = document.getElementById('comments-container');
-                if (commentsContainer) {
-                    commentsContainer.insertAdjacentHTML('afterbegin', newCommentHTML);
-                    
-                    const newlyInserted = document.getElementById(tempId);
-                    if(newlyInserted) {
-                        const newForm = newlyInserted.querySelector('form');
-                        if(newForm) newForm.addEventListener('submit', handleCommentSubmit);
-                    }
-                }
-                
-                const heading = document.getElementById('comments-section');
-                if(heading) {
-                    const countMatch = heading.innerText.match(/\d+/);
-                    if(countMatch) {
-                        const newCount = parseInt(countMatch[0]) + 1;
-                        heading.innerText = `Comments (${newCount})`;
-                    }
-                }
-            }
-            fetch("/blog/postComment", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: JSON.stringify({
-                    comment: commentText,
-                    postSno: postSno,
-                    parentSno: parentSno
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                const tempEl = document.getElementById(tempId);
-                if (data.status === "success") {
-                    if (tempEl) {
-                        tempEl.classList.remove('opacity-70');
-                        if (!parentSno) {
-                            tempEl.dataset.commentSno = data.comment_sno;
-                            const newParentInput = tempEl.querySelector('input[name="parentSno"]');
-                            if (newParentInput) newParentInput.value = data.comment_sno;
-                        }
-                    }
-                } else {
-                    if (tempEl) tempEl.remove();
-                    commentInput.value = commentText; 
-                    console.error("Error posting comment:", data.message);
-                }
-            })
-            .catch(err => {
-                const tempEl = document.getElementById(tempId);
-                if (tempEl) tempEl.remove();
-                commentInput.value = commentText; 
-                console.error("Error posting comment:", err);
-                showToast('Failed to post comment. Please try again.', 'error');
-            });
-        }
-        document.addEventListener("DOMContentLoaded", () => {
-            const slug = "{{ post.slug }}";
-            const postSno = "{{ post.sno }}";
-            
-            // 1. Fetch Post State (Likes, Bookmarks, Views, Interested)
-            fetch(`/blog/api/${slug}/state/`)
-                .then(res => {
-                    if (res.status === 429) {
-                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
-                        throw new Error("Rate limited");
-                    }
-                    if (!res.ok) {
-                        throw new Error('Server error (' + res.status + ')');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    // Update Views
-                    const viewsContainer = document.getElementById('post-views-container');
-                    if(viewsContainer) viewsContainer.innerHTML = `· ${data.views} views`;
-
-                    // Update Like Button
-                    const likeSkeletonWrapper = document.getElementById('like-skeleton-wrapper');
-                    if (likeSkeletonWrapper) likeSkeletonWrapper.classList.add('hidden');
-
-                    const likeBtn = document.getElementById(`like-btn-${postSno}`);
-                    const likeCountContainer = document.getElementById('like-container');
-                    const likeCountSpan = document.getElementById(`like-count-${postSno}`);
-                    const likeInteractiveWrapper = document.getElementById('like-interactive-wrapper');
-                    
-                    if (likeBtn && likeCountContainer && likeCountSpan) {
-                        if(data.liked) {
-                            likeBtn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
-                        } else {
-                            likeBtn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
-                        }
-                        likeCountSpan.innerText = data.likes;
-                        if(likeInteractiveWrapper) likeInteractiveWrapper.style.display = 'flex';
-                    }
-
-                    // Update Bookmark Button
-                    const saveBtn = document.getElementById(`save-btn-${postSno}`);
-                    if (saveBtn) {
-                        if(data.bookmarked) {
-                            saveBtn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-darkest w-6 h-6' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
-                        } else {
-                            saveBtn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest' fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
-                        }
-                        saveBtn.style.display = 'flex';
-                    }
-
-                    // Update Interested Posts
-                    if (data.interestedPosts && data.interestedPosts.length > 0) {
-                        const interestedContainer = document.getElementById('interested-posts-container');
-                        const interestedHeading = document.getElementById('interested-posts-heading');
-                        const interestedHr = document.getElementById('interested-posts-hr');
-                        
-                        if(interestedContainer && interestedHeading && interestedHr) {
-                            let html = "";
-                            data.interestedPosts.forEach(p => {
-                                html += `
-                                <a href="/blog/${encodeURIComponent(p.slug)}" class="bg-white rounded-xl hover:shadow-lg transition relative fade-in block h-full group" style="border-left: 4px solid var(--theme-base);">
-                                    <div class="p-5 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                                        <div class="text-xs font-medium mb-1" style="color: var(--theme-base);">
-                                            ${escapeHtml(p.timestamp)} · ${escapeHtml(p.views)} views · ${escapeHtml(p.likes)} likes <span class="reading-time-container"><span class="reading-time-separator"> · </span><span style='display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;'><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${p.reading_time} min</span></span>
-                                        </div>
-                                        <h3 class="text-lg font-semibold mb-1 text-color-darkest group-hover:text-[var(--theme-base)] transition">${escapeHtml(p.title)}</h3>
-                                        <p class="text-sm mb-2" style="color: #6b7280; font-weight: 500;">Category: ${escapeHtml(p.category)}</p>
-                                        <p class="text-sm" style="color: #4b5563;">${escapeHtml(p.summary)}</p>
-                                    </div>
-                                </a>`;
-                            });
-                            interestedContainer.innerHTML = html;
-                            interestedContainer.classList.remove('hidden');
-                            interestedHeading.classList.remove('hidden');
-                            interestedHr.classList.remove('hidden');
-                        }
-                    }
-
-                    // ── Scroll Restoration ──
-                    let savedProgress = 0;
-                    if (window.USER_IS_AUTHENTICATED) {
-                        savedProgress = data.scroll_progress || 0;
-                    } else {
-                        try {
-                            const raw = localStorage.getItem('articlio_history');
-                            if (raw) {
-                                const entries = JSON.parse(raw);
-                                const entry = entries.find(e => e.sno == postSno);
-                                if (entry) savedProgress = entry.scroll_progress || 0;
-                            }
-                        } catch(e) {}
-                    }
-                    if (savedProgress > 1) {
-                        // Delay slightly to let the page render fully
-                        setTimeout(() => {
-                            const contentArea = document.querySelector('.ql-editor');
-                            if (!contentArea) return;
-                            const contentTop = contentArea.getBoundingClientRect().top + window.scrollY;
-                            const contentHeight = contentArea.offsetHeight;
-                            const scrollTarget = contentTop + (savedProgress / 100) * contentHeight - window.innerHeight;
-                            window.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
-                        }, 500);
-                    }
-                })
-                .catch(err => {
-                    if (err.message === 'Rate limited') return;
-                    console.error("Error fetching post state:", err);
-                    showToast('Failed to load post details. Please refresh.', 'error');
-                    // Remove stuck skeletons and show defaults
-                    const likeSkeletonWrapper = document.getElementById('like-skeleton-wrapper');
-                    if (likeSkeletonWrapper) likeSkeletonWrapper.classList.add('hidden');
-                    const viewsContainer = document.getElementById('post-views-container');
-                    if(viewsContainer) viewsContainer.innerHTML = '';
-                    const likeBtn = document.getElementById(`like-btn-${postSno}`);
-                    if(likeBtn) { likeBtn.style.display = 'inline-flex'; likeBtn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>"; }
-                    const likeCountContainer = document.getElementById('like-container');
-                    if(likeCountContainer) likeCountContainer.style.display = 'inline-flex';
+            // Sync clicks & animations
+            function triggerBounce(btn) {
+                if (!btn) return;
+                btn.classList.remove('like-bounce');
+                void btn.offsetWidth;
+                btn.classList.add('like-bounce');
+                btn.addEventListener('animationend', function onEnd() {
+                    btn.classList.remove('like-bounce');
+                    btn.removeEventListener('animationend', onEnd);
                 });
-
-            // ── History: Scroll Tracking (based on .ql-editor content area only) ──
-            const contentEl = document.querySelector('.ql-editor');
-            function getScrollProgress() {
-                if (!contentEl) return 0;
-                const rect = contentEl.getBoundingClientRect();
-                const contentTop = rect.top + window.scrollY;
-                const contentHeight = contentEl.offsetHeight;
-                if (contentHeight <= 0) return 0;
-                const scrolledIntoContent = window.scrollY + window.innerHeight - contentTop;
-                const progress = (scrolledIntoContent / contentHeight) * 100;
-                return Math.min(100, Math.max(0, Math.round(progress)));
             }
 
-            let scrollTrackTimer = null;
-            let lastSyncedProgress = -1;
-
-            function syncScrollProgress() {
-                const progress = getScrollProgress();
-                if (progress === lastSyncedProgress) return;
-                lastSyncedProgress = progress;
-
-                if (window.USER_IS_AUTHENTICATED) {
-                    // POST to server
-                    fetch('/blog/api/history/track/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': window.CSRF_TOKEN
-                        },
-                        body: JSON.stringify({
-                            post_sno: postSno,
-                            scroll_progress: progress
-                        })
-                    }).catch(() => {});
-                } else {
-                    // Save to localStorage
-                    try {
-                        const HISTORY_LS_KEY = 'articlio_history';
-                        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-                        const raw = localStorage.getItem(HISTORY_LS_KEY);
-                        let entries = raw ? JSON.parse(raw) : [];
-                        const cutoff = Date.now() - SEVEN_DAYS_MS;
-                        entries = entries.filter(e => e.ts >= cutoff);
-                        const idx = entries.findIndex(e => e.sno == postSno);
-                        const entry = { sno: parseInt(postSno), scroll_progress: progress, ts: Date.now(), slug: slug };
-                        if (idx >= 0) {
-                            entries[idx] = entry;
-                        } else {
-                            entries.unshift(entry);
-                        }
-                        localStorage.setItem(HISTORY_LS_KEY, JSON.stringify(entries));
-                    } catch(e) {}
+            function triggerParticles(btn) {
+                if (!btn) return;
+                const wrapper = btn.parentElement;
+                if (!wrapper) return;
+                wrapper.style.position = 'relative';
+                for (let i = 0; i < 6; i++) {
+                    const particle = document.createElement('span');
+                    particle.className = 'like-particle';
+                    const angle = (Math.PI * 2 / 6) * i + (Math.random() * 0.5 - 0.25);
+                    const dist = 18 + Math.random() * 14;
+                    particle.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+                    particle.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+                    particle.style.left = (btn.offsetLeft + btn.offsetWidth / 2 - 3) + 'px';
+                    particle.style.top = (btn.offsetTop + btn.offsetHeight / 2 - 3) + 'px';
+                    const colors = ['var(--theme-base)', 'var(--theme-light)', 'var(--theme-dark)', '#f59e0b', '#ef4444', '#10b981'];
+                    particle.style.background = colors[i % colors.length];
+                    wrapper.appendChild(particle);
+                    particle.addEventListener('animationend', function() { this.remove(); });
                 }
             }
 
-            // ── Reading Progress Bar ──
-            const progressContainer = document.querySelector('.reading-progress-container');
-            const mainNav = document.getElementById('main-nav');
-            if (mainNav && progressContainer) {
-                mainNav.appendChild(progressContainer);
-            }
-
-            const readingProgressBar = document.getElementById('reading-progress-bar');
-            function updateReadingProgressBar() {
-                if (!contentEl || !readingProgressBar) return;
-                const rect = contentEl.getBoundingClientRect();
-                const contentHeight = contentEl.offsetHeight;
-                
-                const elementTop = rect.top;
-                const elementBottom = rect.bottom;
-                const viewportHeight = window.innerHeight;
-                
-                const startY = 100; // Top boundary (navbar offset)
-                const endY = viewportHeight; // Bottom boundary
-                
-                let progress = 0;
-                if (elementTop > startY) {
-                    progress = 0;
-                } else if (elementBottom < endY) {
-                    progress = 100;
-                } else {
-                    const totalRange = (contentHeight + startY) - endY;
-                    const currentScrolled = startY - elementTop;
-                    progress = (currentScrolled / totalRange) * 100;
-                }
-                
-                readingProgressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
-            }
-
-            // ── Focus Mode Reading Indicators ──
-            const focusProgressBar = document.getElementById('focus-progress-bar');
-            const focusTimeText = document.getElementById('focus-time-text');
-            const totalReadingTime = parseInt(document.getElementById('focus-time-remaining')?.dataset.totalTime) || 3;
-
-            window.updateFocusReadingIndicators = function() {
-                if (!contentEl) return;
-                const rect = contentEl.getBoundingClientRect();
-                const contentHeight = contentEl.offsetHeight;
-                const viewportHeight = window.innerHeight;
-                let progress = 0;
-                if (rect.top > 0) {
-                    progress = 0;
-                } else if (rect.bottom < viewportHeight) {
-                    progress = 100;
-                } else {
-                    const totalRange = contentHeight - viewportHeight;
-                    if (totalRange > 0) {
-                        progress = (-rect.top / totalRange) * 100;
+            if (bottomLike && topLike) {
+                bottomLike.addEventListener('click', () => {
+                    if (window.BlogPostConfig && window.BlogPostConfig.isAuthenticated !== true) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('Please login to like posts.');
+                        return;
                     }
-                }
-                progress = Math.min(100, Math.max(0, progress));
-                if (focusProgressBar) {
-                    focusProgressBar.style.width = progress + '%';
-                }
-                if (focusTimeText) {
-                    const remaining = Math.max(0, Math.ceil(totalReadingTime * (1 - progress / 100)));
-                    if (progress >= 98) {
-                        focusTimeText.textContent = 'Finished!';
-                    } else if (remaining < 1) {
-                        focusTimeText.textContent = '< 1 min left';
-                    } else {
-                        focusTimeText.textContent = '~' + remaining + ' min left';
+                    const isLiked = topLike.innerHTML.includes('bi-heart-fill');
+                    if (!isLiked) {
+                        triggerParticles(bottomLike);
                     }
-                }
-            };
-
-            window.addEventListener('scroll', () => {
-                updateReadingProgressBar();
-                window.updateFocusReadingIndicators();
-                clearTimeout(scrollTrackTimer);
-                scrollTrackTimer = setTimeout(syncScrollProgress, 2000);
-            });
-
-            window.addEventListener('resize', () => {
-                updateReadingProgressBar();
-                window.updateFocusReadingIndicators();
-            });
-
-            // Also sync on page unload to capture final position
-            window.addEventListener('beforeunload', () => {
-                syncScrollProgress();
-            });
-
-            // Sync once on load to record the visit and init progress bar
-            syncScrollProgress();
-            updateReadingProgressBar();
-            window.updateFocusReadingIndicators();
-
-
-            // 2. Shared comment renderer
-            function renderComment(c, isOwn) {
-                let repliesHtml = "";
-                c.replies.forEach(r => {
-                    repliesHtml += `
-                    <div class="flex gap-3 ml-8 pl-4" style="border-left: 1px solid var(--theme-light)">
-                        <img loading="lazy" src="/static/img/user.webp" class="w-9 h-9 rounded-full" alt="${escapeHtml(r.username)}">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <b class="text-color-darkest font-semibold">${escapeHtml(r.username)}</b>
-                                <span class="text-xs text-color-dark">${escapeHtml(r.timestamp)}</span>
-                            </div>
-                            <p class="text-color-darkest">${escapeHtml(r.comment)}</p>
-                        </div>
-                    </div>`;
+                    triggerBounce(bottomLike);
+                    topLike.click();
                 });
-
-                const replyForm = window.USER_IS_AUTHENTICATED === true ? `
-                    <details>
-                        <summary class="cursor-pointer text-sm text-color-darkest hover:underline">Reply</summary>
-                        <form action="/blog/postComment" method="post" class="mt-3 w-full flex items-stretch gap-2">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                            <input type="hidden" name="postSno" value="${postSno}">
-                            <input type="hidden" name="parentSno" value="${c.sno}">
-                            <input type="text" name="comment" placeholder="Write a reply..." class="w-full all-border theme-medium theme-medium-btn text-color-lightest rounded-lg px-4 py-2 input-box focus:outline-none">
-                            <button type="submit" class="all-border theme-medium flex items-center gap-2 theme-medium-btn text-color-lightest px-4 py-2 rounded-lg transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/></svg>
-                                <span class="hidden sm:inline">Reply</span>
-                            </button>
-                        </form>
-                    </details>` : '';
-
-                return `
-                <div class="comment-item bg-white rounded-xl mb-6 card-shadow fade-in" data-comment-sno="${c.sno}" style="border-left: 4px solid var(--theme-base);">
-                    <div class="p-4 flex flex-col h-full rounded-xl" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                        <div class="flex items-start gap-4">
-                            <img loading="lazy" src="/static/img/user.webp" class="w-12 h-12 rounded-full" alt="${escapeHtml(c.username)}">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                    <b class="font-semibold text-color-darkest">${escapeHtml(c.username)} ${isOwn ? '(You)' : ''}</b>
-                                    <span class="text-xs text-color-dark">${escapeHtml(c.timestamp)}</span>
-                                </div>
-                                <p class="text-color-darkest mt-1">${escapeHtml(c.comment)}</p>
-                                <div class="mt-3">
-                                    ${replyForm}
-                                </div>
-                                <div class="mt-4 space-y-4">
-                                    ${repliesHtml}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+                
+                topLike.addEventListener('click', () => {
+                    if (window.BlogPostConfig && window.BlogPostConfig.isAuthenticated !== true) {
+                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('Please login to like posts.');
+                        return;
+                    }
+                    const isLiked = topLike.innerHTML.includes('bi-heart-fill');
+                    if (!isLiked) {
+                        triggerParticles(bottomLike);
+                    }
+                    triggerBounce(bottomLike);
+                });
             }
 
-            // Load more comments (appends to existing)
-            window.loadMoreComments = function() {
-                const commentsContainer = document.getElementById('comments-container');
-                if (!commentsContainer) return;
+            if (bottomCommentBtn && topCommentBtn) {
+                bottomCommentBtn.addEventListener('click', () => topCommentBtn.click());
+            }
 
-                // Add 5 skeleton loaders
-                const skeletonHtml = Array(5).fill(`
-                    <div class="comment-item bg-white rounded-xl mb-6 card-shadow skeleton-comment fade-in" style="border-left: 4px solid var(--theme-base); height: 120px;">
-                        <div class="p-4 flex h-full rounded-xl skeleton" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;"></div>
-                    </div>`).join('');
-                commentsContainer.insertAdjacentHTML('beforeend', skeletonHtml);
+            if (bottomSave && topSave) {
+                bottomSave.addEventListener('click', () => {
+                    triggerBounce(bottomSave);
+                    topSave.click();
+                });
+                
+                topSave.addEventListener('click', () => {
+                    triggerBounce(bottomSave);
+                });
+            }
 
-                fetch(`/blog/api/${slug}/comments/?page=${commentsPage}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('Server error (' + res.status + ')');
-                        return res.json();
-                    })
-                    .then(data => {
-                        const commentsContainer = document.getElementById('comments-container');
-                        if (!commentsContainer) return;
-
-                        // Remove skeleton loaders
-                        const skeletons = commentsContainer.querySelectorAll('.skeleton-comment');
-                        skeletons.forEach(s => s.remove());
-
-                        let html = "";
-                        data.other_comments.forEach(c => html += renderComment(c, false));
-                        commentsContainer.insertAdjacentHTML('beforeend', html);
-
-                        commentsHasNext = data.has_next;
-                        updateLoadMoreVisibility();
-
-                        // Bind reply forms on new comments
-                        commentsContainer.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
-                            form.removeEventListener('submit', handleCommentSubmit);
-                            form.addEventListener('submit', handleCommentSubmit);
-                        });
-                    })
-                    .catch(err => {
-                        console.error("Error loading more comments:", err);
-                        showToast('Failed to load more comments.', 'error');
-                        commentsPage--; // Revert page increment on error
-                        
-                        const commentsContainer = document.getElementById('comments-container');
-                        if (commentsContainer) {
-                            const skeletons = commentsContainer.querySelectorAll('.skeleton-comment');
-                            skeletons.forEach(s => s.remove());
+            // Sync contents/states using MutationObserver
+            function syncElements(source, target, isLikeBtn = false) {
+                if (source && target) {
+                    if (isLikeBtn) {
+                        target.innerHTML = source.innerHTML.replace(/like-count-/g, 'bottom-like-count-');
+                    } else {
+                        target.innerHTML = source.innerHTML;
+                    }
+                    const observer = new MutationObserver(() => {
+                        if (isLikeBtn) {
+                            target.innerHTML = source.innerHTML.replace(/like-count-/g, 'bottom-like-count-');
+                        } else {
+                            target.innerHTML = source.innerHTML;
                         }
                     });
+                    observer.observe(source, { childList: true, characterData: true, subtree: true });
+                }
             }
 
-            // 3. Initial comments fetch (page 1)
-            fetch(`/blog/api/${slug}/comments/?page=1`)
-                .then(res => {
-                    if (res.status === 429) {
-                        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search) + '&msg=' + encodeURIComponent('You have reached the request limit. Please login to continue browsing.');
-                        throw new Error("Rate limited");
-                    }
-                    if (!res.ok) {
-                        throw new Error('Server error (' + res.status + ')');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    const commentsContainer = document.getElementById('comments-container');
-                    if (!commentsContainer) return;
-                    
-                    const heading = document.getElementById('comments-section');
-                    if(heading) heading.innerText = `Comments (${data.total})`;
-                    
-                    let html = "";
-                    data.own_comments.forEach(c => html += renderComment(c, true));
-                    data.other_comments.forEach(c => html += renderComment(c, false));
-                    
-                    commentsContainer.innerHTML = html || '<p class="text-color-darkest mb-6">No comments yet.</p>';
-                    
-                    commentsHasNext = data.has_next;
-                    updateLoadMoreVisibility();
-                    
-                    document.querySelectorAll('form[action="/blog/postComment"]').forEach(form => {
-                        form.addEventListener('submit', handleCommentSubmit);
-                    });
-                })
-                .catch(err => {
-                    if (err.message === 'Rate limited') return;
-                    console.error("Error fetching comments:", err);
-                    showToast('Failed to load comments.', 'error');
-                    const commentsContainer = document.getElementById('comments-container');
-                    if (commentsContainer) commentsContainer.innerHTML = '<p class="text-color-darkest mb-6">Failed to load comments.</p>';
-                });
-
-            // 4. Click delegation for related post cards overlay
-            const interestedContainer = document.getElementById('interested-posts-container');
-            if (interestedContainer) {
-                interestedContainer.addEventListener('click', function(e) {
-                    const card = e.target.closest('a');
-                    if (card && !card.querySelector('.related-card-overlay')) {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'related-card-overlay';
-                        overlay.innerHTML = `
-                            <svg class="w-8 h-8 animate-spin text-[var(--theme-base)]" viewBox="0 0 24 24" fill="none">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                            </svg>
-                        `;
-                        card.appendChild(overlay);
-                    }
-                });
-            }
+            syncElements(topLike, bottomLike, true);
+            syncElements(topSave, bottomSave);
         });
     </script>
 {% endblock body %}
 {% block js %}
-<script nonce="{{ request.csp_nonce }}">
-    let lastLikeRequestTime = 0;
-    let likeDebounceTimer = null;
-    let likeToggleCount = 0;
-    let likeStateBeforeDebounce = null;
-    let likeCountBeforeDebounce = null;
-
-    function toggleLike(postId) {
-        const btn = document.getElementById(`like-btn-${postId}`);
-        if (!btn) return;
-
-        const countSpan = document.getElementById(`like-count-${postId}`);
-        if (!countSpan) return;
-
-        const isLiked = btn.innerHTML.includes('bi-hand-thumbs-down');
-        const originalCount = parseInt(countSpan.innerText) || 0;
-
-        // 1. IMMEDIATE OPTIMISTIC UPDATE
-        if (isLiked) {
-            btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
-            countSpan.innerText = Math.max(0, originalCount - 1);
-        } else {
-            btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
-            countSpan.innerText = originalCount + 1;
-        }
-
-        // 2. DEBOUNCE THE SERVER SYNC
-        if (likeToggleCount === 0) {
-            likeStateBeforeDebounce = isLiked;
-            likeCountBeforeDebounce = originalCount;
-        }
-        likeToggleCount++;
-        
-        clearTimeout(likeDebounceTimer);
-        likeDebounceTimer = setTimeout(() => {
-            // Only send ONE request if the net number of clicks was odd
-            if (likeToggleCount % 2 !== 0) {
-                const requestTime = Date.now();
-                lastLikeRequestTime = requestTime;
-
-                fetch("{% url 'toggleLike' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    },
-                    body: JSON.stringify({ 
-                        post_id: postId,
-                        timestamp: requestTime 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.timestamp && data.timestamp < lastLikeRequestTime) return;
-                    countSpan.innerText = Math.max(0, data.likes);
-                    // Update icon to match final server state
-                    if (data.status === "liked") {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
-                    } else {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Error syncing like:", err);
-                    showToast('Failed to update like. Please try again.', 'error');
-                    // Revert to pre-debounce state
-                    if (likeStateBeforeDebounce) {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Unlike</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-down' viewBox='0 0 16 16'><path d='M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1'/></svg>";
-                    } else {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Like</span> <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-hand-thumbs-up' viewBox='0 0 16 16'><path d='M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z'/></svg>";
-                    }
-                    countSpan.innerText = Math.max(0, likeCountBeforeDebounce);
-                });
-            }
-            likeToggleCount = 0;
-        }, 400);
-    };
-    
-
-    document.getElementById('like-btn-{{ post.sno }}').addEventListener("click", () => toggleLike("{{ post.sno }}"));
-    let bookmarkDebounceTimer = null;
-    let bookmarkToggleCount = 0;
-    let lastBookmarkRequestTime = 0;
-    let bookmarkStateBeforeDebounce = null;
-
-    function toggleBookmark(postId) {
-        const btn = document.getElementById(`save-btn-${postId}`);
-        if (!btn) return;
-
-        const originalContent = btn.innerHTML;
-        const isSaved = btn.innerHTML.includes('bi-bookmark-check-fill');
-
-        // 1. OPTIMISTIC UI UPDATE
-        if (isSaved) {
-            btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
-        } else {
-            btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
-        }
-
-        // 2. DEBOUNCE THE SERVER SYNC
-        if (bookmarkToggleCount === 0) {
-            bookmarkStateBeforeDebounce = isSaved;
-        }
-        bookmarkToggleCount++;
-        
-        clearTimeout(bookmarkDebounceTimer);
-        bookmarkDebounceTimer = setTimeout(() => {
-            // Only send ONE request if the net number of clicks was odd
-            if (bookmarkToggleCount % 2 !== 0) {
-                const requestTime = Date.now();
-                lastBookmarkRequestTime = requestTime;
-
-                fetch("{% url 'toggleBookmark' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    },
-                    body: JSON.stringify({ 
-                        post_id: postId,
-                        timestamp: requestTime 
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    // If a newer request was sent, ignore this response
-                    if (data.timestamp && data.timestamp < lastBookmarkRequestTime) return;
-                    
-                    // Keep server truth
-                    if (data.status === "unsave") {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
-                    } else {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Error syncing bookmark:", err);
-                    showToast('Failed to update bookmark. Please try again.', 'error');
-                    // Revert to pre-debounce state
-                    if (bookmarkStateBeforeDebounce) {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Saved</span> <svg xmlns='http://www.w3.org/2000/svg'  fill='currentColor' class='bi bi-bookmark-check-fill w-6 h-6 text-color-darkest' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>";
-                    } else {
-                        btn.innerHTML = "<span class='hidden sm:inline'>Save</span> <svg xmlns='http://www.w3.org/2000/svg' class='w-6 h-6 text-color-darkest'  fill='currentColor' class='bi bi-bookmark' viewBox='0 0 16 16'><path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z'/></svg>";
-                    }
-                });
-            }
-            bookmarkToggleCount = 0;
-        }, 400);
-    }
-    if(document.getElementById('save-btn-{{ post.sno }}')){
-
-        document.getElementById('save-btn-{{ post.sno }}').addEventListener("click", () => toggleBookmark("{{ post.sno }}"));
-    }
-
-    const btn = document.getElementById("toTopBtn");
-
-    window.addEventListener("scroll", () => {
-        if(window.scrollY > 100){
-            btn.classList.remove("hidden")
-        }
-        else{
-            btn.classList.add("hidden")
-        }
-    });
-
-    btn.addEventListener("click", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    if("{{request.user.is_authenticated}}"==="False"){
-        document.getElementById("like-btn-{{ post.sno }}").disabled = true;
-        document.getElementById("like-btn-{{ post.sno }}").style.cursor = "not-allowed";
-        document.getElementById("like-btn-{{ post.sno }}").classList.remove("theme-medium","theme-medium-btn","text-color-lightest");
-        document.getElementById("like-btn-{{ post.sno }}").classList.add("bg-gray-400","hover:bg-gray-700","cursor-not-allowed","text-white");
-    }
-    else{
-        document.getElementById("like-btn-{{ post.sno }}").disabled = false;
-        document.getElementById("like-btn-{{ post.sno }}").style.cursor = "pointer";
-        document.getElementById("like-btn-{{ post.sno }}").classList.remove("bg-gray-400","hover:bg-gray-700","cursor-not-allowed","text-white");
-        document.getElementById("like-btn-{{ post.sno }}").classList.add("theme-medium","theme-medium-btn","text-color-lightest");
-    }
-
-    // ── Font Size Control Logic ──
-    (function() {
-        const qlEditor = document.querySelector('.ql-editor');
-        const fontDecBtns = document.querySelectorAll('#font-dec, #font-dec-main');
-        const fontIncBtns = document.querySelectorAll('#font-inc, #font-inc-main');
-        const fontResetBtns = document.querySelectorAll('#font-reset, #font-reset-main');
-
-        const minSize = 12; // px
-        const maxSize = 24; // px
-        const defaultSize = 16; // px
-        const step = 2; // px
-
-        let currentFontSize = defaultSize;
-
-        try {
-            const savedSize = localStorage.getItem('articlio_font_size');
-            if (savedSize) {
-                const parsed = parseInt(savedSize, 10);
-                if (!isNaN(parsed) && parsed >= minSize && parsed <= maxSize) {
-                    currentFontSize = parsed;
-                }
-            }
-        } catch (e) {
-            console.warn('Failed to load font size from localStorage', e);
-        }
-
-        function updateFontSize(size) {
-            currentFontSize = size;
-            if (qlEditor) {
-                qlEditor.style.setProperty('--ql-font-size', `${currentFontSize}px`);
-            }
-
-            fontDecBtns.forEach(btn => btn.disabled = (currentFontSize <= minSize));
-            fontIncBtns.forEach(btn => btn.disabled = (currentFontSize >= maxSize));
-            
-            const percentage = Math.round((currentFontSize / defaultSize) * 100);
-            fontResetBtns.forEach(btn => {
-                btn.innerText = `${percentage}%`;
-            });
-
-            try {
-                localStorage.setItem('articlio_font_size', currentFontSize.toString());
-            } catch (e) {}
-        }
-
-        fontDecBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (currentFontSize > minSize) {
-                    updateFontSize(currentFontSize - step);
-                }
-            });
-        });
-
-        fontIncBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (currentFontSize < maxSize) {
-                    updateFontSize(currentFontSize + step);
-                }
-            });
-        });
-
-        fontResetBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                updateFontSize(defaultSize);
-            });
-        });
-
-        // Initialize
-        updateFontSize(currentFontSize);
-    })();
-
-    // ── Spacing Control Logic ──
-    (function() {
-        const qlEditor = document.querySelector('.ql-editor');
-        const spacingSelector = document.getElementById('spacing-selector');
-        if (!spacingSelector) return;
-
-        const SPACING_KEY = 'articlio_line_spacing';
-        const spacingMap = {
-            'compact': 1.4,
-            'comfortable': 1.75,
-            'spacious': 2.1
-        };
-
-        let currentSpacing = 'comfortable';
-
-        try {
-            const savedSpacing = localStorage.getItem(SPACING_KEY);
-            if (savedSpacing && spacingMap[savedSpacing] !== undefined) {
-                currentSpacing = savedSpacing;
-            }
-        } catch (e) {}
-
-        function applySpacing(spacing, saveToStorage) {
-            if (saveToStorage === undefined) saveToStorage = true;
-            currentSpacing = spacing;
-            const height = spacingMap[spacing];
-
-            if (qlEditor) {
-                qlEditor.style.setProperty('--ql-line-height', height);
-            }
-
-            // Update active class on spacing buttons
-            spacingSelector.querySelectorAll('.spacing-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.spacing === spacing);
-            });
-
-            if (saveToStorage) {
-                try {
-                    localStorage.setItem(SPACING_KEY, spacing);
-                } catch (e) {}
-            }
-        }
-
-        // Bind clicks
-        spacingSelector.querySelectorAll('.spacing-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                applySpacing(this.dataset.spacing);
-            });
-        });
-
-        // Initialize
-        applySpacing(currentSpacing, false);
-    })();
-
-    // ── Content Width Control Logic ──
-    (function() {
-        const maxW5xl = document.querySelector('.max-w-5xl');
-        const widthSelector = document.getElementById('width-selector');
-        if (!widthSelector) return;
-
-        const WIDTH_KEY = 'articlio_content_width';
-        const widthMap = {
-            'narrow': '40rem',
-            'medium': '48rem',
-            'wide': '56rem'
-        };
-
-        let currentWidth = 'medium';
-
-        try {
-            const savedWidth = localStorage.getItem(WIDTH_KEY);
-            if (savedWidth && widthMap[savedWidth] !== undefined) {
-                currentWidth = savedWidth;
-            }
-        } catch (e) {}
-
-        function applyWidth(width, saveToStorage) {
-            if (saveToStorage === undefined) saveToStorage = true;
-            currentWidth = width;
-            const remValue = widthMap[width];
-
-            if (maxW5xl) {
-                maxW5xl.style.setProperty('--focus-content-width', remValue);
-            }
-
-            // Update active class on width buttons
-            widthSelector.querySelectorAll('.width-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.width === width);
-            });
-
-            if (saveToStorage) {
-                try {
-                    localStorage.setItem(WIDTH_KEY, width);
-                } catch (e) {}
-            }
-        }
-
-        // Bind clicks
-        widthSelector.querySelectorAll('.width-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                applyWidth(this.dataset.width);
-            });
-        });
-
-        // Initialize
-        applyWidth(currentWidth, false);
-    })();
-
-    // ── Reader Settings Dropdown Toggle ──
-    (function() {
-        const toggleBtn = document.getElementById('reader-settings-toggle');
-        const dropdown = document.getElementById('reader-settings-dropdown');
-        if (!toggleBtn || !dropdown) return;
-
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            dropdown.classList.toggle('active');
-        });
-
-        dropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
-        document.addEventListener('click', function() {
-            dropdown.classList.remove('active');
-        });
-    })();
-
-    // ── Focus Mode Logic ──
-    (function() {
-        const toggleBtn = document.getElementById('focus-mode-toggle');
-        const floatExitBtn = document.getElementById('focus-mode-exit-float');
-        const transitionOverlay = document.getElementById('focus-transition-overlay');
-
-        // ── Reading Theme Selector Logic ──
-        const READING_THEME_KEY = 'articlio_reading_theme';
-        let currentReadingTheme = 'light'; // 'light' | 'sepia' | 'dark'
-        // Track the dark mode state the user had BEFORE entering focus mode
-        let darkModeBeforeFocus = document.documentElement.classList.contains('dark');
-
-        function applyReadingTheme(theme, saveToStorage) {
-            if (saveToStorage === undefined) saveToStorage = true;
-            currentReadingTheme = theme;
-            const html = document.documentElement;
-
-            // Remove sepia class
-            html.classList.remove('reading-theme-sepia');
-
-            if (theme === 'sepia') {
-                // Sepia: remove dark mode, add sepia class
-                html.classList.remove('dark');
-                html.classList.add('reading-theme-sepia');
-            } else if (theme === 'dark') {
-                // Dark: add dark mode
-                html.classList.add('dark');
-            } else {
-                // Light: remove dark mode
-                html.classList.remove('dark');
-            }
-
-            // Update active state on dots
-            document.querySelectorAll('.reading-theme-dot').forEach(function(dot) {
-                dot.classList.toggle('active', dot.dataset.theme === theme);
-            });
-
-            if (saveToStorage) {
-                try {
-                    localStorage.setItem(READING_THEME_KEY, theme);
-                } catch (e) {}
-            }
-        }
-
-        // Bind reading theme dot clicks
-        document.querySelectorAll('.reading-theme-dot').forEach(function(dot) {
-            dot.addEventListener('click', function() {
-                applyReadingTheme(this.dataset.theme);
-            });
-        });
-
-        // ── Inactivity Auto-Hide Logic ──
-        let exitBtnTimer = null;
-        let isHoveredOnExitBtn = false;
-
-        function resetExitBtnTimer() {
-            if (!floatExitBtn) return;
-            floatExitBtn.classList.remove('is-idle');
-            if (exitBtnTimer) clearTimeout(exitBtnTimer);
-            
-            const isActive = document.documentElement.classList.contains('focus-mode-active');
-            if (isActive && !isHoveredOnExitBtn) {
-                exitBtnTimer = setTimeout(function() {
-                    if (document.documentElement.classList.contains('focus-mode-active') && !isHoveredOnExitBtn) {
-                        floatExitBtn.classList.add('is-idle');
-                    }
-                }, 3000);
-            }
-        }
-
-        const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
-        function onUserActivity() {
-            resetExitBtnTimer();
-        }
-
-        function enableActivityListeners() {
-            activityEvents.forEach(function(evt) {
-                window.addEventListener(evt, onUserActivity, { passive: true });
-            });
-            resetExitBtnTimer();
-        }
-
-        function disableActivityListeners() {
-            activityEvents.forEach(function(evt) {
-                window.removeEventListener(evt, onUserActivity);
-            });
-            if (exitBtnTimer) clearTimeout(exitBtnTimer);
-            if (floatExitBtn) floatExitBtn.classList.remove('is-idle');
-        }
-
-        function setFocusMode(active, animate) {
-            if (animate === undefined) animate = true;
-            function doApply() {
-                const settingsToggleBtn = document.getElementById('reader-settings-toggle');
-                const dropdown = document.getElementById('reader-settings-dropdown');
-                if (active) {
-                    // Save the user's dark mode state before focus mode takes over
-                    darkModeBeforeFocus = document.documentElement.classList.contains('dark');
-                    document.documentElement.classList.add('focus-mode-active');
-                    enableActivityListeners();
-                    if (settingsToggleBtn) settingsToggleBtn.style.display = 'flex';
-                    if (toggleBtn) {
-                        toggleBtn.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
-                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
-                            </svg>
-                            <span>Exit Focus</span>
-                        `;
-                    }
-                    // Apply the saved reading theme
-                    try {
-                        var savedTheme = localStorage.getItem(READING_THEME_KEY);
-                        if (savedTheme && ['light', 'sepia', 'dark'].indexOf(savedTheme) !== -1) {
-                            applyReadingTheme(savedTheme, false);
-                        } else {
-                            // Auto-detect: if user was in dark mode, default to dark reading theme
-                            var detectedTheme = darkModeBeforeFocus ? 'dark' : 'light';
-                            applyReadingTheme(detectedTheme, false);
-                        }
-                    } catch (e) {
-                        var detectedTheme = darkModeBeforeFocus ? 'dark' : 'light';
-                        applyReadingTheme(detectedTheme, false);
-                    }
-                } else {
-                    document.documentElement.classList.remove('focus-mode-active');
-                    document.documentElement.classList.remove('reading-theme-sepia');
-                    disableActivityListeners();
-                    if (settingsToggleBtn) settingsToggleBtn.style.display = 'none';
-                    if (dropdown) dropdown.classList.remove('active');
-                    // Restore the dark mode state the user had before focus mode
-                    if (darkModeBeforeFocus) {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                    if (toggleBtn) {
-                        toggleBtn.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                            </svg>
-                            <span>Focus Mode</span>
-                        `;
-                    }
-                }
-                try {
-                    localStorage.setItem('articlio_focus_mode', active ? 'true' : 'false');
-                } catch (e) {}
-                if (typeof window.updateFocusReadingIndicators === 'function') {
-                    setTimeout(window.updateFocusReadingIndicators, 100);
-                }
-            }
-
-            if (animate && transitionOverlay) {
-                transitionOverlay.classList.add('active');
-                setTimeout(function() {
-                    doApply();
-                    setTimeout(function() {
-                        transitionOverlay.classList.remove('active');
-                    }, 50);
-                }, 350);
-            } else {
-                doApply();
-            }
-        }
-
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
-                const isActive = document.documentElement.classList.contains('focus-mode-active');
-                setFocusMode(!isActive);
-            });
-        }
-
-        if (floatExitBtn) {
-            floatExitBtn.addEventListener('mouseenter', () => {
-                isHoveredOnExitBtn = true;
-                floatExitBtn.classList.remove('is-idle');
-                if (exitBtnTimer) clearTimeout(exitBtnTimer);
-            });
-            floatExitBtn.addEventListener('mouseleave', () => {
-                isHoveredOnExitBtn = false;
-                resetExitBtnTimer();
-            });
-            floatExitBtn.addEventListener('click', () => {
-                setFocusMode(false);
-            });
-        }
-
-        // Keyboard shortcuts: Escape to exit, F to toggle
-        document.addEventListener('keydown', function(e) {
-            var tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
-            if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-            if (document.activeElement && document.activeElement.isContentEditable) return;
-
-            if (e.key === 'Escape' && document.documentElement.classList.contains('focus-mode-active')) {
-                e.preventDefault();
-                setFocusMode(false);
-            }
-
-            if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                var isActive = document.documentElement.classList.contains('focus-mode-active');
-                setFocusMode(!isActive);
-            }
-        });
-
-        // Initialize from localStorage (no animation on page load)
-        try {
-            const savedFocus = localStorage.getItem('articlio_focus_mode');
-            if (savedFocus === 'true') {
-                setFocusMode(true, false);
-            }
-        } catch (e) {}
-    })();
-
-    // ── Text-to-Speech (TTS) Integration ──
-    (function() {
-        const toggleBtn = document.getElementById('tts-toggle-btn');
-        const playerBar = document.getElementById('tts-player-bar');
-        const playPauseBtn = document.getElementById('tts-play-pause-btn');
-        const playIcon = document.getElementById('tts-play-icon');
-        const pauseIcon = document.getElementById('tts-pause-icon');
-        const skipBtn = document.getElementById('tts-skip-btn');
-        const speedBtn = document.getElementById('tts-speed-btn');
-        const speedLabel = document.getElementById('tts-speed-label');
-        const stopBtn = document.getElementById('tts-stop-btn');
-        const statusLabel = document.getElementById('tts-status-label');
-        const loader = document.getElementById('tts-loader');
-
-        if (!toggleBtn || !playerBar) return;
-
-        const speeds = [1.0, 1.25, 1.5, 2.0, 0.8];
-        let currentSpeedIndex = 0;
-        let isPlaying = false;
-        let isPaused = false;
-        let currentIndex = 0;
-        let speechChunks = [];
-        let activeToken = 0;
-        let currentUtterance = null;
-
-        function initChunks() {
-            speechChunks = [];
-            const editor = document.querySelector('.ql-editor');
-            if (!editor) return;
-            const elements = editor.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
-            elements.forEach(el => {
-                const txt = el.textContent ? el.textContent.trim() : '';
-                if (txt.length > 0) {
-                    speechChunks.push({ element: el, text: txt });
-                }
-            });
-        }
-
-        function prepareWordSpans(element) {
-            if (element.dataset.ttsOriginal) return;
-            element.dataset.ttsOriginal = element.innerHTML;
-            const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
-            const textNodes = [];
-            let node;
-            while (node = walk.nextNode()) {
-                textNodes.push(node);
-            }
-            let globalCharOffset = 0;
-            textNodes.forEach(tNode => {
-                const nodeText = tNode.nodeValue;
-                const words = nodeText.split(/(\s+)/);
-                const frag = document.createDocumentFragment();
-                let localOffset = 0;
-                words.forEach(w => {
-                    if (w.trim().length > 0) {
-                        const span = document.createElement('span');
-                        span.className = 'tts-word-span';
-                        const wordStart = globalCharOffset + localOffset;
-                        const wordEnd = wordStart + w.length;
-                        span.dataset.startIdx = wordStart;
-                        span.dataset.endIdx = wordEnd;
-                        span.textContent = w;
-                        frag.appendChild(span);
-                    } else {
-                        frag.appendChild(document.createTextNode(w));
-                    }
-                    localOffset += w.length;
-                });
-                globalCharOffset += nodeText.length;
-                if (tNode.parentNode) tNode.parentNode.replaceChild(frag, tNode);
-            });
-        }
-
-        function restoreElementHtml(element) {
-            if (element && element.dataset.ttsOriginal) {
-                element.innerHTML = element.dataset.ttsOriginal;
-                delete element.dataset.ttsOriginal;
-            }
-        }
-
-        function clearHighlights() {
-            document.querySelectorAll('.tts-reading-highlight').forEach(el => {
-                el.classList.remove('tts-reading-highlight');
-                restoreElementHtml(el);
-            });
-        }
-
-        function showLoader(show) {
-            if (!loader) return;
-            if (show) {
-                loader.classList.remove('hidden');
-            } else {
-                loader.classList.add('hidden');
-            }
-        }
-
-        function updateUIState() {
-            if (isPlaying && !isPaused) {
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-                toggleBtn.classList.add('active');
-            } else {
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-                if (!isPlaying && !isPaused) {
-                    toggleBtn.classList.remove('active');
-                }
-            }
-            if (speedLabel) speedLabel.textContent = speeds[currentSpeedIndex] + 'x';
-        }
-
-        function cancelActiveSpeech() {
-            activeToken++;
-            if (currentUtterance) {
-                currentUtterance.onstart = null;
-                currentUtterance.onend = null;
-                currentUtterance.onerror = null;
-                currentUtterance.onboundary = null;
-                currentUtterance = null;
-            }
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-        }
-
-        function speakCurrentChunk() {
-            if (!('speechSynthesis' in window)) {
-                alert('Text-to-Speech is not supported in your browser.');
-                return;
-            }
-
-            cancelActiveSpeech();
-            clearHighlights();
-
-            if (currentIndex < 0 || currentIndex >= speechChunks.length) {
-                stopTTS();
-                if (statusLabel) statusLabel.textContent = 'Finished reading aloud';
-                return;
-            }
-
-            const token = ++activeToken;
-            const chunk = speechChunks[currentIndex];
-            prepareWordSpans(chunk.element);
-            chunk.element.classList.add('tts-reading-highlight');
-            chunk.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            showLoader(true);
-            if (statusLabel) {
-                statusLabel.textContent = `Preparing section ${currentIndex + 1} of ${speechChunks.length}...`;
-            }
-
-            const utterance = new SpeechSynthesisUtterance(chunk.text);
-            utterance.rate = speeds[currentSpeedIndex];
-            currentUtterance = utterance;
-
-            utterance.onboundary = function(e) {
-                if (token !== activeToken) return;
-                const charIndex = e.charIndex;
-                const spans = chunk.element.querySelectorAll('.tts-word-span');
-                if (spans.length > 0) {
-                    spans.forEach(s => {
-                        const start = parseInt(s.dataset.startIdx, 10);
-                        const end = parseInt(s.dataset.endIdx, 10);
-                        if (charIndex >= start && charIndex < end) {
-                            s.classList.add('tts-word-active');
-                        } else {
-                            s.classList.remove('tts-word-active');
-                        }
-                    });
-                }
-            };
-
-            utterance.onstart = function() {
-                if (token !== activeToken) return;
-                showLoader(false);
-                if (statusLabel) {
-                    statusLabel.textContent = `Reading section ${currentIndex + 1} of ${speechChunks.length}`;
-                }
-            };
-
-            utterance.onend = function() {
-                if (token !== activeToken) return;
-                showLoader(false);
-                restoreElementHtml(chunk.element);
-                if (isPlaying && !isPaused) {
-                    currentIndex++;
-                    speakCurrentChunk();
-                }
-            };
-
-            utterance.onerror = function(e) {
-                if (token !== activeToken) return;
-                console.error('Speech synthesis error:', e);
-                showLoader(false);
-                restoreElementHtml(chunk.element);
-                if (isPlaying && !isPaused) {
-                    currentIndex++;
-                    speakCurrentChunk();
-                }
-            };
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function startOrToggleTTS() {
-            if (!('speechSynthesis' in window)) {
-                alert('Text-to-Speech is not supported in your browser.');
-                return;
-            }
-
-            if (playerBar.classList.contains('hidden')) {
-                playerBar.classList.remove('hidden');
-                playerBar.classList.add('flex');
-            }
-
-            if (!isPlaying && !isPaused) {
-                initChunks();
-                if (speechChunks.length === 0) {
-                    if (statusLabel) statusLabel.textContent = 'No text found to read';
-                    return;
-                }
-                isPlaying = true;
-                isPaused = false;
-                currentIndex = 0;
-                updateUIState();
-                speakCurrentChunk();
-            } else if (isPlaying && !isPaused) {
-                cancelActiveSpeech();
-                isPlaying = false;
-                isPaused = true;
-                showLoader(false);
-                if (statusLabel) statusLabel.textContent = 'Playback paused';
-                updateUIState();
-            } else if (isPaused) {
-                isPlaying = true;
-                isPaused = false;
-                updateUIState();
-                speakCurrentChunk();
-            }
-        }
-
-        function stopTTS() {
-            cancelActiveSpeech();
-            isPlaying = false;
-            isPaused = false;
-            currentIndex = 0;
-            clearHighlights();
-            showLoader(false);
-            updateUIState();
-            playerBar.classList.add('hidden');
-            playerBar.classList.remove('flex');
-            if (statusLabel) statusLabel.textContent = 'Ready to read aloud';
-        }
-
-        function skipForward() {
-            if (!isPlaying && !isPaused) return;
-            currentIndex++;
-            isPaused = false;
-            isPlaying = true;
-            updateUIState();
-            speakCurrentChunk();
-        }
-
-        function cycleSpeed() {
-            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
-            if (speedLabel) speedLabel.textContent = speeds[currentSpeedIndex] + 'x';
-            if (isPlaying && !isPaused) {
-                speakCurrentChunk();
-            }
-        }
-
-        toggleBtn.addEventListener('click', startOrToggleTTS);
-        playPauseBtn.addEventListener('click', startOrToggleTTS);
-        stopBtn.addEventListener('click', stopTTS);
-        skipBtn.addEventListener('click', skipForward);
-        speedBtn.addEventListener('click', cycleSpeed);
-
-        window.addEventListener('beforeunload', function() {
-            cancelActiveSpeech();
-        });
-    })();
-</script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/comments.js' %}?v=1.2"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/postState.js' %}?v=1.2"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/scrollTracking.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/readingProgress.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/likeToggle.js' %}?v=1.2"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/bookmarkToggle.js' %}?v=1.2"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/fontSizeControl.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/readerSettings.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/focusMode.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/tts.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/highlights.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/uiMisc.js' %}"></script>
 {% endblock js %}
-

@@ -32,5 +32,12 @@ module.exports = {
 
   'filter-bar',
   'ad-sidebar',
+
+  'post-card',
+  'card-enter-animate',
+  'like-bounce',
+  'like-particle',
+  'comment-enter-animate',
+  'btn-press',
 ],
 }

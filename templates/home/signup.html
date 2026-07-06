@@ -28,6 +28,170 @@
             font-family: 'Inter', system-ui, sans-serif;
         }
 
+        .close-msg {
+            cursor: pointer;
+        }
+
+        /* ── Glassmorphism & Animated Background ── */
+        body {
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--bg-body);
+        }
+
+        .auth-bg-decorations {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .auth-bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            animation: float-blob 25s infinite alternate ease-in-out;
+        }
+
+        .auth-bg-blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: var(--theme-base);
+        }
+
+        .auth-bg-blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: var(--theme-light);
+            animation-delay: -5s;
+        }
+
+        .auth-bg-blob-3 {
+            top: 30%;
+            left: 70%;
+            width: 35vw;
+            height: 35vw;
+            background: var(--theme-medium);
+            animation-delay: -10s;
+        }
+
+        @keyframes float-blob {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(5%, 10%) scale(1.1) rotate(60deg);
+            }
+            100% {
+                transform: translate(-5%, -5%) scale(0.9) rotate(120deg);
+            }
+        }
+
+        .auth-card-glass {
+            background: hsla(from var(--theme-base) h s l / 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid hsla(from var(--theme-base) h s l / 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
+            position: relative;
+            z-index: 10;
+        }
+
+        .dark .auth-card-glass {
+            background: hsla(from var(--theme-base) h calc(s * 0.3) 14% / 0.45);
+            border: 1px solid hsla(from var(--theme-base) h s 50% / 0.12);
+            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.35);
+        }
+
+        .auth-input-glass {
+            background: hsla(from var(--theme-base) h s l / 0.03) !important;
+            border: 1px solid hsla(from var(--theme-base) h s l / 0.15) !important;
+            color: var(--text-main) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-input-glass::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .auth-input-glass:focus {
+            background: hsla(from var(--theme-base) h s l / 0.06) !important;
+            border-color: var(--theme-base) !important;
+            box-shadow: 0 0 0 4px hsla(from var(--theme-base) h s 50% / 0.15) !important;
+            outline: none;
+        }
+
+        .dark .auth-input-glass {
+            background: hsla(from var(--theme-base) h calc(s * 0.3) 10% / 0.3) !important;
+            border: 1px solid hsla(from var(--theme-base) h s 50% / 0.15) !important;
+        }
+
+        .dark .auth-input-glass:focus {
+            background: hsla(from var(--theme-base) h calc(s * 0.3) 10% / 0.4) !important;
+            border-color: var(--theme-light) !important;
+            box-shadow: 0 0 0 4px hsla(from var(--theme-base) h s 50% / 0.25) !important;
+        }
+
+        .auth-btn-primary {
+            background: var(--theme-base) !important;
+            border: 1px solid var(--theme-medium) !important;
+            color: #ffffff !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 12px hsla(from var(--theme-base) h s l / 0.3) !important;
+            cursor: pointer;
+        }
+
+        .auth-btn-primary:not(:disabled):hover {
+            background: var(--theme-dark) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px hsla(from var(--theme-base) h s l / 0.4) !important;
+        }
+
+        .auth-btn-primary:not(:disabled):active {
+            transform: translateY(0) !important;
+        }
+
+        .auth-btn-primary:disabled {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+            background: var(--theme-light) !important;
+            border-color: var(--theme-light) !important;
+            box-shadow: none !important;
+        }
+
+        .auth-btn-secondary {
+            background: hsla(from var(--theme-base) h s l / 0.04) !important;
+            border: 1px solid hsla(from var(--theme-base) h s l / 0.15) !important;
+            color: var(--text-main) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .auth-btn-secondary:hover {
+            background: hsla(from var(--theme-base) h s l / 0.1) !important;
+            transform: translateY(-2px) !important;
+            border-color: hsla(from var(--theme-base) h s l / 0.25) !important;
+        }
+
+        .auth-btn-secondary:active {
+            transform: translateY(0) !important;
+        }
+
+        .auth-label {
+            color: var(--text-main) !important;
+        }
+
+        .auth-text-muted {
+            color: var(--text-muted) !important;
+        }
+
         /* ── Loader ── */
         #page-loader {
             position: fixed;
@@ -105,10 +269,37 @@
             transition: width 0.3s ease, opacity 0.3s ease;
             pointer-events: none;
         }
+
+        /* ── Micro-Animations ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
 
 <body class="theme-base-faded">
+    <!-- Animated Blob Backgrounds -->
+    <div class="auth-bg-decorations">
+        <div class="auth-bg-blob auth-bg-blob-1"></div>
+        <div class="auth-bg-blob auth-bg-blob-2"></div>
+        <div class="auth-bg-blob auth-bg-blob-3"></div>
+    </div>
+
     <div id="top-progress-bar"></div>
     <div id="page-loader">
         <div class="creative-loader">
@@ -120,7 +311,7 @@
     </div>
 
 
-    <div class="max-w-xl mx-auto px-4 py-12">
+    <div class="max-w-xl mx-auto px-4 py-12 relative z-10 animate-fade-in-up">
 
         {% for message in messages %}
         <div class="max-w-4xl mx-auto my-3 px-4">
@@ -135,9 +326,9 @@
 
         {% endfor %}
         <main>
-            <div class="mb-6 flex justify-start">
+            <div class="mb-6 flex justify-start animate-fade-in-up delay-100">
                 <a
-                    class="go-back-btn theme-medium all-border theme-medium-btn text-color-lightest px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+                    class="go-back-btn auth-btn-secondary px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-arrow-left" viewBox="0 0 16 16">
                         <path fill-rule="evenodd"
@@ -146,19 +337,19 @@
                     Go Back
                 </a>
             </div>
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-color-darkest">
+            <div class="text-center mb-10 animate-fade-in-up delay-100">
+                <h2 class="text-3xl font-bold text-color-darkest dark:text-color-lightest">
                     Sign Up
                 </h2>
-                <p class="text-color-darkest mt-3">
-                    Already have an account? <a href="/login" class="underline">Log In</a>
+                <p class="text-color-muted dark:text-color-lightest mt-3">
+                    Already have an account? <a href="/login" class="underline font-semibold text-color-darkest dark:text-color-lightest">Log In</a>
                 </p>
             </div>
 
-            <div class="theme-dark all-border hover-card-shadow transition rounded-xl p-8">
+            <div class="auth-card-glass transition-all duration-300 rounded-xl p-8 hover:shadow-2xl hover:scale-[1.01] animate-fade-in-up delay-200">
                 <div class="mb-6 space-y-3">
                     <a href="{% provider_login_url 'google' %}"
-                        class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
+                        class="w-full flex items-center justify-center gap-2 auth-btn-secondary px-4 py-2 rounded-lg font-medium transition">
                         <svg class="w-5 h-5" viewBox="0 0 48 48">
                             <path fill="#EA4335"
                                 d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
@@ -172,7 +363,7 @@
                         Sign Up with Google
                     </a>
                     <a href="{% provider_login_url 'github' %}"
-                        class="w-full flex items-center justify-center gap-2 theme-dark all-border text-color-lightest px-4 py-2 rounded-lg font-medium transition hover:opacity-80">
+                        class="w-full flex items-center justify-center gap-2 auth-btn-secondary px-4 py-2 rounded-lg font-medium transition">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd"
                                 d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
@@ -182,60 +373,60 @@
                     </a>
                 </div>
                 <div class="flex items-center my-6">
-                    <div class="flex-grow border-t border-gray-600"></div>
-                    <span class="mx-4 text-color-lightest text-sm uppercase">Or</span>
-                    <div class="flex-grow border-t border-gray-600"></div>
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="mx-4 auth-text-muted text-sm uppercase font-semibold">Or</span>
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
                 <form action="/signup" method="post" id="signupForm" class="space-y-6">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.GET.next }}">
                     <input type="hidden" name="verified" id="verified">
                     <div>
-                        <label for="username" class="block text-color-lightest font-medium mb-1">
+                        <label for="username" class="block auth-label font-medium mb-1">
                             Username
                         </label>
                         <input type="text" id="username" name="username"
-                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                            class="w-full rounded-lg auth-input-glass px-4 py-2 focus:outline-none input-box"
                             placeholder="Enter Username" value="{{ username|default:'' }}" required>
                         <p id="username-feedback" class="mt-2 text-sm hidden font-medium flex items-center gap-1"></p>
                     </div>
                     <div>
-                        <label for="name" class="block text-color-lightest font-medium mb-1">
+                        <label for="name" class="block auth-label font-medium mb-1">
                             Name
                         </label>
                         <input type="text" id="name" name="name"
-                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                            class="w-full rounded-lg auth-input-glass px-4 py-2 focus:outline-none input-box"
                             placeholder="Enter Your Name" value="{{ name|default:'' }}" required>
                     </div>
 
                     <div>
-                        <label for="email" class="block text-color-lightest font-medium mb-1">
+                        <label for="email" class="block auth-label font-medium mb-1">
                             Email address
                         </label>
                         <input type="email" id="email" name="email"
-                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box"
+                            class="w-full rounded-lg auth-input-glass px-4 py-2 focus:outline-none input-box"
                             placeholder="you@example.com" value="{{ email|default:'' }}" required>
                     </div>
                     <div>
-                        <label for="role" class="block text-color-lightest font-medium mb-1">Role</label>
+                        <label for="role" class="block auth-label font-medium mb-1">Role</label>
                         <select id="role" name="role"
-                            class="w-full rounded-lg theme-dark all-border text-color-lightest px-4 py-2 focus:outline-none input-box">
+                            class="w-full rounded-lg auth-input-glass px-4 py-2 focus:outline-none input-box">
                             <option value="reader" {% if role == "reader" or not role %}selected{% endif %}>Reader
                             </option>
                             <option value="author" {% if role == "author" %}selected{% endif %}>Author</option>
                         </select>
-                        <p class="text-color-lightest mt-3 note"></p>
+                        <p class="auth-text-muted mt-3 note"></p>
                     </div>
                     <div>
-                        <label for="pass1" class="block text-color-lightest font-medium mb-1">
+                        <label for="pass1" class="block auth-label font-medium mb-1">
                             Password
                         </label>
                         <div class="relative">
                             <input type="password" id="pass1" name="pass1"
-                                class="w-full rounded-lg theme-dark all-border text-color-lightest pl-4 pr-10 py-2 focus:outline-none input-box"
+                                class="w-full rounded-lg auth-input-glass pl-4 pr-10 py-2 focus:outline-none input-box"
                                 placeholder="Select Strong Password" required>
                             <button type="button"
-                                class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none flex items-center justify-center p-1 text-color-light hover:text-color-lightest transition-colors"
+                                class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none flex items-center justify-center p-1 auth-text-muted hover:text-color-darkest dark:hover:text-color-lightest transition-colors"
                                 data-target="pass1" aria-label="Toggle Password Visibility">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-5 h-5 eye-icon">
@@ -246,22 +437,22 @@
                                 </svg>
                             </button>
                         </div>
-                        <p class="text-xs text-color-lightest opacity-70 mt-1 ml-1">Password must be at least 6
+                        <p class="text-xs auth-text-muted opacity-70 mt-1 ml-1">Password must be at least 6
                             characters</p>
                         <div class="mt-2 py-3 px-2 rounded-lg" id="strength" style="display: none;">
 
                         </div>
                     </div>
                     <div>
-                        <label for="pass2" class="block text-color-lightest font-medium mb-1">
+                        <label for="pass2" class="block auth-label font-medium mb-1">
                             Again Enter Your Password
                         </label>
                         <div class="relative">
                             <input type="password" id="pass2" name="pass2"
-                                class="w-full rounded-lg theme-dark all-border text-color-lightest pl-4 pr-10 py-2 focus:outline-none input-box"
+                                class="w-full rounded-lg auth-input-glass pl-4 pr-10 py-2 focus:outline-none input-box"
                                 placeholder="Re-enter Password" required>
                             <button type="button"
-                                class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none flex items-center justify-center p-1 text-color-light hover:text-color-lightest transition-colors"
+                                class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none flex items-center justify-center p-1 auth-text-muted hover:text-color-darkest dark:hover:text-color-lightest transition-colors"
                                 data-target="pass2" aria-label="Toggle Password Visibility">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                     stroke="currentColor" class="w-5 h-5 eye-icon">
@@ -272,31 +463,31 @@
                                 </svg>
                             </button>
                         </div>
-                        <ul style="display: none;" class="my-2 bg-red-100 p-2 rounded-lg" id="confpass">
+                        <ul style="display: none;" class="my-2 bg-red-100 p-2 rounded-lg text-red-700 text-sm" id="confpass">
                         </ul>
                     </div>
                     <div class="text-center">
-                        <label class="inline-flex items-center text-color-lightest">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" name="terms" value="true"
+                        <label class="inline-flex items-center auth-label cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" name="terms" value="true"
                                 {% if terms %}checked{% endif %} required>
-                            <span class="ml-2">I agree to the <a href="/terms" class="underline">Terms and
+                            <span class="ml-2 text-sm">I agree to the <a href="/terms" class="underline font-semibold">Terms and
                                     Conditions</a></span>
                         </label>
                     </div>
                     <div class="text-center">
-                        <label class="inline-flex items-center text-color-lightest">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" name="privacy"
+                        <label class="inline-flex items-center auth-label cursor-pointer">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" name="privacy"
                                 value="true" {% if privacy %}checked{% endif %} required>
-                            <span class="ml-2">I agree with <a href="/privacy" class="underline">Privacy
+                            <span class="ml-2 text-sm">I agree with <a href="/privacy" class="underline font-semibold">Privacy
                                     Policy</a></span>
                         </label>
                     </div>
                     <div class="text-center">
                         <button disabled type="submit"
-                            class="px-8 py-3 all-border flex items-center rounded-lg font-medium transition bg-gray-400 hover:bg-gray-500 text-gray-200 cursor-not-allowed opacity-60"
+                            class="px-8 py-3 flex items-center rounded-lg font-medium transition cursor-not-allowed opacity-60 auth-btn-primary mx-auto"
                             id="signup-btn">
-                            <span id="signup-text">Sign Up</span>
-                            <svg id="signup-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24"
+                            <span id="signup-text" class="font-semibold text-white">Sign Up</span>
+                            <svg id="signup-spinner" class="w-4 h-4 animate-spin hidden ml-2 text-white" viewBox="0 0 24 24"
                                 fill="none">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4" />

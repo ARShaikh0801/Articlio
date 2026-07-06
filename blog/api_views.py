@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Post, BlogComment, Like, Bookmark, History
+from .models import Post, BlogComment, Like, Bookmark, History, Highlight
+from django.db.models import Count
 import time
 
 
@@ -50,31 +51,49 @@ def _serialize_post(post, bookmarked_ids=None):
     }
 
 
-def _serialize_comment(comment, replies_dict, current_user=None):
+def _serialize_comment(comment, replies_dict, current_user=None, liked_comment_ids=None):
     """Serialize a comment with its replies."""
     from django.contrib.humanize.templatetags.humanize import naturaltime
     replies = replies_dict.get(comment.sno, [])
+    if liked_comment_ids is None:
+        liked_comment_ids = set()
+    
+    # Put user's own replies on top, keeping others ordered by like count
+    own_replies = []
+    other_replies = []
+    for r in replies:
+        if current_user and r.user == current_user:
+            own_replies.append(r)
+        else:
+            other_replies.append(r)
+    sorted_replies = own_replies + other_replies
+
     return {
         'sno': comment.sno,
         'comment': comment.comment,
         'username': comment.user.username,
         'is_own': current_user == comment.user if current_user else False,
         'timestamp': naturaltime(comment.timestamp),
+        'likes_count': getattr(comment, 'num_likes', 0),
+        'liked': comment.sno in liked_comment_ids,
         'replies': [
             {
                 'sno': r.sno,
                 'comment': r.comment,
                 'username': r.user.username,
                 'timestamp': naturaltime(r.timestamp),
+                'likes_count': getattr(r, 'num_likes', 0),
+                'liked': r.sno in liked_comment_ids,
+                'is_own': current_user == r.user if current_user else False,
             }
-            for r in replies
+            for r in sorted_replies
         ],
     }
 
 
 def api_posts(request):
     """Return published posts with filter/sort support and pagination."""
-    if _check_rate_limit(request, 'api_posts_rate'):
+    if not request.user.is_authenticated and _check_rate_limit(request, 'api_posts_rate'):
         return JsonResponse({'error': 'Too many requests. Please wait 10 minutes or login to continue.'}, status=429)
 
     allPosts = Post.objects.filter(draft=False)
@@ -192,13 +211,13 @@ def api_post_state(request, slug):
 
 def api_comments(request, slug):
     """Return the comment tree for a blog post with pagination."""
-    if _check_rate_limit(request, 'api_comments_view_rate', max_requests=5, window_seconds=1800):
+    if not request.user.is_authenticated and _check_rate_limit(request, 'api_comments_view_rate', max_requests=60, window_seconds=60):
         return JsonResponse({'error': 'Rate limit exceeded. Please wait 30 minutes or login to continue.'}, status=429)
 
     post = get_object_or_404(Post, slug=slug, draft=False)
 
-    all_top_level = BlogComment.objects.filter(post=post, parent=None).order_by('-timestamp')
-    replies = BlogComment.objects.filter(post=post).exclude(parent=None)
+    all_top_level = BlogComment.objects.filter(post=post, parent=None).annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
+    replies = BlogComment.objects.filter(post=post).exclude(parent=None).annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
 
     replies_dict = {}
     for reply in replies:
@@ -210,12 +229,16 @@ def api_comments(request, slug):
     current_user = request.user if request.user.is_authenticated else None
     total_count = all_top_level.count()
 
+    liked_comment_ids = set()
+    if current_user:
+        liked_comment_ids = set(current_user.comment_likes.filter(post=post).values_list('sno', flat=True))
+
     # Separate own comments (always fully returned) and others (paginated)
     own_comments = []
     other_top_level = []
     for c in all_top_level:
         if current_user and c.user == current_user:
-            own_comments.append(_serialize_comment(c, replies_dict, current_user))
+            own_comments.append(_serialize_comment(c, replies_dict, current_user, liked_comment_ids))
         else:
             other_top_level.append(c)
 
@@ -227,7 +250,7 @@ def api_comments(request, slug):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages) if paginator.num_pages > 0 else paginator.page(1)
 
-    other_comments = [_serialize_comment(c, replies_dict, current_user) for c in page_obj]
+    other_comments = [_serialize_comment(c, replies_dict, current_user, liked_comment_ids) for c in page_obj]
 
     return JsonResponse({
         'own_comments': own_comments,
@@ -493,3 +516,123 @@ def api_history(request):
             'posts': posts_data,
             'authenticated': False,
         })
+
+
+def api_highlights(request, slug):
+    """Return all highlights for a blog post."""
+    post = get_object_or_404(Post, slug=slug, draft=False)
+    
+    if request.user.is_authenticated:
+        highlights = Highlight.objects.filter(post=post, user=request.user).order_by('start_offset')
+        data = [{
+            'id': h.id,
+            'start': h.start_offset,
+            'end': h.end_offset,
+            'text': h.text,
+            'note': h.note or '',
+            'color': h.color
+        } for h in highlights]
+        return JsonResponse({'highlights': data, 'authenticated': True})
+    else:
+        return JsonResponse({'highlights': [], 'authenticated': False})
+
+
+def api_create_highlight(request):
+    """Create a new highlight for a blog post (authenticated only)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    import json
+    try:
+        data = json.loads(request.body)
+        post_sno = data.get('post_sno')
+        start = int(data.get('start'))
+        end = int(data.get('end'))
+        text = data.get('text', '')
+        note = data.get('note', '')
+        color = data.get('color', 'yellow')
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        return JsonResponse({'error': 'Invalid request data'}, status=400)
+        
+    post = get_object_or_404(Post, sno=post_sno)
+    
+    # Avoid duplicate highlights at the exact same location
+    existing = Highlight.objects.filter(post=post, user=request.user, start_offset=start, end_offset=end).first()
+    if existing:
+        existing.text = text
+        existing.note = note
+        existing.color = color
+        existing.save()
+        h = existing
+    else:
+        h = Highlight.objects.create(
+            post=post,
+            user=request.user,
+            start_offset=start,
+            end_offset=end,
+            text=text,
+            note=note,
+            color=color
+        )
+        
+    return JsonResponse({
+        'status': 'success',
+        'highlight': {
+            'id': h.id,
+            'start': h.start_offset,
+            'end': h.end_offset,
+            'text': h.text,
+            'note': h.note or '',
+            'color': h.color
+        }
+    })
+
+
+def api_update_highlight(request, id):
+    """Update highlight note/color (authenticated only)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    h = get_object_or_404(Highlight, id=id, user=request.user)
+    
+    import json
+    try:
+        data = json.loads(request.body)
+        h.note = data.get('note', h.note)
+        h.color = data.get('color', h.color)
+        h.save()
+    except (json.JSONDecodeError, ValueError) as e:
+        return JsonResponse({'error': 'Invalid request data'}, status=400)
+        
+    return JsonResponse({
+        'status': 'success',
+        'highlight': {
+            'id': h.id,
+            'start': h.start_offset,
+            'end': h.end_offset,
+            'text': h.text,
+            'note': h.note or '',
+            'color': h.color
+        }
+    })
+
+
+def api_delete_highlight(request, id):
+    """Delete a highlight (authenticated only)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+    if request.method not in ['POST', 'DELETE']:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        
+    h = get_object_or_404(Highlight, id=id, user=request.user)
+    h.delete()
+    
+    return JsonResponse({'status': 'success'})
+

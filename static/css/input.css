@@ -60,6 +60,10 @@
     --theme-light: var(--border-color);
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     background-color: var(--bg-body);
     color: var(--text-main);
@@ -1740,5 +1744,324 @@ li.tts-reading-highlight::before {
     background-color: #fbf0d9;
 }
 
+/* ==========================================================================
+   HIGHLIGHT & ANNOTATE STYLES
+   ========================================================================== */
+
+.articlio-highlight {
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border-radius: 2px;
+}
+
+/* Soft glassmorphic light mode highlight colors */
+.highlight-yellow {
+    background-color: rgba(253, 224, 71, 0.55);
+}
+.highlight-yellow:hover, .articlio-highlight.highlight-yellow.has-note {
+    border-color: rgb(234, 179, 8);
+}
+
+.highlight-green {
+    background-color: rgba(134, 239, 172, 0.55);
+}
+.highlight-green:hover, .articlio-highlight.highlight-green.has-note {
+    border-color: rgb(34, 197, 94);
+}
+
+.highlight-blue {
+    background-color: rgba(147, 197, 253, 0.55);
+}
+.highlight-blue:hover, .articlio-highlight.highlight-blue.has-note {
+    border-color: rgb(59, 130, 246);
+}
+
+.highlight-pink {
+    background-color: rgba(244, 114, 182, 0.55);
+}
+.highlight-pink:hover, .articlio-highlight.highlight-pink.has-note {
+    border-color: rgb(236, 72, 153);
+}
+
+/* Subtle dashed underline when note is present */
+.articlio-highlight.has-note {
+    border-bottom-style: dashed !important;
+}
+
+/* Dark mode tweaks for highlighter colors */
+.dark .highlight-yellow {
+    background-color: rgba(234, 179, 8, 0.38);
+}
+.dark .highlight-green {
+    background-color: rgba(34, 197, 94, 0.38);
+}
+.dark .highlight-blue {
+    background-color: rgba(59, 130, 246, 0.38);
+}
+.dark .highlight-pink {
+    background-color: rgba(236, 72, 153, 0.38);
+}
+
+/* Sepia mode tweaks */
+.reading-theme-sepia .highlight-yellow {
+    background-color: rgba(217, 119, 6, 0.38);
+}
+.reading-theme-sepia .highlight-green {
+    background-color: rgba(21, 128, 61, 0.38);
+}
+.reading-theme-sepia .highlight-blue {
+    background-color: rgba(29, 78, 216, 0.38);
+}
+.reading-theme-sepia .highlight-pink {
+    background-color: rgba(190, 24, 74, 0.38);
+}
+
+/* Highlight & Eraser Toolbar Capsule */
+.hl-eraser-capsule {
+    display: flex;
+    align-items: center;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--theme-base) 0%, var(--theme-dark) 100%);
+    box-shadow:
+        0 4px 15px -3px rgba(0,0,0,0.2),
+        0 0 0 1px rgba(255,255,255,0.15) inset;
+    overflow: hidden;
+    height: 42px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hl-eraser-capsule:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 25px -3px rgba(0,0,0,0.25),
+        0 0 0 1px rgba(255,255,255,0.2) inset,
+        0 0 20px -4px var(--theme-base);
+}
+
+.dark .hl-eraser-capsule {
+    background: linear-gradient(135deg, var(--theme-base) 0%, hsl(from var(--theme-base) h calc(s * 0.8) 30%) 100%);
+    box-shadow:
+        0 4px 15px -3px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.dark .hl-eraser-capsule:hover {
+    box-shadow:
+        0 8px 25px -3px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.12) inset,
+        0 0 25px -4px hsl(from var(--theme-base) h s 50% / 0.5);
+}
+
+#hl-tool-btn, #eraser-tool-btn {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    width: 42px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+#hl-tool-btn:hover, #eraser-tool-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#hl-tool-btn.active, #eraser-tool-btn.active {
+    background: linear-gradient(135deg, var(--theme-light) 0%, var(--theme-base) 100%) !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.hl-eraser-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Color Picker dropdown */
+.hl-color-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 6px 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 1000;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(12px) saturate(1.8);
+    -webkit-backdrop-filter: blur(12px) saturate(1.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hl-color-picker-dropdown.hidden {
+    display: none !important;
+}
+
+.hl-color-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.hl-color-dot:hover {
+    transform: scale(1.2);
+}
+
+.hl-color-dot.active {
+    border-color: var(--text-main);
+    transform: scale(1.1);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.hl-color-dot--yellow { background-color: rgb(253, 224, 71); }
+.hl-color-dot--green { background-color: rgb(134, 239, 172); }
+.hl-color-dot--blue { background-color: rgb(147, 197, 253); }
+.hl-color-dot--pink { background-color: rgb(244, 114, 182); }
+
+.dark .hl-color-picker-dropdown {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
 
 
+/* ============================
+   MICRO-ANIMATIONS
+============================ */
+
+/* ── Post Card Hover Lift ── */
+.post-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15),
+               0 4px 10px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dark .post-card:hover {
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.4),
+               0 4px 10px -4px rgba(0, 0, 0, 0.25),
+               0 0 20px -6px var(--glow-color);
+}
+
+.post-card:active {
+    transform: translateY(-1px);
+}
+
+/* ── Staggered Card Entrance ── */
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-enter-animate {
+    animation: card-enter 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Like / Bookmark Bounce ── */
+@keyframes like-bounce {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(1.25); }
+    50%  { transform: scale(0.92); }
+    75%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+.like-bounce {
+    animation: like-bounce 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Like Burst Particles ── */
+@keyframes like-particle {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--px, 0), var(--py, 0)) scale(0); }
+}
+
+.like-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--theme-base);
+    pointer-events: none;
+    animation: like-particle 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ── Page Content Fade In ── */
+@keyframes page-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+main {
+    animation: page-fade-in 0.5s ease-out;
+}
+
+/* ── Comment Slide In ── */
+@keyframes comment-enter {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comment-enter-animate {
+    animation: comment-enter 0.4s ease-out both;
+}
+
+/* ── Button Press Effect ── */
+button:active,
+.btn-press:active {
+    transform: scale(0.97);
+}
+
+/* ── Accessibility: Respect reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .post-card:hover {
+        transform: none;
+    }
+
+    main {
+        animation: none;
+    }
+}

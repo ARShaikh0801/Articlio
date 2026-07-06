@@ -45,6 +45,7 @@ class BlogComment(models.Model):
     post=models.ForeignKey(Post,on_delete=models.CASCADE)
     parent=models.ForeignKey('self',on_delete=models.CASCADE,null=True)
     timestamp=models.DateTimeField(default=now)
+    likes=models.ManyToManyField(User,related_name='comment_likes',blank=True)
 
     def __str__(self):
         return self.comment[0:13]+"... by "+self.user.username
@@ -89,3 +90,21 @@ class History(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.post.title}"
+
+class Highlight(models.Model):
+    """
+    Represents a user's text highlight & annotation on a blog post.
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_offset = models.IntegerField()
+    end_offset = models.IntegerField()
+    text = models.TextField()
+    note = models.TextField(blank=True, null=True)
+    color = models.CharField(max_length=20, default='yellow')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s highlight on {self.post.title}"
+

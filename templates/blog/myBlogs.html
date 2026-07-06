@@ -200,7 +200,7 @@
                 const editBtnColor = type === 'drafts' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-600 hover:bg-gray-700';
 
                 html += `
-                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in flex flex-col h-full">
+                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in post-card flex flex-col h-full">
                     <h3 class="text-lg font-semibold text-color-lightest">${escapeHtml(blog.title)}</h3>
                     <p class="text-sm text-color-lightest mt-1">Category: ${escapeHtml(blog.category)}</p>
                     ${type === 'published' ? 
