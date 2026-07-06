@@ -51,6 +51,7 @@ classDiagram
         +post: ForeignKey (Post)
         +parent: ForeignKey (self)
         +timestamp: DateTime
+        +likes: ManyToManyField (CustomUser)
     }
     class Like {
         +post: ForeignKey (Post)
@@ -66,6 +67,17 @@ classDiagram
         +scroll_progress: Float
         +viewed_at: DateTime
     }
+    class Highlight {
+        +post: ForeignKey (Post)
+        +user: ForeignKey (CustomUser)
+        +start_offset: Integer
+        +end_offset: Integer
+        +text: Text
+        +note: Text
+        +color: String
+        +created_at: DateTime
+        +updated_at: DateTime
+    }
     class Contact {
         +sno: AutoField (PK)
         +name: String
@@ -79,10 +91,12 @@ classDiagram
     CustomUser "1" --* Like : performs
     CustomUser "1" --* Bookmark : saves
     CustomUser "1" --* History : views
+    CustomUser "1" --* Highlight : creates
     Post "1" --* BlogComment : receives
     Post "1" --* Like : receives
     Post "1" --* Bookmark : saved_in
     Post "1" --* History : tracked_in
+    Post "1" --* Highlight : tracked_in
     BlogComment "1" --* BlogComment : parent_of
 ```
 
@@ -92,10 +106,11 @@ classDiagram
 | :--- | :--- | :--- | :--- |
 | `CustomUser` | `home` | Overrides standard User. Handles roles, themes, verification, and OAuth completion tags. | Inherits `AbstractUser` |
 | `Post` | `blog` | Represents a blog entry. Tracks views, drafts, likes, and reading metrics. | `slug` must be unique. |
-| `BlogComment` | `blog` | Reusable recursive comment structure allowing nested replies. | ForeignKey to `self` |
+| `BlogComment` | `blog` | Reusable recursive comment structure allowing nested replies and comment upvoting/likes. | ForeignKey to `self`, ManyToMany to `User` |
 | `Like` | `blog` | Represents post likes by users. | Unique combination: `(post, user)` |
 | `Bookmark` | `blog` | Allows users to save posts to their reading list. | Unique combination: `(post, user)` |
 | `History` | `blog` | Captures reading metrics, including scroll progress percentages. | Unique combination: `(post, user)` |
+| `Highlight` | `blog` | Persists user-created colored highlights and notes on post text blocks. | ForeignKey to `Post` & `User` |
 | `Contact` | `home` | Feedback and inquiry submission registry. | Auto timestamps |
 
 ---
@@ -217,3 +232,42 @@ To enhance accessibility and support on-the-go consumption, Articlio integrates 
 - **Sanitization & Text Extraction**: Prior to vocalization, post HTML contents are parsed to extract clean text blocks while filtering out hidden markers or raw code blocks.
 - **Playback Controls**: Readers can toggle Play/Pause, jump forward/backward by block intervals, and adjust playback speeds ($0.75\times$ to $2.0\times$).
 - **State Persistence & Clean Teardown**: The controller handles boundary events, audio pauses when navigating away, and synchronizes state across both standard and Focus Mode reader bars.
+
+---
+
+## 9. Text Highlighting & Annotations
+
+Readers can select and highlight text blocks directly inside the blog post editor pane and attach custom note annotations.
+
+### Pipeline Flow
+1. **Client Selection Event**: Listeners capture selection ranges (`window.getSelection()`) inside the post wrapper container.
+2. **Offset Calculation**: Compares selection bounds against parent text node indexes to compute character offsets (`start_offset` and `end_offset`) relative to the root text layout, ensuring highlight markers render accurately regardless of browser dimensions or text reflow.
+3. **AJAX Serialization**: Highlighting triggers an asynchronous `POST` query to the backend API (`/blog/api/<slug>/highlights/create/`), saving selection details, HSL colors (Yellow, Green, Blue, Pink), and markdown notes.
+4. **Dynamic DOM Injection**: On post load, saved offsets are retrieved and injected directly into the DOM structure using inline CSS wrapper spans (`<span class="highlight-yellow">...</span>`).
+
+---
+
+## 10. Comment Upvote & Like Engine
+
+Articlio features an interactive comment-like system supporting nested replies and thread upvotes.
+
+### Design Details
+- **Many-to-Many Mappings**: A many-to-many relationship (`likes = models.ManyToManyField(User)`) tracks which accounts upvoted which comments, preventing duplicate likes.
+- **AJAX State Sync**: Heart/Like buttons execute non-blocking AJAX updates toggling the user state instantly, updating badge numbers asynchronously.
+- **Micro-Animations**: Success responses trigger micro-animations including count-up/count-down number animations and toggle class state shifts.
+
+---
+
+## 11. Modular Frontend Script Structure
+
+To ensure codebase maintainability and clean up monolithic script blocks, Articlio splits frontend operations into modular, single-responsibility files located in `static/js/blogPost/`:
+
+- **`postState.js`**: Core data orchestration and page loading state coordinator.
+- **`focusMode.js`**: Focus Mode toggling, workspace isolation, layout adjustments, and table of contents generation.
+- **`highlights.js`**: Text Selection tracker, range offset parser, and highlight injection framework.
+- **`tts.js`**: Web Speech synthesis playback controls and audio state manager.
+- **`comments.js`**: Recursive comment renderer, reply drawer toggle, and comment upvoting engine.
+- **`bookmarkToggle.js` / `likeToggle.js`**: Clean APIs managing post bookmarking and article like toggles.
+- **`readingProgress.js` / `scrollTracking.js`**: Viewport offset tracker and reading progress sync.
+- **`fontSizeControl.js` / `readerSettings.js`**: Focus Mode typography scale and color scheme switcher.
+- **`uiMisc.js`**: Micro-interaction listeners and page UI loaders.

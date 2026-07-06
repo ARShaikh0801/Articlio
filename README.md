@@ -18,9 +18,12 @@ A modern, responsive, and secure blogging platform built using **Django** and **
 - **Dynamic Theming Engine**: Select from five beautiful accent themes: Ocean 🔵, Emerald 🟢, Slate 🔘, Crimson 🔴, and Violet 🟣. The user dashboard, emails, and comments adapt instantly.
 - **Immersive Focus Mode**: Distraction-free reading surface with customizable content width (Narrow / Medium / Wide), reading background themes (Sepia, Warm, Light, Dark), and font size adjustments (`A-`, `reset`, `A+`).
 - **Text-to-Speech (TTS) Narrator**: Built-in audio narrator utilizing the Web Speech API with play/pause, playback speed adjustment, and position skipping for hands-free listening.
+- **Rich Text Highlighting**: Native text selection highlighter allowing users to save custom colored highlights (Yellow, Green, Blue, Pink) with custom annotations, persisted to the database.
 - **Blog Publisher**: Manage, draft, edit, and publish posts using modern templates.
-- **Interactive Readers**: Bookmark posts, like articles, and comment with nested threads.
+- **Interactive Readers**: Bookmark posts, like articles, comment with nested threads, and upvote/like individual comments.
 - **Reading History & Live Metrics**: Tracks article scroll progress with exact resumption and displays real-time estimated time remaining indicators (~X min left).
+- **Global Search Shortcut**: Pressing `/` anywhere on the site instantly focuses the global navigation search bar (unless already typing).
+- **Modular Frontend Architecture**: Refactored monolithic scripts into decoupled, single-responsibility JS files under `static/js/blogPost/` for maintainability.
 - **Bloom Filter Performance**: Employs an in-memory cached Bloom Filter to deliver instant username availability checks on signup.
 - **Security Protections**: Configured Content Security Policy (CSP) with random script nonces and Clickjacking prevention headers.
 
