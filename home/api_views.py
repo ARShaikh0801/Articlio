@@ -1,11 +1,16 @@
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage
+from django.utils import timezone
+from datetime import timedelta
 from blog.models import Post, Bookmark
-from blog.api_views import _check_rate_limit, _safe_page
+from blog.api_views import _check_rate_limit, _safe_page, _get_trending_post_ids
 
 
-def _serialize_post(post, bookmarked_ids=None):
+def _serialize_post(post, bookmarked_ids=None, trending_post_ids=None):
     """Serialize a Post object to a dict for JSON response."""
+    is_trending = False
+    if trending_post_ids is not None:
+        is_trending = post.sno in trending_post_ids
     return {
         'sno': post.sno,
         'title': post.title,
@@ -18,6 +23,8 @@ def _serialize_post(post, bookmarked_ids=None):
         'reading_time': post.reading_time,
         'timestamp': post.timestamp.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.timestamp else '',
         'bookmarked': post.sno in bookmarked_ids if bookmarked_ids else False,
+        'is_new': (timezone.now() - post.timestamp).days <= 7 if post.timestamp else False,
+        'is_trending': is_trending,
     }
 
 
@@ -32,11 +39,13 @@ def api_home_posts(request):
     if request.user.is_authenticated:
         bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
 
-    posts_data = [_serialize_post(p, bookmarked_ids) for p in top_posts]
+    trending_post_ids = _get_trending_post_ids()
+    posts_data = [_serialize_post(p, bookmarked_ids, trending_post_ids) for p in top_posts]
 
     return JsonResponse({
         'posts': posts_data,
     })
+
 
 
 def api_search(request):
@@ -72,9 +81,11 @@ def api_search(request):
     if request.user.is_authenticated:
         bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
 
-    posts_data = [_serialize_post(p, bookmarked_ids) for p in page_obj]
+    trending_post_ids = _get_trending_post_ids()
+    posts_data = [_serialize_post(p, bookmarked_ids, trending_post_ids) for p in page_obj]
 
     message = 'We searched far and wide but could not find a match. Try searching with different keywords!' if total_results == 0 else ''
+
 
     return JsonResponse({
         'posts': posts_data,

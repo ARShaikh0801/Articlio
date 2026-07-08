@@ -34,7 +34,38 @@ module.exports = {
   'ad-sidebar',
 
   'post-card',
+  'post-card-inner',
+  'post-card-header',
+  'post-card-tags',
+  'post-card-title',
+  'post-card-author',
+  'post-card-summary',
+  'post-card-footer',
+  'post-card-read-link',
   'card-enter-animate',
+
+  'category-pill',
+  'stat-chip',
+  'stats-row',
+  'stat-separator',
+  'badge-new',
+  'badge-trending',
+
+  'hero-section',
+  'hero-title',
+  'hero-subtitle',
+  'hero-cta-group',
+  'hero-cta-primary',
+  'hero-cta-secondary',
+  'hero-shape',
+
+  'skeleton-card',
+  'skeleton-bar',
+
+  'section-heading',
+  'section-heading-icon',
+  'blog-header',
+
   'like-bounce',
   'like-particle',
   'comment-enter-animate',

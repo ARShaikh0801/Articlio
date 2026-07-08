@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+from datetime import timedelta
 from .models import Post, BlogComment, Like, Bookmark, History, Highlight
 from django.db.models import Count
 import time
@@ -33,8 +35,22 @@ def _check_rate_limit(request, key='api_requests', max_requests=15, window_secon
     return False
 
 
-def _serialize_post(post, bookmarked_ids=None):
+def _get_trending_post_ids():
+    """Return the set of post sno IDs representing the top 1 viewed post in each category."""
+    trending_ids = set()
+    categories = Post.objects.filter(draft=False).values_list('category', flat=True).distinct()
+    for cat in categories:
+        max_post = Post.objects.filter(draft=False, category=cat).order_by('-views').first()
+        if max_post:
+            trending_ids.add(max_post.sno)
+    return trending_ids
+
+
+def _serialize_post(post, bookmarked_ids=None, trending_post_ids=None):
     """Serialize a Post object to a dict for JSON response."""
+    is_trending = False
+    if trending_post_ids is not None:
+        is_trending = post.sno in trending_post_ids
     return {
         'sno': post.sno,
         'title': post.title,
@@ -48,7 +64,10 @@ def _serialize_post(post, bookmarked_ids=None):
         'timestamp': post.timestamp.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.timestamp else '',
         'updated_at': post.updated_at.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if post.updated_at else '',
         'bookmarked': post.sno in bookmarked_ids if bookmarked_ids else False,
+        'is_new': (timezone.now() - post.timestamp).days <= 7 if post.timestamp else False,
+        'is_trending': is_trending,
     }
+
 
 
 def _serialize_comment(comment, replies_dict, current_user=None, liked_comment_ids=None):
@@ -143,7 +162,8 @@ def api_posts(request):
     if request.user.is_authenticated:
         bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
 
-    posts_data = [_serialize_post(p, bookmarked_ids) for p in page_obj]
+    trending_post_ids = _get_trending_post_ids()
+    posts_data = [_serialize_post(p, bookmarked_ids, trending_post_ids) for p in page_obj]
 
     return JsonResponse({
         'posts': posts_data,
@@ -279,7 +299,8 @@ def api_bookmarks(request):
         page_obj = paginator.page(paginator.num_pages)
 
     bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
-    posts_data = [_serialize_post(p, bookmarked_ids) for p in page_obj]
+    trending_post_ids = _get_trending_post_ids()
+    posts_data = [_serialize_post(p, bookmarked_ids, trending_post_ids) for p in page_obj]
 
     return JsonResponse({
         'posts': posts_data,
@@ -466,13 +487,14 @@ def api_history(request):
             page_obj = paginator.page(paginator.num_pages) if paginator.num_pages > 0 else paginator.page(1)
 
         bookmarked_ids = set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True))
+        trending_post_ids = _get_trending_post_ids()
 
         posts_data = []
         for h in page_obj:
             p = h.post
             if p.draft:
                 continue
-            d = _serialize_post(p, bookmarked_ids)
+            d = _serialize_post(p, bookmarked_ids, trending_post_ids)
             d['scroll_progress'] = h.scroll_progress
             d['viewed_at'] = h.viewed_at.strftime('%b. %d, %Y, %I:%M %p').replace(' 0', ' ') if h.viewed_at else ''
             posts_data.append(d)

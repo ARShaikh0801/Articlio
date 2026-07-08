@@ -1,102 +1,101 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}My Blogs{% endblock title %}
+{% block title %}My Blogs - Articlio{% endblock title %}
 {% block manageactive %}active-link font-semibold{% endblock manageactive %}
 
 {% block body %}
-<div class="max-w-7xl mx-auto px-4 py-12">
+<div class="max-w-7xl mx-auto px-4 py-10">
 
-    <div class="text-center mb-10">
-        <h1 class="text-4xl font-bold text-color-darkest">
-            My Blogs
-        </h1>
-        <p class="text-color-darkest mt-2">
-            Manage your drafts and published posts
-        </p>
+    <!-- ═══════════════ MY BLOGS HEADER ═══════════════ -->
+    <div class="blog-header mb-10 text-center flex flex-col items-center">
+        <h1>My Blogs</h1>
+        <p class="max-w-md mx-auto">Manage your drafts and published posts, track views, and update content.</p>
 
         <div class="mt-6 flex justify-center">
-            <div class="inline-flex theme-medium rounded-lg p-1">
-                <button id="tab-drafts" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition theme-darkest all-border text-color-lightest cursor-pointer">
-                    Drafts
+            <div class="inline-flex theme-medium rounded-lg p-1 all-border" style="background: var(--bg-card);">
+                <button id="tab-drafts" class="tab-btn px-6 py-2 rounded-md text-sm font-semibold transition theme-darkest text-color-lightest cursor-pointer">
+                    Drafts (0)
                 </button>
-                <button id="tab-published" class="tab-btn px-6 py-2 rounded-md text-sm font-medium transition text-color-light cursor-pointer">
-                    Published
+                <button id="tab-published" class="tab-btn px-6 py-2 rounded-md text-sm font-semibold transition text-color-light cursor-pointer">
+                    Published (0)
                 </button>
             </div>
         </div>
-        <div class="mt-6 max-w-md mx-auto relative flex items-center">
-            <input type="text" id="search-input" placeholder="Search your creations..." class="w-full px-4 py-2 rounded-lg all-border theme-base-faded input-box text-color-darkest focus:outline-none pr-10" style="border: 2px solid var(--theme-medium);">
-            <button id="clear-search" class="absolute right-4 top-1/2 -translate-y-1/2 text-color-dark hover:text-color-darkest hidden cursor-pointer flex items-center justify-center" title="Clear search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                </svg>
-            </button>
-        </div>
     </div>
 
+    <!-- ═══════════════ SEARCH BAR ═══════════════ -->
+    <div class="mb-8 max-w-md mx-auto relative flex items-center">
+        <input type="text" id="search-input" placeholder="Search your creations..." class="w-full px-4 py-2 rounded-lg all-border input-box text-color-darkest focus:outline-none pr-10" style="border: 2px solid var(--theme-medium); background: var(--bg-card);">
+        <button id="clear-search" class="absolute right-4 top-1/2 -translate-y-1/2 text-color-dark hover:text-color-darkest hidden cursor-pointer flex items-center justify-center" title="Clear search" style="background: none; border: none; padding: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+        </button>
+    </div>
 
+    <!-- ═══════════════ GRID ═══════════════ -->
     <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6" id="blogs-container">
-        <!-- Skeleton Loaders -->
+        <!-- Structured Skeleton Loaders -->
         {% for i in "12" %}
-        <div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>
+        <div class="skeleton-card">
+            <div class="skeleton-bar skeleton-bar-sm"></div>
+            <div class="skeleton-bar skeleton-bar-lg"></div>
+            <div class="skeleton-bar skeleton-bar-sm" style="width: 45%;"></div>
+            <div style="display:flex; gap:12px;">
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 80px;"></div>
+            </div>
+            <div class="skeleton-bar skeleton-bar-xl"></div>
+            <div class="skeleton-bar skeleton-bar-xl" style="width: 80%;"></div>
+            <div class="skeleton-bar skeleton-bar-btn"></div>
+        </div>
         {% endfor %}
     </div>
+
     <div id="myblogs-pagination-container"></div>
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="delete-modal">
 
-        <div class="theme-base-faded rounded-xl shadow-xl max-w-md w-full p-6">
-
-            <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-red-100">
-                <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
+    <!-- ═══════════════ DELETE MODAL ═══════════════ -->
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4" id="delete-modal" style="backdrop-filter: blur(4px);">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform scale-95 transition-all" style="border-top: 4px solid #ef4444; background: var(--bg-card);">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-red-100 dark:bg-red-900/30">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
 
-            <h3 id="delete-modal-title" class="text-xl font-semibold text-color-lightest text-center mt-4">
+            <h3 id="delete-modal-title" class="text-xl font-bold text-color-darkest text-center mt-4">
+                Delete Post?
             </h3>
 
-            <p class="text-color-lightest text-center mt-2">
-                Are you sure you want to delete this blog?
-                <br>
-                This action <span class="font-semibold text-color-lightest underline">cannot be undone</span>.
+            <p class="text-sm text-center mt-2 text-color-darkest opacity-80">
+                Are you sure you want to delete this blog? This action <span class="font-bold underline text-red-500">cannot be undone</span>.
             </p>
 
-            <div class="flex justify-center gap-4 mt-6">
-                <form method="post" id="delete-form">
-                    {% csrf_token %}
-
-                    <div class="flex justify-center gap-4 mt-6">
-                        <button type="button" id="close-delete-modal"
-                            class="px-5 py-2 all-border rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 transition cursor-pointer">
-                            Cancel
-                        </button>
-
-                        <button type="submit" id="confirm-delete-btn"
-                            class="px-5 py-2 all-border rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                            <span id="delete-text">Delete</span>
-
-                            <svg id="delete-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24"
-                                fill="none">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                            </svg>
-                        </button>
-                    </div>
-                </form>
-
-            </div>
-
+            <form method="post" id="delete-form">
+                {% csrf_token %}
+                <div class="flex justify-center gap-3 mt-6">
+                    <button type="button" id="close-delete-modal" class="px-4 py-2 all-border rounded-lg text-sm font-semibold text-color-darkest hover:bg-gray-50 transition cursor-pointer" style="border: 1px solid var(--border-color); background: transparent;">
+                        Cancel
+                    </button>
+                    <button type="submit" id="confirm-delete-btn" class="px-4 py-2 rounded-lg text-sm font-semibold text-white transition flex items-center gap-2 cursor-pointer" style="background: #ef4444; border: 1px solid #ef4444;">
+                        <span id="delete-text">Delete</span>
+                        <svg id="delete-spinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
 </div>
 {% endblock body %}
+
 {% block js %}
 <script nonce="{{ request.csp_nonce }}">
-
     const deleteModal = document.getElementById("delete-modal");
     const deleteForm = document.getElementById("delete-form");
     const closeBtn = document.getElementById("close-delete-modal");
@@ -166,10 +165,10 @@
     });
 
     function activateTab(activeBtn, inactiveBtn) {
-        activeBtn.classList.add("theme-darkest", "text-color-lightest", "all-border");
-        activeBtn.classList.remove("text-color-light");
-        inactiveBtn.classList.remove("theme-darkest", "text-color-lightest", "all-border");
-        inactiveBtn.classList.add("text-color-light");
+        activeBtn.classList.add("theme-darkest", "text-color-lightest");
+        activeBtn.style.background = "var(--theme-darkest)";
+        inactiveBtn.classList.remove("theme-darkest", "text-color-lightest");
+        inactiveBtn.style.background = "transparent";
     }
 
     function goToPage(page) {
@@ -182,40 +181,91 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function buildSkeletons(count) {
+        return Array(count).fill(`
+            <div class="skeleton-card">
+                <div class="skeleton-bar skeleton-bar-sm"></div>
+                <div class="skeleton-bar skeleton-bar-lg"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 45%;"></div>
+                <div style="display:flex; gap:12px;">
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 80px;"></div>
+                </div>
+                <div class="skeleton-bar skeleton-bar-xl"></div>
+                <div class="skeleton-bar skeleton-bar-xl" style="width: 80%;"></div>
+                <div class="skeleton-bar skeleton-bar-btn"></div>
+            </div>
+        `).join('');
+    }
+
     function renderBlogs(blogs, type, paginationData) {
         let html = '';
         
         if (blogs.length === 0) {
             html = `
-            <div class="theme-medium all-border rounded-lg p-6 text-color-lightest text-center" style="grid-column: 1 / -1;">
-                ${type === 'drafts' ? 'Got a story brewing? Click Post Blog whenever inspiration strikes!' : "The stage is all yours! You haven't published any stories yet, click Post Blog to share your work with the world."}
+            <div class="theme-medium all-border rounded-lg p-12 text-color-lightest text-center" style="grid-column: 1 / -1; background: var(--bg-card);">
+                <p class="font-semibold text-base mb-2">${type === 'drafts' ? 'Got a story brewing?' : "The stage is all yours!"}</p>
+                <p class="text-sm opacity-80 mb-4">${type === 'drafts' ? 'Click Post Blog whenever inspiration strikes!' : "You haven't published any stories yet. Share your work with the world."}</p>
+                <a href="/blog/writeBlog" class="inline-block px-5 py-2.5 rounded-lg theme-medium font-semibold text-sm all-border theme-medium-btn text-color-lightest">Post Blog</a>
             </div>`;
         } else {
             blogs.forEach(blog => {
                 const viewBtn = type === 'published' ? `
-                    <a href="/blog/${encodeURIComponent(blog.slug)}" class="px-4 py-2 all-border text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    <a href="/blog/${encodeURIComponent(blog.slug)}" class="px-4 py-2 all-border text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center flex items-center justify-center">
                         View
                     </a>` : '';
                     
                 const editBtnColor = type === 'drafts' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-600 hover:bg-gray-700';
 
+                let metaHtml = '';
+                if (type === 'published') {
+                    metaHtml = `
+                    <div class="stats-row mb-1">
+                        <span class="stat-chip">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+                            <span data-count-up>${escapeHtml(blog.views)}</span> views
+                        </span>
+                        <span class="stat-separator"></span>
+                        <span class="stat-chip">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 16 16"><path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/></svg>
+                            <span data-count-up>${escapeHtml(blog.likes)}</span> likes
+                        </span>
+                        <span class="stat-separator"></span>
+                        <span class="stat-chip">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                            ${blog.reading_time} min read
+                        </span>
+                    </div>
+                    <div class="text-xs mb-2" style="color: var(--text-muted);">Published: ${escapeHtml(blog.timestamp)}</div>`;
+                } else {
+                    metaHtml = `<div class="text-xs mb-2" style="color: var(--text-muted);">Created: ${escapeHtml(blog.timestamp)}</div>`;
+                }
+
                 html += `
-                <div class="theme-medium all-border rounded-lg p-5 hover-card-shadow transition fade-in post-card flex flex-col h-full">
-                    <h3 class="text-lg font-semibold text-color-lightest">${escapeHtml(blog.title)}</h3>
-                    <p class="text-sm text-color-lightest mt-1">Category: ${escapeHtml(blog.category)}</p>
-                    ${type === 'published' ? 
-                        `<p class="text-sm text-color-lightest mt-1">Published on: ${escapeHtml(blog.timestamp)} · ${escapeHtml(blog.views)} views · ${escapeHtml(blog.likes)} likes <span style="white-space: nowrap;">· <span style="display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;"><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${blog.reading_time} min</span></span></p>` :
-                        `<p class="text-sm text-color-lightest mt-1">Created: ${escapeHtml(blog.timestamp)}</p>`
-                    }
-                    <p class="text-sm text-color-lightest mt-1">Last updated: ${escapeHtml(blog.updated_at)}</p>
-                    <div class="text-color-light mb-4 mt-2 flex-grow">${escapeHtml(blog.summary)}</div>
-                    <div class="mt-auto flex gap-3 pt-4">
-                        ${viewBtn}
-                        <form action="/blog/edit/${encodeURIComponent(blog.slug)}" method="post">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="${window.CSRF_TOKEN}">
-                            <button type="submit" class="px-4 py-2 all-border text-sm ${editBtnColor} text-white rounded transition cursor-pointer">Edit</button>
-                        </form>
-                        <button type="button" class="open-delete-modal all-border px-4 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition cursor-pointer" data-slug="${escapeHtml(blog.slug)}" data-title="${escapeHtml(blog.title)}">Delete</button>
+                <div class="post-card" style="border-radius: 16px; border: 1px solid var(--border-color, #e5e7eb); background: var(--bg-card, #fff); overflow: hidden;">
+                    <div class="post-card-inner">
+                        <div class="post-card-header">
+                            <div class="post-card-tags">
+                                <a href="/search?query=${encodeURIComponent(blog.category)}" class="category-pill">${escapeHtml(blog.category)}</a>
+                            </div>
+                        </div>
+
+                        <h3 class="post-card-title">${escapeHtml(blog.title)}</h3>
+
+                        ${metaHtml}
+                        <div class="text-xs mb-3" style="color: var(--text-muted);">Last updated: ${escapeHtml(blog.updated_at)}</div>
+
+                        <p class="post-card-summary flex-grow">${escapeHtml(blog.summary)}</p>
+
+                        <div class="post-card-footer flex gap-2 pt-4 mt-auto">
+                            ${viewBtn}
+                            <form action="/blog/edit/${encodeURIComponent(blog.slug)}" method="post" style="margin:0;">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${window.CSRF_TOKEN}">
+                                <button type="submit" class="px-4 py-2 all-border text-xs font-semibold ${editBtnColor} text-white rounded-lg transition cursor-pointer flex items-center justify-center" style="min-height:32px;">Edit</button>
+                            </form>
+                            <button type="button" class="open-delete-modal all-border px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition cursor-pointer flex items-center justify-center" style="min-height:32px;" data-slug="${escapeHtml(blog.slug)}" data-title="${escapeHtml(blog.title)}">Delete</button>
+                        </div>
                     </div>
                 </div>`;
             });
@@ -250,13 +300,11 @@
         const page = tab === 'drafts' ? draftsPage : publishedPage;
         const query = searchInput.value.trim();
 
-        // Show skeleton while loading
-        container.innerHTML = Array(2).fill('<div class="theme-medium all-border rounded-lg p-5 mb-4 skeleton" style="height: 180px;"></div>').join('');
+        container.innerHTML = buildSkeletons(2);
 
         fetch(`/blog/api/my-blogs/?tab=${tab}&page=${page}&query=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
-                // Update tab labels with counts
                 tabDrafts.textContent = `Drafts (${data.total_drafts || 0})`;
                 tabPublished.textContent = `Published (${data.total_published || 0})`;
 
@@ -265,7 +313,6 @@
                     total_pages: data.total_pages,
                 });
 
-                // Handle initial tab selection
                 if (tab === 'drafts') {
                     activateTab(tabDrafts, tabPublished);
                 } else {
@@ -275,12 +322,11 @@
             .catch(err => {
                 console.error(err);
                 showToast('Failed to load your blogs. Please try again.', 'error');
-                container.innerHTML = '<p class="text-color-darkest text-center">Failed to load blogs.</p>';
+                container.innerHTML = '<p class="text-color-darkest text-center py-12">Failed to load blogs.</p>';
             });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Initial load — fetch drafts first to determine default tab
         fetch('/blog/api/my-blogs/?tab=drafts&page=1')
             .then(res => res.json())
             .then(data => {
@@ -297,14 +343,13 @@
                 } else {
                     currentTab = 'published';
                     activateTab(tabPublished, tabDrafts);
-                    // Need to fetch published tab
                     fetchMyBlogs('published');
                 }
             })
             .catch(err => {
                 console.error(err);
                 showToast('Failed to load your blogs. Please try again.', 'error');
-                container.innerHTML = '<p class="text-color-darkest text-center">Failed to load blogs.</p>';
+                container.innerHTML = '<p class="text-color-darkest text-center py-12">Failed to load blogs.</p>';
             });
     });
 
@@ -322,6 +367,4 @@
         fetchMyBlogs('published');
     });
 </script>
-
-
 {% endblock js %}
