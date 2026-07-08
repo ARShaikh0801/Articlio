@@ -19,6 +19,55 @@
         transform: translateY(-1px);
     }
 
+    /* Share Button Transition Styles */
+    .share-btn {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        min-width: 2.2rem;
+        height: 2.2rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .share-btn:hover {
+        background-color: rgba(from var(--theme-base) r g b / 0.08) !important;
+    }
+    .share-btn .share-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+    }
+    .share-btn .share-text-wrapper {
+        position: absolute;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #10b981;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+    .share-btn.copied-active {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        color: #10b981 !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        border-radius: 9999px !important;
+        width: auto !important;
+    }
+    .share-btn.copied-active .share-icon-wrapper {
+        position: absolute;
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    .share-btn.copied-active .share-text-wrapper {
+        position: static;
+        opacity: 1;
+        transform: scale(1);
+    }
+
     .bi-hand-thumbs-down {
         transform: translateY(5px);
     }
@@ -870,6 +919,7 @@
             <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
             <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
             <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
         </div>
 
         <div id="like-interactive-wrapper" class="flex items-center gap-4" style="height: 2.5rem; display: none;">
@@ -896,6 +946,20 @@
                 </svg>
             </a>
             {% endif %}
+
+            <!-- Top Share Button -->
+            <button class="share-btn cursor-pointer rounded-lg text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="share-btn-{{ post.sno }}" title="Share this post">
+                <span class="share-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                </span>
+                <span class="share-text-wrapper">Copied!</span>
+            </button>
         </div>
     </div>
 
@@ -1090,6 +1154,20 @@
                 </svg>
             </a>
             {% endif %}
+
+            <!-- Bottom Share Button -->
+            <button class="share-btn cursor-pointer rounded-lg text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="bottom-share-btn-{{ post.sno }}" title="Share this post">
+                <span class="share-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                </span>
+                <span class="share-text-wrapper">Copied!</span>
+            </button>
         </div>
     </div>
 
@@ -1274,6 +1352,9 @@
             const topSave = document.getElementById('save-btn-{{ post.sno }}');
             const bottomSave = document.getElementById('bottom-save-btn-{{ post.sno }}');
 
+            const topShare = document.getElementById('share-btn-{{ post.sno }}');
+            const bottomShare = document.getElementById('bottom-share-btn-{{ post.sno }}');
+
             // Sync clicks & animations
             function triggerBounce(btn) {
                 if (!btn) return;
@@ -1346,6 +1427,69 @@
                 
                 topSave.addEventListener('click', () => {
                     triggerBounce(bottomSave);
+                });
+            }
+
+            let shareTimeout = null;
+            function handleShare(btn) {
+                if (!btn) return;
+                triggerBounce(btn);
+
+                const performCopy = () => {
+                    const topShareBtn = document.getElementById('share-btn-{{ post.sno }}');
+                    const bottomShareBtn = document.getElementById('bottom-share-btn-{{ post.sno }}');
+
+                    [topShareBtn, bottomShareBtn].forEach(b => {
+                        if (b) b.classList.add('copied-active');
+                    });
+
+                    if (shareTimeout) clearTimeout(shareTimeout);
+                    shareTimeout = setTimeout(() => {
+                        [topShareBtn, bottomShareBtn].forEach(b => {
+                            if (b) b.classList.remove('copied-active');
+                        });
+                    }, 2500);
+                };
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(window.location.href)
+                        .then(performCopy)
+                        .catch(err => {
+                            console.error('Could not copy text: ', err);
+                            fallbackShare(btn, performCopy);
+                        });
+                } else {
+                    fallbackShare(btn, performCopy);
+                }
+            }
+
+            function fallbackShare(btn, onSuccess) {
+                const dummy = document.createElement('input');
+                document.body.appendChild(dummy);
+                dummy.value = window.location.href;
+                dummy.select();
+                try {
+                    document.execCommand('copy');
+                    onSuccess();
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    if (window.showToast) {
+                        window.showToast('Failed to copy link.', 'error');
+                    }
+                }
+                document.body.removeChild(dummy);
+            }
+
+            if (topShare) {
+                topShare.addEventListener('click', () => {
+                    handleShare(topShare);
+                    if (bottomShare) triggerBounce(bottomShare);
+                });
+            }
+            if (bottomShare) {
+                bottomShare.addEventListener('click', () => {
+                    handleShare(bottomShare);
+                    if (topShare) triggerBounce(topShare);
                 });
             }
 
