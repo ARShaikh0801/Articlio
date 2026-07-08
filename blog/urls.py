@@ -12,6 +12,7 @@ urlpatterns=[
     path('toggle-like/',views.toggle_like,name='toggleLike'),
     path('toggle-comment-like/',views.toggle_comment_like,name='toggleCommentLike'),
     path('toggle-bookmark/',views.toggle_bookmark,name='toggleBookmark'),
+    path('add-reactions-batch/',views.add_reactions_batch,name='addReactionsBatch'),
     path('verification',views.emailVerification,name='emailVerification'),
     path('edit/<str:slug>',views.editBlogPost,name='editBlogPost'),
     path('delete/<str:slug>',views.deleteBlogPost,name='deleteBlogPost'),

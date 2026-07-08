@@ -108,3 +108,26 @@ class Highlight(models.Model):
     def __str__(self):
         return f"{self.user.username}'s highlight on {self.post.title}"
 
+
+class Reaction(models.Model):
+    """
+    Represents user reactions to a post. Allowed multiple times per reaction type.
+    """
+    REACTION_TYPES = [
+        ('fire', 'Fire'),
+        ('insightful', 'Insightful'),
+        ('celebrate', 'Celebrate'),
+        ('surprised', 'Surprised'),
+    ]
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reactions')
+    type = models.CharField(max_length=20, choices=REACTION_TYPES)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('post', 'user', 'type')
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.type} x{self.count} on {self.post.title}"
+
+

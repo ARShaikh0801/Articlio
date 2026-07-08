@@ -14,6 +14,7 @@
 {% block meta_robots %}{% if post.draft %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock meta_robots %}
 {% block blogactive %}active-link font-semibold{% endblock blogactive %}
 {% block css %}
+<link rel="stylesheet" nonce="{{ request.csp_nonce }}" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
     .bi-hand-thumbs-up {
         transform: translateY(-1px);
@@ -871,6 +872,186 @@
             display: none !important;
         }
     }
+
+    /* ── Code Blocks Modern Styling ── */
+    .code-block-wrapper {
+        position: relative;
+        margin: 1.5rem 0;
+        border-radius: 12px;
+        background: #1e1e24;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    /* Header bar for code blocks */
+    .code-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.65rem 1rem;
+        background: rgba(30, 30, 36, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        user-select: none;
+    }
+
+    /* Three dots on the left (Mac OS style) */
+    .code-block-header .window-controls {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .code-block-header .window-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .code-block-header .dot-red { background: #ff5f56; }
+    .code-block-header .dot-yellow { background: #ffbd2e; }
+    .code-block-header .dot-green { background: #27c93f; }
+
+    /* Language Badge */
+    .code-block-header .lang-badge {
+        margin-left: 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.07em;
+    }
+
+    /* Copy Button */
+    .code-copy-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .code-copy-btn:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .code-copy-btn:active {
+        transform: scale(0.95);
+    }
+
+    .code-copy-btn.copied {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+    }
+
+    /* Code content override to fit neatly inside wrapper */
+    .code-block-wrapper pre {
+        margin: 0 !important;
+        padding: 1.25rem 1rem !important;
+        background: transparent !important;
+        overflow-x: auto;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .code-block-wrapper pre code {
+        font-family: inherit !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    /* Add custom scrollbar for pre blocks */
+    .code-block-wrapper pre::-webkit-scrollbar {
+        height: 8px;
+    }
+    .code-block-wrapper pre::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+    }
+    .code-block-wrapper pre::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
+    /* Reactions CSS */
+    #reactions-container-top, #reactions-container-bottom {
+        background: var(--bg-card, #f3f4f6);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 9999px;
+        padding: 2px 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .reaction-btn {
+        cursor: pointer !important;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 9999px;
+        padding: 0.25rem 0.5rem !important;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        user-select: none;
+        color: var(--text-main);
+    }
+    .reaction-emoji-img {
+        width: 1.25rem;
+        height: 1.25rem;
+        object-fit: contain;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .reaction-btn:hover {
+        background: rgba(from var(--theme-base) r g b / 0.08) !important;
+    }
+    .reaction-btn.user-reacted {
+        background: rgba(from var(--theme-base) r g b / 0.15) !important;
+        color: var(--theme-base) !important;
+        font-weight: 600;
+    }
+    #sidebar-comment-btn, #bottom-sidebar-comment-btn {
+        cursor: pointer !important;
+    }
+    
+    /* Reaction particles anim */
+    .reaction-particle {
+        position: absolute;
+        pointer-events: none;
+        z-index: 10000;
+        font-size: 1.2rem;
+        animation: reaction-particle-anim 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    @keyframes reaction-particle-anim {
+        0% {
+            transform: translate(0, 0) scale(0.5);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(var(--px), var(--py)) scale(1.2);
+            opacity: 0;
+        }
+    }
+    
+    .reaction-bounce {
+        animation: reaction-bounce-anim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes reaction-bounce-anim {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+    }
 </style>
 {% endblock css %}
 {% block body %}
@@ -914,17 +1095,38 @@
       "description": "{{ post.content|striptags|truncatechars:160|escapejs }}",
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/user.webp' %}"
     }
-    </script>    <div class="flex items-center mb-4">
-        <div id="like-skeleton-wrapper" class="flex items-center gap-4">
-            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
-            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
-            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
-            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
+    </script>    <div class="flex items-center flex-wrap mb-4">
+        <div id="like-skeleton-wrapper" class="flex items-center gap-4 flex-wrap" style="min-height: 2.5rem;">
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div> <!-- Like -->
+            <div class="skeleton rounded-full" style="width: 10.5rem; height: 2.2rem;"></div> <!-- Reactions -->
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div> <!-- Comment -->
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div> <!-- Save -->
+            <div class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div> <!-- Share -->
         </div>
 
-        <div id="like-interactive-wrapper" class="flex items-center gap-4" style="height: 2.5rem; display: none;">
+        <div id="like-interactive-wrapper" class="flex items-center gap-4 flex-wrap" style="min-height: 2.5rem; display: none;">
             <button class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="like-btn-{{ post.sno }}">
             </button>
+
+            <!-- Reaction Buttons (Top) -->
+            <div class="flex items-center gap-1" id="reactions-container-top">
+                <button class="reaction-btn flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="fire" id="react-btn-fire-top" title="Fire">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Fire/3D/fire_3d.png" alt="🔥" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-fire-top">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="insightful" id="react-btn-insightful-top" title="Insightful">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Light%20bulb/3D/light_bulb_3d.png" alt="💡" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-insightful-top">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="celebrate" id="react-btn-celebrate-top" title="Celebrate">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Party%20popper/3D/party_popper_3d.png" alt="🎉" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-celebrate-top">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-2 py-1 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="surprised" id="react-btn-surprised-top" title="Surprised">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Face%20with%20open%20mouth/3D/face_with_open_mouth_3d.png" alt="😮" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-surprised-top">0</span>
+                </button>
+            </div>
 
             <!-- Comment Skeleton -->
             <div id="comment-btn-skeleton" class="skeleton rounded-lg" style="width: 3.5rem; height: 2.2rem;"></div>
@@ -1124,11 +1326,31 @@
     </div>
 
     <!-- Post-content Interactive Toolbar -->
-    <div id="post-interactive-toolbar" class="flex items-center justify-between mt-6 px-2 py-4 border-t border-b border-[var(--border-color)]">
-        <div class="flex items-center gap-6">
+    <div id="post-interactive-toolbar" class="flex items-center justify-between flex-wrap gap-4 mt-6 px-2 py-4 border-t border-b border-[var(--border-color)]">
+        <div class="flex items-center gap-6 flex-wrap">
             <!-- Bottom Like Button Wrapper -->
             <div id="bottom-like-interactive-wrapper" class="flex items-center gap-2">
                 <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border-0 bg-transparent focus:outline-none" type="button" id="bottom-like-btn-{{ post.sno }}">
+                </button>
+            </div>
+
+            <!-- Reaction Buttons (Bottom) -->
+            <div class="flex items-center gap-1" id="reactions-container-bottom" style="display: none;">
+                <button class="reaction-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="fire" id="react-btn-fire-bottom" title="Fire">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Fire/3D/fire_3d.png" alt="🔥" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-fire-bottom">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="insightful" id="react-btn-insightful-bottom" title="Insightful">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Light%20bulb/3D/light_bulb_3d.png" alt="💡" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-insightful-bottom">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="celebrate" id="react-btn-celebrate-bottom" title="Celebrate">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Party%20popper/3D/party_popper_3d.png" alt="🎉" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-celebrate-bottom">0</span>
+                </button>
+                <button class="reaction-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(from_var(--theme-base)_r_g_b_/_0.08)] text-color-darkest border border-transparent bg-transparent focus:outline-none" type="button" data-type="surprised" id="react-btn-surprised-bottom" title="Surprised">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Face%20with%20open%20mouth/3D/face_with_open_mouth_3d.png" alt="😮" class="reaction-emoji-img select-none pointer-events-none">
+                    <span class="count text-xs font-semibold text-color-dark" id="react-count-surprised-bottom">0</span>
                 </button>
             </div>
 
@@ -1333,6 +1555,7 @@
             isAuthenticated: "{{ request.user.is_authenticated }}" === "True",
             toggleLikeUrl: "{% url 'toggleLike' %}",
             toggleBookmarkUrl: "{% url 'toggleBookmark' %}",
+            addReactionsBatchUrl: "{% url 'addReactionsBatch' %}",
             readingTime: {{ post.reading_time|default:3 }},
         };
     </script>
@@ -1524,10 +1747,13 @@
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/readingProgress.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/likeToggle.js' %}?v=1.2"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/bookmarkToggle.js' %}?v=1.2"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/reactionToggle.js' %}?v=1.0"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/fontSizeControl.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/readerSettings.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/focusMode.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/tts.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/highlights.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/uiMisc.js' %}"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/codeBlocks.js' %}?v=1.0"></script>
 {% endblock js %}

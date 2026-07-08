@@ -1,8 +1,10 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Post,BlogComment,Like,Bookmark
+from .models import Post,BlogComment,Like,Bookmark,Reaction
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.db.models import F, Sum
+from django.db import transaction
 import json
 import random
 import time
@@ -396,3 +398,57 @@ def toggle_comment_like(request):
         return JsonResponse({"error": "Comment not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+
+@require_POST
+def add_reactions_batch(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        post_id = data.get("post_id")
+        increments = data.get("increments", {})
+        post = Post.objects.get(sno=post_id)
+        user = request.user
+
+        valid_types = ['fire', 'insightful', 'celebrate', 'surprised']
+
+        with transaction.atomic():
+            for r_type, inc in increments.items():
+                if r_type not in valid_types:
+                    continue
+                try:
+                    inc = int(inc)
+                except (ValueError, TypeError):
+                    continue
+                if inc <= 0:
+                    continue
+
+                reaction, created = Reaction.objects.get_or_create(
+                    post=post, user=user, type=r_type,
+                    defaults={'count': 0}
+                )
+                reaction.count = F('count') + inc
+                reaction.save()
+
+        # Retrieve final aggregated totals and user counts
+        totals = {}
+        user_counts = {}
+        for r_type in valid_types:
+            total_sum = Reaction.objects.filter(post=post, type=r_type).aggregate(total=Sum('count'))['total'] or 0
+            totals[r_type] = total_sum
+
+            user_react = Reaction.objects.filter(post=post, user=user, type=r_type).first()
+            user_counts[r_type] = user_react.count if user_react else 0
+
+        return JsonResponse({
+            "status": "success",
+            "reactions": totals,
+            "user_reactions": user_counts
+        })
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+

@@ -46,6 +46,11 @@
                 if (likeInteractiveWrapper) likeInteractiveWrapper.style.display = 'flex';
             }
 
+            // Initialize Reactions State
+            if (window.initReactionsState) {
+                window.initReactionsState(data.reactions, data.user_reactions);
+            }
+
             // Update Bookmark Button
             var saveBtn = document.getElementById('save-btn-' + postSno);
             if (saveBtn) {

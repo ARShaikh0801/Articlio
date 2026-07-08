@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from datetime import timedelta
-from .models import Post, BlogComment, Like, Bookmark, History, Highlight
-from django.db.models import Count
+from .models import Post, BlogComment, Like, Bookmark, History, Highlight, Reaction
+from django.db.models import Count, Sum
 import time
 
 
@@ -218,6 +218,20 @@ def api_post_state(request, slug):
         for p in interested
     ]
 
+    valid_types = ['fire', 'insightful', 'celebrate', 'surprised']
+    reactions = {}
+    user_reactions = {}
+
+    for r_type in valid_types:
+        total_sum = Reaction.objects.filter(post=post, type=r_type).aggregate(total=Sum('count'))['total'] or 0
+        reactions[r_type] = total_sum
+
+        if request.user.is_authenticated:
+            user_react = Reaction.objects.filter(post=post, user=request.user, type=r_type).first()
+            user_reactions[r_type] = user_react.count if user_react else 0
+        else:
+            user_reactions[r_type] = 0
+
     return JsonResponse({
         'liked': liked,
         'bookmarked': bookmarked,
@@ -226,6 +240,8 @@ def api_post_state(request, slug):
         'reading_time': post.reading_time,
         'scroll_progress': scroll_progress,
         'interestedPosts': interested_data,
+        'reactions': reactions,
+        'user_reactions': user_reactions,
     })
 
 
