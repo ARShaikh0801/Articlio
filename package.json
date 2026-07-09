@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "postcss static/css/input.css -o static/css/output.css",
-    "build:min": "postcss static/css/input.css -o static/css/output.css --minify"
+    "build": "npx postcss static/css/input.css -o static/css/output.css",
+    "build:min": "npx postcss static/css/input.css -o static/css/output.css --minify"
   },
   "keywords": [],
   "author": "",
