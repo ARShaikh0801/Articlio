@@ -35,6 +35,17 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="csrf-token" content="{{ csrf_token }}">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DFRE5010VN"></script>
+    <script nonce="{{ request.csp_nonce }}">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-DFRE5010VN');
+    </script>
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
