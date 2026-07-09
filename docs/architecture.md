@@ -35,12 +35,13 @@ classDiagram
         +title: String
         +content: Text
         +summary: Text
-        +author: String
+        +author: String (Indexed)
         +slug: String (Unique)
-        +category: String
-        +views: Integer
+        +category: String (Indexed)
+        +views: Integer (Indexed)
         +likes: Integer
-        +draft: Boolean
+        +draft: Boolean (Indexed)
+        +reading_time_minutes: Integer
         +timestamp: DateTime
         +updated_at: DateTime
     }
@@ -65,7 +66,7 @@ classDiagram
         +post: ForeignKey (Post)
         +user: ForeignKey (CustomUser)
         +scroll_progress: Float
-        +viewed_at: DateTime
+        +viewed_at: DateTime (Indexed)
     }
     class Highlight {
         +post: ForeignKey (Post)
@@ -105,13 +106,29 @@ classDiagram
 | Model | Application | Description | Important Constraints |
 | :--- | :--- | :--- | :--- |
 | `CustomUser` | `home` | Overrides standard User. Handles roles, themes, verification, and OAuth completion tags. | Inherits `AbstractUser` |
-| `Post` | `blog` | Represents a blog entry. Tracks views, drafts, likes, and reading metrics. | `slug` must be unique. |
+| `Post` | `blog` | Represents a blog entry. Tracks views, drafts, likes, and precomputed reading time. | `slug` must be unique. |
 | `BlogComment` | `blog` | Reusable recursive comment structure allowing nested replies and comment upvoting/likes. | ForeignKey to `self`, ManyToMany to `User` |
 | `Like` | `blog` | Represents post likes by users. | Unique combination: `(post, user)` |
 | `Bookmark` | `blog` | Allows users to save posts to their reading list. | Unique combination: `(post, user)` |
 | `History` | `blog` | Captures reading metrics, including scroll progress percentages. | Unique combination: `(post, user)` |
 | `Highlight` | `blog` | Persists user-created colored highlights and notes on post text blocks. | ForeignKey to `Post` & `User` |
 | `Contact` | `home` | Feedback and inquiry submission registry. | Auto timestamps |
+
+### Database Performance Indexes
+To ensure fast retrieval under heavy load, the database schema defines several performance indexes:
+- `idx_post_draft_category`: Compound index on Post `(draft, category)` to accelerate category listings.
+- `idx_post_draft_views`: Compound index on Post `(draft, -views)` to speed up trending/popular feeds.
+- `idx_post_draft_timestamp`: Compound index on Post `(draft, -timestamp)` to speed up latest post feeds.
+- `idx_history_user_viewed`: Compound index on History `(user, -viewed_at)` for fetching user histories.
+- `idx_highlight_post_user`: Compound index on Highlight `(post, user)` for rendering user post highlights.
+- `idx_reaction_post_type`: Compound index on Reaction `(post, type)` to optimize batch reaction aggregations.
+
+### Query Layer Optimizations
+- **Stored Reading Time**: Reading time is computed on save and stored in `reading_time_minutes`, avoiding expensive CPU-bound regex parser execution and table scans on lists.
+- **N+1 Avoidance**: The trending post selector runs a single subquery with rank matching instead of executing category loops. Comment fetching utilizes `select_related('user')` to fetch author usernames in a single JOIN query.
+- **Bulk Aggregation**: Post details load reaction counts using aggregation groupings rather than running individual type lookups, reducing DB round-trips from 8 queries to 2.
+- **Content Deferral**: List feeds defer fetching the potentially large HTML `content` column via `.defer('content')` to reduce memory consumption.
+- **Search Consolidation**: Search queries combine title, category, content, and author matching into a single database hit using Django `Q` query operations.
 
 ---
 

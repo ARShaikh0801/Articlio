@@ -25,6 +25,7 @@ A modern, responsive, and secure blogging platform built using **Django** and **
 - **Global Search Shortcut**: Pressing `/` anywhere on the site instantly focuses the global navigation search bar (unless already typing).
 - **Modular Frontend Architecture**: Refactored monolithic scripts into decoupled, single-responsibility JS files under `static/js/blogPost/` for maintainability.
 - **Bloom Filter Performance**: Employs an in-memory cached Bloom Filter to deliver instant username availability checks on signup.
+- **High-Performance Query Layer**: Optimized SQL profiles including compound index fields, single subquery category trending checks, query caching strategies, bulk reaction aggregation, and deferred column loads for extremely responsive page feeds.
 - **Security Protections**: Configured Content Security Policy (CSP) with random script nonces and Clickjacking prevention headers.
 
 ---
