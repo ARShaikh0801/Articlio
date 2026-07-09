@@ -35,9 +35,13 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="csrf-token" content="{{ csrf_token }}">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     {% load static %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
     <link href="{% static 'css/output.css' %}" rel="stylesheet">
+
     <style>
         * { font-family: 'Inter', system-ui, sans-serif; }
         .close-msg { cursor: pointer; }
