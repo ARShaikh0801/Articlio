@@ -17,6 +17,8 @@
     <link rel="icon" type="image/png" href="{% static 'img/articlio logo.png' %}">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#212529">
+    {% block extra_meta %}{% endblock extra_meta %}
+
 
     <title>{% block title %}{% endblock title %}</title>
     <meta name="description" content="{% block meta_description %}Articlio - Thoughtful articles and tutorials.{% endblock meta_description %}">

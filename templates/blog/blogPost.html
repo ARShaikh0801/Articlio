@@ -5,12 +5,12 @@
 {% load lazy_images %}
 
 {% block title %}{{ post.title }} - Articlio{% endblock title %}
-{% block meta_description %}{{ post.content|striptags|truncatechars:160 }}{% endblock meta_description %}
+{% block meta_description %}{% if post.summary %}{{ post.summary }}{% else %}{{ post.content|striptags|truncatechars:155 }}{% endif %}{% endblock meta_description %}
 {% block og_title %}{{ post.title }} - Articlio{% endblock og_title %}
-{% block og_description %}{{ post.content|striptags|truncatechars:160 }}{% endblock og_description %}
+{% block og_description %}{% if post.summary %}{{ post.summary }}{% else %}{{ post.content|striptags|truncatechars:155 }}{% endif %}{% endblock og_description %}
 {% block og_type %}article{% endblock og_type %}
 {% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}
-{% block og_image %}{% static 'img/user.webp' %}{% endblock og_image %}
+{% block og_image %}{% if post.first_image %}{% if "http" in post.first_image or post.first_image|slice:":2" == "//" %}{{ post.first_image }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ post.first_image }}{% endif %}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/articlio logo.png' %}{% endif %}{% endblock og_image %}
 {% block meta_robots %}{% if post.draft %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock meta_robots %}
 {% block blogactive %}active-link font-semibold{% endblock blogactive %}
 {% block css %}
@@ -1491,12 +1491,12 @@
 <div class="ad-sidebar border border-[var(--border-color)] bg-transparent text-color-darkest px-4 py-2 rounded-lg mb-4 fixed top-1/4" style="left: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
-    <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
+    <p class="text-xs wrap-break-word" ><a href="mailto:ArticlioOfficialBlogs2026@gmail.com" class="hover:underline">ArticlioOfficialBlogs2026@gmail.com</a></p>
 </div>
 <div class="ad-sidebar border border-[var(--border-color)] bg-transparent text-color-darkest px-4 py-2 rounded-lg mb-4 fixed top-1/4" style="right: 10px ;width: max-content; height: 350px; text-align: center;">
     <h3 class="text-lg font-semibold mb-2">Articlio Blog Ad Space</h3>
     <p class="text-xs wrap-break-word" >Contact on</p>
-    <p class="text-xs wrap-break-word" >ArticlioOfficialBlog2026@gmail.com</p>
+    <p class="text-xs wrap-break-word" ><a href="mailto:ArticlioOfficialBlogs2026@gmail.com" class="hover:underline">ArticlioOfficialBlogs2026@gmail.com</a></p>
 </div>
 
 <!-- Comments Sidebar Drawer -->
@@ -1756,4 +1756,32 @@
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/uiMisc.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/codeBlocks.js' %}?v=1.0"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ post.title|escapejs }}",
+  "description": "{% if post.summary %}{{ post.summary|escapejs }}{% else %}{{ post.content|striptags|truncatechars:155|escapejs }}{% endif %}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.author|escapejs }}"
+  },
+  "datePublished": "{{ post.timestamp|date:'c' }}",
+  "dateModified": "{{ post.updated_at|date:'c' }}",
+  "image": "{% if post.first_image %}{% if "http" in post.first_image or post.first_image|slice:":2" == "//" %}{{ post.first_image }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ post.first_image }}{% endif %}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/articlio logo.png' %}{% endif %}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Articlio",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/articlio logo.png' %}"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  }
+}
+</script>
 {% endblock js %}

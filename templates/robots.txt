@@ -1,3 +1,19 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /complete-profile/
+Disallow: /accounts/
+Disallow: /blog/writeBlog
+Disallow: /blog/myBlogs
+Disallow: /blog/bookmarks
+Disallow: /blog/history
+Disallow: /blog/edit/
+Disallow: /blog/delete/
+Disallow: /blog/api/
+Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /logout
+
 Sitemap: {{ request.scheme }}://{{ request.get_host }}{% url 'sitemap' %}
+

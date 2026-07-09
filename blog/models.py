@@ -45,6 +45,15 @@ class Post(models.Model):
             return self.reading_time_minutes
         return self._compute_reading_time()
 
+    @property
+    def first_image(self):
+        """Extract the first image URL from the content or return None."""
+        match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', self.content or '')
+        if match:
+            return match.group(1)
+        return None
+
+
     def save(self, *args, **kwargs):
         # Auto-compute reading_time on every save (unless only updating specific fields
         # that don't include content)

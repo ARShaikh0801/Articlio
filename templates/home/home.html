@@ -2,6 +2,9 @@
 {% load static %}
 {% block title %}Home - Articlio{% endblock title %}
 {% block meta_description %}Discover thoughtful articles, tutorials, and stories on Articlio. Read, write, and inspire.{% endblock meta_description %}
+{% block og_title %}Home - Articlio{% endblock og_title %}
+{% block og_description %}Discover thoughtful articles, tutorials, and stories on Articlio. Read, write, and inspire.{% endblock og_description %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/articlio logo.png' %}{% endblock og_image %}
 
 {% block js %}
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/bookmarkToggle.js' %}"></script>
