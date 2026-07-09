@@ -6,7 +6,8 @@ class PostSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Post.objects.filter(draft=False)
+        return Post.objects.filter(draft=False).order_by('-timestamp')
+
 
     def lastmod(self, obj):
         return obj.updated_at

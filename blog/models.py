@@ -64,8 +64,13 @@ class Post(models.Model):
                 kwargs['update_fields'] = list(update_fields) + ['reading_time_minutes']
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('blogPost', kwargs={'slug': self.slug})
+
     def __str__(self):
         return self.title + ' ' + self.author
+
     
 class BlogComment(models.Model):
     """
