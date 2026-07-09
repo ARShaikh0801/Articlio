@@ -23,6 +23,22 @@
     var activeTool = null; // 'highlight', 'eraser', or null
     var activeColor = 'yellow'; // default color
 
+    // Helper: update the custom selection color on the editor
+    function updateEditorSelectionStyle() {
+        if (!qlEditor) return;
+        qlEditor.classList.remove(
+            'highlight-mode-active',
+            'selection-yellow',
+            'selection-green',
+            'selection-blue',
+            'selection-pink'
+        );
+        if (activeTool === 'highlight') {
+            qlEditor.classList.add('highlight-mode-active');
+            qlEditor.classList.add('selection-' + activeColor);
+        }
+    }
+
     // Helper: get text nodes in order
     function getCharacterRanges(root) {
         var textNodes = [];
@@ -279,6 +295,7 @@
                     eraserToolBtn.classList.remove('active');
                 }
             }
+            updateEditorSelectionStyle();
         });
     }
 
@@ -302,6 +319,7 @@
                     hlColorPicker.classList.add('hidden');
                 }
             }
+            updateEditorSelectionStyle();
         });
     }
 
@@ -312,6 +330,7 @@
             activeColor = dot.dataset.color;
             colorDots.forEach(function(d) { d.classList.remove('active'); });
             dot.classList.add('active');
+            updateEditorSelectionStyle();
         });
     });
 

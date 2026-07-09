@@ -2291,6 +2291,60 @@ li.tts-reading-highlight::before {
     border-color: rgb(236, 72, 153);
 }
 
+/* Custom selection highlights when highlight tool is active */
+.highlight-mode-active.selection-yellow::selection,
+.highlight-mode-active.selection-yellow *::selection {
+    background-color: rgba(253, 224, 71, 0.55) !important;
+}
+.highlight-mode-active.selection-green::selection,
+.highlight-mode-active.selection-green *::selection {
+    background-color: rgba(134, 239, 172, 0.55) !important;
+}
+.highlight-mode-active.selection-blue::selection,
+.highlight-mode-active.selection-blue *::selection {
+    background-color: rgba(147, 197, 253, 0.55) !important;
+}
+.highlight-mode-active.selection-pink::selection,
+.highlight-mode-active.selection-pink *::selection {
+    background-color: rgba(244, 114, 182, 0.55) !important;
+}
+
+/* Dark mode selection highlights */
+.dark .highlight-mode-active.selection-yellow::selection,
+.dark .highlight-mode-active.selection-yellow *::selection {
+    background-color: rgba(234, 179, 8, 0.38) !important;
+}
+.dark .highlight-mode-active.selection-green::selection,
+.dark .highlight-mode-active.selection-green *::selection {
+    background-color: rgba(34, 197, 94, 0.38) !important;
+}
+.dark .highlight-mode-active.selection-blue::selection,
+.dark .highlight-mode-active.selection-blue *::selection {
+    background-color: rgba(59, 130, 246, 0.38) !important;
+}
+.dark .highlight-mode-active.selection-pink::selection,
+.dark .highlight-mode-active.selection-pink *::selection {
+    background-color: rgba(236, 72, 153, 0.38) !important;
+}
+
+/* Sepia mode selection highlights */
+.reading-theme-sepia .highlight-mode-active.selection-yellow::selection,
+.reading-theme-sepia .highlight-mode-active.selection-yellow *::selection {
+    background-color: rgba(217, 119, 6, 0.38) !important;
+}
+.reading-theme-sepia .highlight-mode-active.selection-green::selection,
+.reading-theme-sepia .highlight-mode-active.selection-green *::selection {
+    background-color: rgba(21, 128, 61, 0.38) !important;
+}
+.reading-theme-sepia .highlight-mode-active.selection-blue::selection,
+.reading-theme-sepia .highlight-mode-active.selection-blue *::selection {
+    background-color: rgba(29, 78, 216, 0.38) !important;
+}
+.reading-theme-sepia .highlight-mode-active.selection-pink::selection,
+.reading-theme-sepia .highlight-mode-active.selection-pink *::selection {
+    background-color: rgba(190, 24, 74, 0.38) !important;
+}
+
 /* Subtle dashed underline when note is present */
 .articlio-highlight.has-note {
     border-bottom-style: dashed !important;
