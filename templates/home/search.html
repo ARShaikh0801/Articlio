@@ -22,12 +22,30 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function buildSkeletons(count) {
+        return Array(count).fill(`
+            <div class="skeleton-card">
+                <div class="skeleton-bar skeleton-bar-sm"></div>
+                <div class="skeleton-bar skeleton-bar-lg"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 45%;"></div>
+                <div style="display:flex; gap:12px;">
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 80px;"></div>
+                </div>
+                <div class="skeleton-bar skeleton-bar-xl"></div>
+                <div class="skeleton-bar skeleton-bar-xl" style="width: 80%;"></div>
+                <div class="skeleton-bar skeleton-bar-btn"></div>
+            </div>
+        `).join('');
+    }
+
     function fetchSearchResults() {
         if (!query) return;
 
         const container = document.getElementById('search-results-container');
         const paginationContainer = document.getElementById('search-pagination-container');
-        container.innerHTML = Array(4).fill('<div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>').join('');
+        container.innerHTML = buildSkeletons(4);
         paginationContainer.innerHTML = '';
 
         fetch(`/api/search/?query=${encodeURIComponent(query)}&page=${currentSearchPage}`)
@@ -53,49 +71,77 @@
                 }
                 
                 data.posts.forEach(post => {
+                    // Build bookmark HTML
                     const bookmarkHtml = window.USER_IS_AUTHENTICATED ? `
-                        <div class="absolute top-4 right-4 saveSVG" id="save-btn-${post.sno}" data-sno="${post.sno}">
+                        <div class="saveSVG" id="save-btn-${post.sno}" data-sno="${post.sno}" style="flex-shrink: 0;">
                             ${post.bookmarked ? 
-                                `<svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-darkest w-6 h-6 cursor-pointer' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>` 
+                                `<svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' class='bi bi-bookmark-check-fill text-color-darkest w-5 h-5 cursor-pointer' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m8.854-9.646a.5.5 0 0 0-.708-.708L7.5 7.793 6.354 6.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z'/></svg>` 
                                 : 
-                                `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest bi bi-bookmark cursor-pointer" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/></svg>`
+                                `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-color-darkest bi bi-bookmark cursor-pointer" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/></svg>`
                             }
                         </div>` 
                     : `
-                        <a class="absolute top-4 right-4" aria-label="save button" href="/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}&msg=Please+login+to+save+posts.">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-color-darkest" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/></svg>
+                        <a href="/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}&msg=Please+login+to+save+posts." style="flex-shrink: 0;" aria-label="Save post">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-color-darkest" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/></svg>
                         </a>`;
 
+                    // Build badges
+                    let badgesHtml = '';
+                    if (post.is_new) {
+                        badgesHtml += `<span class="badge-new">✦ New</span>`;
+                    }
+                    if (post.is_trending) {
+                        badgesHtml += `<span class="badge-trending">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.44-.714-2.378-1.318-3.114l-.5-.55a.626.626 0 0 0-1.19.263c-.067.71-.778 1.615-1.492 2.151C10.5 6.5 8 3 8 0c0 0-6 4-6 11.5S4.686 16 8 16"/></svg>
+                            Trending</span>`;
+                    }
+
                     const postHtml = `
-                    <div class="bg-white rounded-xl hover:shadow-lg transition relative fade-in" style="border-left: 4px solid var(--theme-base);">
-                        <div class="p-6 flex rounded-xl flex-col h-full" style="border: 1px solid #e5e7eb; border-left: none; border-radius: 0 12px 12px 0;">
-                            ${bookmarkHtml}
+                    <div class="post-card" style="border-radius: 16px; border: 1px solid var(--border-color, #e5e7eb); background: var(--bg-card, #fff); overflow: hidden;">
+                        <div class="post-card-inner">
+                            <div class="post-card-header">
+                                <div class="post-card-tags">
+                                    <a href="/search?query=${encodeURIComponent(post.category)}" class="category-pill">${escapeHtml(post.category)}</a>
+                                    ${badgesHtml}
+                                </div>
+                                ${bookmarkHtml}
+                            </div>
 
-                            <strong class="text-color-darkest mb-2" style="font-size: 0.85rem; padding-right: 1.75rem;">
-                                Article by <a class="author-link-hover-medium underline" style="color: var(--theme-base);" href="/search?query=${encodeURIComponent(post.author)}">${escapeHtml(post.author)}</a> · ${escapeHtml(post.views)} views · ${escapeHtml(post.likes)} likes <span class="reading-time-container"><span class="reading-time-separator"> · </span><span style="display: inline-flex; align-items: center; gap: 3px; background: var(--theme-base); color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: middle;"><svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'><path d='M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z'/><path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/></svg>${post.reading_time} min</span></span>
-                            </strong>
-
-                            <h3 class="text-xl font-semibold mb-1">
-                                <a href="/blog/${encodeURIComponent(post.slug)}" class="text-color-darkest link-hover-medium transition">
-                                    ${escapeHtml(post.title)}
-                                </a>
+                            <h3 class="post-card-title">
+                                <a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a>
                             </h3>
 
-                            <div class="text-sm mb-3" style="color: #6b7280;">
-                                Category: <a class="author-link-hover-medium underline" style="color: var(--theme-base);" href="/search?query=${encodeURIComponent(post.category)}">${escapeHtml(post.category)}</a>
-                            </div>
-                            <div class="text-sm mb-3" style="color: #6b7280;">
-                                ${escapeHtml(post.timestamp)}
-                            </div>
-
-                            <div class="max-w-lg mb-4" style="color: #4b5563;">
-                                ${escapeHtml(post.summary)}
+                            <div class="post-card-author">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/></svg>
+                                <span>by</span>
+                                <a href="/search?query=${encodeURIComponent(post.author)}">${escapeHtml(post.author)}</a>
                             </div>
 
-                            <div class="mt-auto">
-                                <a href="/blog/${encodeURIComponent(post.slug)}" aria-label="Continue reading ${escapeHtml(post.title)}"
-                                   class="inline-block px-5 py-2 rounded-lg transition font-medium" style="background: var(--theme-base); color: white; border: 1px solid var(--theme-base);">
+                            <div class="stats-row">
+                                <span class="stat-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+                                    <span data-count-up>${escapeHtml(post.views)}</span> views
+                                </span>
+                                <span class="stat-separator"></span>
+                                <span class="stat-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/></svg>
+                                    <span data-count-up>${escapeHtml(post.likes)}</span> likes
+                                </span>
+                                <span class="stat-separator"></span>
+                                <span class="stat-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                                    ${post.reading_time} min read
+                                </span>
+                                <span class="stat-separator"></span>
+                                <span class="stat-chip">${escapeHtml(post.timestamp)}</span>
+                            </div>
+
+                            <p class="post-card-summary">${escapeHtml(post.summary)}</p>
+
+                            <div class="post-card-footer">
+                                <a href="/blog/${encodeURIComponent(post.slug)}" class="post-card-read-link" aria-label="Continue reading ${escapeHtml(post.title)}">
                                     Continue reading
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </a>
                             </div>
                         </div>
@@ -139,9 +185,21 @@
     <div id="search-message" class="mb-4"></div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="search-results-container">
-        <!-- Skeleton Loaders -->
+        <!-- Structured Skeleton Loaders -->
         {% for i in "1234" %}
-        <div class="bg-white rounded-xl shadow-sm relative skeleton" style="border-left: 4px solid var(--theme-base); height: 280px;"></div>
+        <div class="skeleton-card">
+            <div class="skeleton-bar skeleton-bar-sm"></div>
+            <div class="skeleton-bar skeleton-bar-lg"></div>
+            <div class="skeleton-bar skeleton-bar-sm" style="width: 45%;"></div>
+            <div style="display:flex; gap:12px;">
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 80px;"></div>
+            </div>
+            <div class="skeleton-bar skeleton-bar-xl"></div>
+            <div class="skeleton-bar skeleton-bar-xl" style="width: 80%;"></div>
+            <div class="skeleton-bar skeleton-bar-btn"></div>
+        </div>
         {% endfor %}
     </div>
 

@@ -4,7 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from datetime import timedelta
 from .models import Post, BlogComment, Like, Bookmark, History, Highlight, Reaction
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Subquery, OuterRef, Max
 import time
 
 
@@ -36,14 +36,20 @@ def _check_rate_limit(request, key='api_requests', max_requests=15, window_secon
 
 
 def _get_trending_post_ids():
-    """Return the set of post sno IDs representing the top 1 viewed post in each category."""
-    trending_ids = set()
-    categories = Post.objects.filter(draft=False).values_list('category', flat=True).distinct()
-    for cat in categories:
-        max_post = Post.objects.filter(draft=False, category=cat).order_by('-views').first()
-        if max_post:
-            trending_ids.add(max_post.sno)
-    return trending_ids
+    """Return the set of post sno IDs representing the top 1 viewed post in each category.
+    Uses a single subquery instead of per-category loops."""
+    # Subquery: for each category, find the max views among non-draft posts
+    max_views_subquery = Post.objects.filter(
+        draft=False, category=OuterRef('category')
+    ).order_by('-views').values('views')[:1]
+
+    # Find posts whose views equal the max in their category
+    trending_posts = Post.objects.filter(
+        draft=False,
+        views=Subquery(max_views_subquery)
+    ).values_list('sno', flat=True)
+
+    return set(trending_posts)
 
 
 def _serialize_post(post, bookmarked_ids=None, trending_post_ids=None):
@@ -115,7 +121,7 @@ def api_posts(request):
     if not request.user.is_authenticated and _check_rate_limit(request, 'api_posts_rate'):
         return JsonResponse({'error': 'Too many requests. Please wait 10 minutes or login to continue.'}, status=429)
 
-    allPosts = Post.objects.filter(draft=False)
+    allPosts = Post.objects.filter(draft=False).defer('content')
 
     # Get filter params
     filtered = request.GET.get('filter', 'all')
@@ -145,9 +151,10 @@ def api_posts(request):
     if category_filter != 'all':
         allPosts = allPosts.filter(category=category_filter)
 
-    # Get unique authors and categories
-    authors = list(Post.objects.filter(draft=False).values_list('author', flat=True).distinct())
-    categories = list(Post.objects.filter(draft=False).values_list('category', flat=True).distinct())
+    # Get unique authors and categories in a single query
+    author_category_pairs = Post.objects.filter(draft=False).values_list('author', 'category')
+    authors = sorted(set(pair[0] for pair in author_category_pairs))
+    categories = sorted(set(pair[1] for pair in author_category_pairs))
 
     # Pagination
     page = _safe_page(request)
@@ -198,10 +205,10 @@ def api_post_state(request, slug):
             scroll_progress = history_entry.scroll_progress
 
     # Related posts: Prioritize same category by popularity, fallback to overall popularity
-    interested = list(Post.objects.filter(draft=False, category=post.category).exclude(sno=post.sno).order_by('-views', '-likes')[:4])
+    interested = list(Post.objects.filter(draft=False, category=post.category).exclude(sno=post.sno).defer('content').order_by('-views', '-likes')[:4])
     if len(interested) < 4:
         exclude_snos = [p.sno for p in interested] + [post.sno]
-        fallback_posts = Post.objects.filter(draft=False).exclude(sno__in=exclude_snos).order_by('-views', '-likes')[:4 - len(interested)]
+        fallback_posts = Post.objects.filter(draft=False).exclude(sno__in=exclude_snos).defer('content').order_by('-views', '-likes')[:4 - len(interested)]
         interested.extend(fallback_posts)
 
     interested_data = [
@@ -218,19 +225,19 @@ def api_post_state(request, slug):
         for p in interested
     ]
 
+    # Bulk-fetch reaction totals and user counts in 2 queries instead of 8
     valid_types = ['fire', 'insightful', 'celebrate', 'surprised']
-    reactions = {}
-    user_reactions = {}
+    reactions = {r_type: 0 for r_type in valid_types}
+    user_reactions = {r_type: 0 for r_type in valid_types}
 
-    for r_type in valid_types:
-        total_sum = Reaction.objects.filter(post=post, type=r_type).aggregate(total=Sum('count'))['total'] or 0
-        reactions[r_type] = total_sum
+    totals_qs = Reaction.objects.filter(post=post, type__in=valid_types).values('type').annotate(total=Sum('count'))
+    for row in totals_qs:
+        reactions[row['type']] = row['total'] or 0
 
-        if request.user.is_authenticated:
-            user_react = Reaction.objects.filter(post=post, user=request.user, type=r_type).first()
-            user_reactions[r_type] = user_react.count if user_react else 0
-        else:
-            user_reactions[r_type] = 0
+    if request.user.is_authenticated:
+        user_qs = Reaction.objects.filter(post=post, user=request.user, type__in=valid_types).values('type', 'count')
+        for row in user_qs:
+            user_reactions[row['type']] = row['count'] or 0
 
     return JsonResponse({
         'liked': liked,
@@ -252,8 +259,8 @@ def api_comments(request, slug):
 
     post = get_object_or_404(Post, slug=slug, draft=False)
 
-    all_top_level = BlogComment.objects.filter(post=post, parent=None).annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
-    replies = BlogComment.objects.filter(post=post).exclude(parent=None).annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
+    all_top_level = BlogComment.objects.filter(post=post, parent=None).select_related('user').annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
+    replies = BlogComment.objects.filter(post=post).exclude(parent=None).select_related('user').annotate(num_likes=Count('likes')).order_by('-num_likes', '-timestamp')
 
     replies_dict = {}
     for reply in replies:
@@ -304,7 +311,7 @@ def api_bookmarks(request):
     if not request.user.is_authenticated:
         return JsonResponse({'posts': [], 'authenticated': False})
 
-    saved_posts = Post.objects.filter(bookmark__user=request.user).distinct().order_by('-bookmark__id')
+    saved_posts = Post.objects.filter(bookmark__user=request.user).defer('content').distinct().order_by('-bookmark__id')
 
     # Pagination
     page = _safe_page(request)
@@ -343,8 +350,8 @@ def api_my_blogs(request):
 
     query = request.GET.get('query', '').strip()
 
-    drafts_qs = Post.objects.filter(author=request.user.name, draft=True)
-    published_qs = Post.objects.filter(author=request.user.name, draft=False)
+    drafts_qs = Post.objects.filter(author=request.user.name, draft=True).defer('content')
+    published_qs = Post.objects.filter(author=request.user.name, draft=False).defer('content')
     
     if query:
         from django.db.models import Q
@@ -473,7 +480,7 @@ def api_history(request):
         history_qs = History.objects.filter(
             user=request.user,
             viewed_at__gte=cutoff,
-        ).select_related('post')
+        ).select_related('post').defer('post__content')
 
         # Apply sorting
         sort_param = request.GET.get('sort', 'recent')
@@ -541,7 +548,7 @@ def api_history(request):
 
         # Only take first 50 to prevent abuse
         sno_list = sno_list[:50]
-        posts = Post.objects.filter(sno__in=sno_list, draft=False)
+        posts = Post.objects.filter(sno__in=sno_list, draft=False).defer('content')
 
         # Maintain the order from the client (most recent first)
         post_map = {p.sno: p for p in posts}

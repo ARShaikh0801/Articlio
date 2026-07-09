@@ -307,7 +307,7 @@ def update_theme_preference(request):
             if theme:
                 user = request.user
                 user.theme_preference = theme
-                user.save()
+                user.save(update_fields=['theme_preference'])
                 return JsonResponse({'status': 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)

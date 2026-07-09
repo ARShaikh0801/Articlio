@@ -432,15 +432,17 @@ def add_reactions_batch(request):
                 reaction.count = F('count') + inc
                 reaction.save()
 
-        # Retrieve final aggregated totals and user counts
-        totals = {}
-        user_counts = {}
-        for r_type in valid_types:
-            total_sum = Reaction.objects.filter(post=post, type=r_type).aggregate(total=Sum('count'))['total'] or 0
-            totals[r_type] = total_sum
+        # Retrieve final aggregated totals and user counts in 2 bulk queries
+        totals = {r_type: 0 for r_type in valid_types}
+        user_counts = {r_type: 0 for r_type in valid_types}
 
-            user_react = Reaction.objects.filter(post=post, user=user, type=r_type).first()
-            user_counts[r_type] = user_react.count if user_react else 0
+        totals_qs = Reaction.objects.filter(post=post, type__in=valid_types).values('type').annotate(total=Sum('count'))
+        for row in totals_qs:
+            totals[row['type']] = row['total'] or 0
+
+        user_qs = Reaction.objects.filter(post=post, user=user, type__in=valid_types).values('type', 'count')
+        for row in user_qs:
+            user_counts[row['type']] = row['count'] or 0
 
         return JsonResponse({
             "status": "success",

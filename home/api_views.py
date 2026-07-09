@@ -33,7 +33,7 @@ def api_home_posts(request):
     if _check_rate_limit(request, 'api_home_rate'):
         return JsonResponse({'error': 'Rate limited. Please wait 10 minutes or login to continue.'}, status=429)
 
-    top_posts = Post.objects.filter(draft=False).order_by('-views')[:2]
+    top_posts = Post.objects.filter(draft=False).defer('content').order_by('-views')[:2]
 
     bookmarked_ids = set()
     if request.user.is_authenticated:
@@ -61,11 +61,12 @@ def api_search(request):
     if len(query) > 30:
         return JsonResponse({'posts': [], 'query': query, 'message': 'Please Enter Less Than 30 Characters'})
 
-    allPostsTitle = Post.objects.filter(title__icontains=query, draft=False)
-    allPostsCategory = Post.objects.filter(category__icontains=query, draft=False)
-    allPostsContent = Post.objects.filter(content__icontains=query, draft=False)
-    allPostsAuthor = Post.objects.filter(author__icontains=query, draft=False)
-    allPosts = allPostsTitle.union(allPostsContent, allPostsAuthor, allPostsCategory).order_by('-views')
+    from django.db.models import Q
+    allPosts = Post.objects.filter(
+        Q(title__icontains=query) | Q(category__icontains=query) |
+        Q(content__icontains=query) | Q(author__icontains=query),
+        draft=False
+    ).order_by('-views')
 
     total_results = allPosts.count()
 
