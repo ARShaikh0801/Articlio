@@ -41,4 +41,6 @@ blog/management/commands/seed_articlio_post.py
 
 # Task review documents
 focus_mode_improvements.md
+Google-Search-Listing-Guide.txt
+
 
