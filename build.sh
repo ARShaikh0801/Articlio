@@ -4,6 +4,7 @@ set -o errexit
 pip install -r requirements.txt
 
 npm install
+chmod -R +x node_modules/.bin/
 npm run build:min
 
 # Set PATH so collectstatic can find the node executable
