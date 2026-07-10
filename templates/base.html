@@ -21,6 +21,7 @@
     <meta name="google-site-verification" content="g-xa6ZjzI3jcGh7yRD6YfjemvDEW-20V8ATCm0wwBRY" />
     <meta name="msvalidate.01" content="A85EF6CC4F08AEE963B43D7205074949" />
     {% endblock extra_meta %}
+    <link rel="alternate" type="application/rss+xml" title="Articlio - RSS Feed" href="{% url 'blog_feed' %}">
 
 
     <title>{% block title %}{% endblock title %}</title>
@@ -666,6 +667,10 @@
                     <a href="/privacy" class="footer-link">Privacy Policy</a>
                     <span class="footer-sep">·</span>
                     <a href="/terms" class="footer-link">Terms of Service</a>
+                    <span class="footer-sep">·</span>
+                    <a href="{% url 'blog_feed' %}" class="footer-link" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: #ee802f; fill: #ee802f;"><path d="M4 11a9 9 0 0 1 9 9" fill="none"></path><path d="M4 4a16 16 0 0 1 16 16" fill="none"></path><circle cx="5" cy="19" r="1"></circle></svg>RSS Feed
+                    </a>
                 </nav>
             </div>
         </div>

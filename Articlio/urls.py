@@ -19,6 +19,7 @@ from django.urls import path,include
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic.base import TemplateView
 from blog.sitemaps import PostSitemap
+from blog.feeds import LatestPostsFeed
 from django.http import HttpResponse
 
 def health_check(request):
@@ -35,6 +36,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('blog/', include('blog.urls')),
+    path('feed/', LatestPostsFeed(), name='blog_feed'),
     path('health/', health_check, name='health_check'),
     path('accounts/', include('allauth.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'articlio-cache-v4';
+const CACHE_NAME = 'articlio-cache-v5';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -23,6 +23,16 @@ self.addEventListener('fetch', event => {
   }
 
   const url = new URL(event.request.url);
+
+  // Bypass service worker for Google Analytics, Tag Manager, and Ads to prevent tracking/CSP fetch errors
+  if (
+    url.hostname.includes('google-analytics.com') || 
+    url.hostname.includes('googletagmanager.com') ||
+    url.hostname.includes('googleads') ||
+    url.hostname.includes('doubleclick')
+  ) {
+    return;
+  }
 
   // Use a Network-First strategy for the root path and page navigations
   if (event.request.mode === 'navigate' || url.pathname === '/') {

@@ -77,8 +77,21 @@
         }
 
         // Re-observe when new elements are added (e.g. after AJAX loads)
-        var bodyObserver = new MutationObserver(function() {
-            observeCountElements();
+        // Debounced to avoid feedback loop: count-up animation changes textContent,
+        // which would trigger the observer, re-querying DOM every animation frame.
+        var countDebounceTimer;
+        var bodyObserver = new MutationObserver(function(mutations) {
+            // Only react to actual node additions, not text/attribute changes
+            var hasNewNodes = false;
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) {
+                    hasNewNodes = true;
+                    break;
+                }
+            }
+            if (!hasNewNodes) return;
+            clearTimeout(countDebounceTimer);
+            countDebounceTimer = setTimeout(observeCountElements, 150);
         });
         bodyObserver.observe(document.body, { childList: true, subtree: true });
     }
@@ -119,18 +132,24 @@
             setTimeout(observeCardElements, 100);
         }
 
-        // Re-observe when new cards are added via AJAX
+        // Re-observe when new cards are added via AJAX (debounced)
+        var cardDebounceTimer;
         var cardBodyObserver = new MutationObserver(function(mutations) {
             var hasNewCards = false;
-            mutations.forEach(function(mutation) {
-                mutation.addedNodes.forEach(function(node) {
+            for (var i = 0; i < mutations.length; i++) {
+                var added = mutations[i].addedNodes;
+                for (var j = 0; j < added.length; j++) {
+                    var node = added[j];
                     if (node.nodeType === 1 && (node.classList.contains('post-card') || node.querySelector('.post-card'))) {
                         hasNewCards = true;
+                        break;
                     }
-                });
-            });
+                }
+                if (hasNewCards) break;
+            }
             if (hasNewCards) {
-                observeCardElements();
+                clearTimeout(cardDebounceTimer);
+                cardDebounceTimer = setTimeout(observeCardElements, 150);
             }
         });
         cardBodyObserver.observe(document.body, { childList: true, subtree: true });
