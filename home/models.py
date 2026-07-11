@@ -55,3 +55,13 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+
+class Visitor(models.Model):
+    """
+    Tracks unique site visitors using a long-lived cookie.
+    """
+    visitor_id = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.visitor_id

@@ -83,6 +83,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'Articlio.middleware.ProfileCompletionMiddleware',
+    'Articlio.middleware.VisitorTrackingMiddleware',
 ]
 
 CSP_IMG_SRC = (
@@ -104,6 +105,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'home.context_processors.footer_stats',
             ],
         },
     },

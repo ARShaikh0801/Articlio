@@ -49,3 +49,41 @@ class ProfileCompletionMiddleware:
                     
         response = self.get_response(request)
         return response
+
+import uuid
+from django.core.cache import cache
+
+class VisitorTrackingMiddleware:
+    """
+    Tracks unique site visitors using a long-lived cookie.
+    Uses cache to prevent redundant database hits on every request.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Ignore static, media and admin requests to avoid counting them
+        path = request.path
+        if path.startswith('/static/') or path.startswith('/media/') or path.startswith('/admin/'):
+            return self.get_response(request)
+
+        visitor_id = request.COOKIES.get('articlio_visitor_id')
+        set_cookie = False
+        if not visitor_id:
+            visitor_id = str(uuid.uuid4())
+            set_cookie = True
+
+        cache_key = f"visitor_tracked_{visitor_id}"
+        if not cache.get(cache_key):
+            from home.models import Visitor
+            try:
+                Visitor.objects.get_or_create(visitor_id=visitor_id)
+                cache.set(cache_key, True, timeout=86400)  # cache for 24 hours
+            except Exception as e:
+                # Fail gracefully if database or cache is temporarily down
+                print(f"Error tracking visitor: {e}")
+
+        response = self.get_response(request)
+        if set_cookie:
+            response.set_cookie('articlio_visitor_id', visitor_id, max_age=365*24*60*60, httponly=True, samesite='Lax')
+        return response

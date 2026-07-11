@@ -1801,6 +1801,469 @@
 
             syncElements(topLike, bottomLike, true);
             syncElements(topSave, bottomSave);
+
+            // --- Text Selection & Share Card popover logic ---
+            const qlEditor = document.querySelector('.ql-editor');
+            const popover = document.getElementById('quote-share-popover');
+            let selectedText = '';
+            let selectedHTML = '';
+
+            // Helper to recursively extract text with inline formatting
+            function getPlainTextWithFormatting(html) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const inlineTags = ['strong', 'b', 'em', 'i', 'code', 'span', 'a'];
+                
+                function flatten(node) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        return node.nodeValue;
+                    }
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const tagName = node.tagName.toLowerCase();
+                        if (inlineTags.includes(tagName)) {
+                            const cloned = node.cloneNode(false);
+                            cloned.innerHTML = Array.from(node.childNodes).map(flatten).join('');
+                            return cloned.outerHTML;
+                        } else {
+                            return Array.from(node.childNodes).map(flatten).join('') + ' ';
+                        }
+                    }
+                    return '';
+                }
+                
+                return Array.from(tempDiv.childNodes).map(flatten).join('').replace(/\s+/g, ' ').trim();
+            }
+
+            // Helper to strip inline formatting but keep block elements
+            function getHierarchyWithoutFormatting(html) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const inlineElements = tempDiv.querySelectorAll('strong, b, em, i, code, span, a');
+                inlineElements.forEach(el => {
+                    const parent = el.parentNode;
+                    if (parent) {
+                        while (el.firstChild) {
+                            parent.insertBefore(el.firstChild, el);
+                        }
+                        parent.removeChild(el);
+                    }
+                });
+                return tempDiv.innerHTML;
+            }
+
+            // Function to update preview based on options
+            function updateCardContent() {
+                const quoteCardText = document.getElementById('quote-card-text');
+                if (!quoteCardText) return;
+                
+                const layoutRadio = document.querySelector('input[name="quote-layout"]:checked');
+                const layout = layoutRadio ? layoutRadio.value : 'plain';
+                const formattingToggle = document.getElementById('quote-formatting-toggle');
+                const keepFormatting = formattingToggle ? formattingToggle.checked : true;
+                
+                let resultHTML = '';
+                
+                if (layout === 'plain') {
+                    if (keepFormatting) {
+                        const formattedPlain = getPlainTextWithFormatting(selectedHTML);
+                        resultHTML = `“${formattedPlain}”`;
+                    } else {
+                        resultHTML = `“${selectedText}”`;
+                    }
+                } else { // layout === 'hierarchy'
+                    if (keepFormatting) {
+                        const hasBlockTags = /<(h[1-6]|p|div|ol|ul|li|blockquote)/i.test(selectedHTML);
+                        if (hasBlockTags) {
+                            resultHTML = selectedHTML;
+                        } else {
+                            resultHTML = `“${selectedHTML}”`;
+                        }
+                    } else {
+                        const noFormattingHTML = getHierarchyWithoutFormatting(selectedHTML);
+                        const hasBlockTags = /<(h[1-6]|p|div|ol|ul|li|blockquote)/i.test(noFormattingHTML);
+                        if (hasBlockTags) {
+                            resultHTML = noFormattingHTML;
+                        } else {
+                            resultHTML = `“${selectedText}”`;
+                        }
+                    }
+                }
+                
+                quoteCardText.innerHTML = resultHTML;
+                
+                // Dynamically adjust font size based on plain text length
+                if (selectedText.length > 200) {
+                    quoteCardText.style.fontSize = '1.05rem';
+                } else if (selectedText.length > 100) {
+                    quoteCardText.style.fontSize = '1.2rem';
+                } else {
+                    quoteCardText.style.fontSize = '1.4rem';
+                }
+            }
+
+            // Attach listeners to option controls
+            document.addEventListener('change', (e) => {
+                if (e.target && (e.target.name === 'quote-layout' || e.target.id === 'quote-formatting-toggle')) {
+                    updateCardContent();
+                }
+            });
+
+            function getSelectionCoords(selection) {
+                if (selection.rangeCount === 0) return null;
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                return {
+                    top: rect.top + window.scrollY,
+                    left: rect.left + window.scrollX,
+                    width: rect.width,
+                    height: rect.height,
+                    bottom: rect.bottom + window.scrollY
+                };
+            }
+
+            function handleTextSelectionChange() {
+                const hlToolBtn = document.getElementById('hl-tool-btn');
+                const eraserToolBtn = document.getElementById('eraser-tool-btn');
+                const isHighlightingOrErasingActive = (hlToolBtn && hlToolBtn.classList.contains('active')) || (eraserToolBtn && eraserToolBtn.classList.contains('active'));
+                
+                if (isHighlightingOrErasingActive) {
+                    if (popover) popover.style.display = 'none';
+                    return;
+                }
+
+                const selection = window.getSelection();
+                const text = selection.toString().trim();
+                
+                if (!text || !qlEditor || !qlEditor.contains(selection.anchorNode)) {
+                    if (popover) popover.style.display = 'none';
+                    return;
+                }
+
+                selectedText = text;
+                
+                // Extract selection HTML content
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const clonedSelection = range.cloneContents();
+                    const div = document.createElement('div');
+                    div.appendChild(clonedSelection);
+                    selectedHTML = div.innerHTML;
+                } else {
+                    selectedHTML = '';
+                }
+
+                const coords = getSelectionCoords(selection);
+                if (coords && popover) {
+                    popover.style.display = 'flex';
+                    const popoverWidth = popover.offsetWidth || 110;
+                    const popoverHeight = popover.offsetHeight || 34;
+                    
+                    // Position below selection on mobile viewports to clear native context menus, and above on desktop.
+                    const isMobile = window.innerWidth < 768;
+                    if (isMobile) {
+                        popover.style.top = `${coords.bottom + 10}px`;
+                    } else {
+                        popover.style.top = `${coords.top - popoverHeight - 10}px`;
+                    }
+                    popover.style.left = `${Math.max(10, Math.min(window.innerWidth - popoverWidth - 10, coords.left + (coords.width - popoverWidth) / 2))}px`;
+                }
+            }
+
+            let isTouching = false;
+            document.addEventListener('touchstart', () => {
+                isTouching = true;
+            }, { passive: true });
+
+            document.addEventListener('touchend', () => {
+                isTouching = false;
+                clearTimeout(selectionTimeout);
+                selectionTimeout = setTimeout(handleTextSelectionChange, 150);
+            }, { passive: true });
+
+            document.addEventListener('touchcancel', () => {
+                isTouching = false;
+            }, { passive: true });
+
+            let selectionTimeout;
+            document.addEventListener('selectionchange', () => {
+                if (isTouching) {
+                    if (popover) popover.style.display = 'none';
+                    return;
+                }
+                clearTimeout(selectionTimeout);
+                selectionTimeout = setTimeout(handleTextSelectionChange, 150);
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if (popover && !popover.contains(e.target) && (!qlEditor || !qlEditor.contains(e.target))) {
+                    popover.style.display = 'none';
+                }
+            });
+
+            // Modal elements
+            const quoteModal = document.getElementById('quote-share-modal');
+            const quoteModalClose = document.getElementById('quote-share-modal-close');
+            const quoteModalOverlay = quoteModal ? quoteModal.querySelector('.quote-modal-overlay') : null;
+            const quoteCardText = document.getElementById('quote-card-text');
+            const quoteShareCard = document.getElementById('quote-share-card');
+            const themeDots = document.querySelectorAll('.theme-dot');
+            const copyImageBtn = document.getElementById('quote-copy-image-btn');
+            const downloadImageBtn = document.getElementById('quote-download-btn');
+            const quoteShareNativeBtn = document.getElementById('quote-share-native-btn');
+
+            // Themes dictionary
+            const cardThemes = {
+                midnight: {
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%)',
+                    color: '#f8fafc',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    quoteColor: '#a78bfa'
+                },
+                sunset: {
+                    background: 'linear-gradient(135deg, #f97316 0%, #d946ef 100%)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    quoteColor: '#ffffff'
+                },
+                emerald: {
+                    background: 'linear-gradient(135deg, #064e3b 0%, #059669 100%)',
+                    color: '#ecfdf5',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    quoteColor: '#34d399'
+                },
+                lavender: {
+                    background: 'linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                    quoteColor: '#ffffff'
+                },
+                ocean: {
+                    background: 'linear-gradient(135deg, #0f172a 0%, #0284c7 100%)',
+                    color: '#f0f9ff',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    quoteColor: '#38bdf8'
+                },
+                minimaldark: {
+                    background: 'linear-gradient(135deg, #09090b 0%, #27272a 100%)',
+                    color: '#f4f4f5',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    quoteColor: '#71717a'
+                },
+                minimallight: {
+                    background: 'linear-gradient(135deg, #f4f4f5 0%, #e4e4e7 100%)',
+                    color: '#09090b',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    quoteColor: '#a1a1aa'
+                }
+            };
+
+            let currentTheme = 'midnight';
+
+            // Show popover click
+            if (popover) {
+                popover.addEventListener('click', () => {
+                    popover.style.display = 'none';
+                    
+                    // Clear the selection to hide mobile native copy/share popover and handles
+                    try {
+                        window.getSelection().removeAllRanges();
+                    } catch (e) {
+                        console.error('Error clearing selection:', e);
+                    }
+
+                    if (quoteModal && quoteCardText) {
+                        // Reset defaults: Plain Text layout, Keep Formatting enabled
+                        const defaultLayout = document.getElementById('quote-layout-plain');
+                        const defaultFormatting = document.getElementById('quote-formatting-toggle');
+                        if (defaultLayout) defaultLayout.checked = true;
+                        if (defaultFormatting) defaultFormatting.checked = true;
+
+                        // Check if there is block-level hierarchy (like headings/paragraphs/lists)
+                        const hierarchyRadio = document.getElementById('quote-layout-hierarchy');
+                        const hasBlockTags = /<(h[1-6]|p|div|ol|ul|li|blockquote)/i.test(selectedHTML);
+                        if (hierarchyRadio) {
+                            if (hasBlockTags) {
+                                hierarchyRadio.disabled = false;
+                                hierarchyRadio.parentElement.style.opacity = '1';
+                                hierarchyRadio.parentElement.style.pointerEvents = 'auto';
+                            } else {
+                                hierarchyRadio.disabled = true;
+                                hierarchyRadio.parentElement.style.opacity = '0.5';
+                                hierarchyRadio.parentElement.style.pointerEvents = 'none';
+                            }
+                        }
+
+                        // Generate preview
+                        updateCardContent();
+
+                        // Open modal
+                        quoteModal.style.display = 'flex';
+                        quoteModal.offsetHeight; // reflow
+                        quoteModal.classList.add('active');
+                    }
+                });
+            }
+
+            function closeQuoteModal() {
+                if (quoteModal) {
+                    quoteModal.classList.remove('active');
+                    setTimeout(() => {
+                        quoteModal.style.display = 'none';
+                    }, 300);
+                }
+            }
+
+            if (quoteModalClose) quoteModalClose.addEventListener('click', closeQuoteModal);
+            if (quoteModalOverlay) quoteModalOverlay.addEventListener('click', closeQuoteModal);
+
+            // Theme selection
+            themeDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    themeDots.forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+                    currentTheme = dot.dataset.theme;
+                    const theme = cardThemes[currentTheme];
+                    if (theme && quoteShareCard) {
+                        quoteShareCard.style.background = theme.background;
+                        quoteShareCard.style.color = theme.color;
+                        quoteShareCard.style.border = 'none';
+                        const quoteMark = quoteShareCard.querySelector('.quote-card-quote-mark');
+                        if (quoteMark) quoteMark.style.color = theme.quoteColor;
+                    }
+                });
+            });
+
+            // html2canvas wrapper helper
+            function generateCardCanvas(callback) {
+                if (!quoteShareCard) return;
+                const originalTransition = quoteShareCard.style.transition;
+                quoteShareCard.style.transition = 'none';
+                
+                html2canvas(quoteShareCard, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null
+                }).then(canvas => {
+                    quoteShareCard.style.transition = originalTransition;
+                    callback(canvas);
+                }).catch(err => {
+                    console.error("Error generating canvas:", err);
+                    if (window.showToast) window.showToast('Failed to generate image.', 'error');
+                });
+            }
+
+            // Copy Image
+            if (copyImageBtn) {
+                copyImageBtn.addEventListener('click', () => {
+                    copyImageBtn.disabled = true;
+                    const originalText = copyImageBtn.innerHTML;
+                    copyImageBtn.innerHTML = 'Copying...';
+                    generateCardCanvas(canvas => {
+                        canvas.toBlob(blob => {
+                            if (!blob) {
+                                copyImageBtn.disabled = false;
+                                copyImageBtn.innerHTML = originalText;
+                                return;
+                            }
+                            try {
+                                const item = new ClipboardItem({ "image/png": blob });
+                                navigator.clipboard.write([item]).then(() => {
+                                    if (window.showToast) window.showToast('Image copied to clipboard!', 'success');
+                                    copyImageBtn.innerHTML = 'Copied!';
+                                    setTimeout(() => {
+                                        copyImageBtn.disabled = false;
+                                        copyImageBtn.innerHTML = originalText;
+                                    }, 2000);
+                                }).catch(err => {
+                                    console.error("Clipboard write error:", err);
+                                    if (window.showToast) window.showToast('Could not write image to clipboard.', 'error');
+                                    copyImageBtn.disabled = false;
+                                    copyImageBtn.innerHTML = originalText;
+                                });
+                            } catch (e) {
+                                console.error("ClipboardItem not supported or browser restricted:", e);
+                                if (window.showToast) window.showToast('Copy not supported on this browser.', 'error');
+                                copyImageBtn.disabled = false;
+                                copyImageBtn.innerHTML = originalText;
+                            }
+                        }, 'image/png');
+                    });
+                });
+            }
+
+            // Download
+            if (downloadImageBtn) {
+                downloadImageBtn.addEventListener('click', () => {
+                    downloadImageBtn.disabled = true;
+                    const originalText = downloadImageBtn.innerHTML;
+                    downloadImageBtn.innerHTML = 'Saving...';
+                    generateCardCanvas(canvas => {
+                        try {
+                            const link = document.createElement('a');
+                            link.download = `articlio-quote-${window.BlogPostConfig.slug || 'share'}.png`;
+                            link.href = canvas.toDataURL('image/png');
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            if (window.showToast) window.showToast('Image downloaded!', 'success');
+                        } catch (e) {
+                            console.error("Download failed:", e);
+                            if (window.showToast) window.showToast('Download failed.', 'error');
+                        }
+                        downloadImageBtn.disabled = false;
+                        downloadImageBtn.innerHTML = originalText;
+                    });
+                });
+            }
+
+            // Native Share Integration (Shares the actual PNG card file if supported, falls back to text share)
+            if (quoteShareNativeBtn) {
+                // Initialize default visibility (supported check happens dynamically)
+                if (navigator.share) {
+                    quoteShareNativeBtn.style.display = 'flex';
+                } else {
+                    quoteShareNativeBtn.style.display = 'none';
+                }
+
+                quoteShareNativeBtn.addEventListener('click', () => {
+                    quoteShareNativeBtn.disabled = true;
+                    const originalText = quoteShareNativeBtn.innerHTML;
+                    quoteShareNativeBtn.innerHTML = 'Generating share...';
+                    
+                    generateCardCanvas(canvas => {
+                        canvas.toBlob(blob => {
+                            quoteShareNativeBtn.disabled = false;
+                            quoteShareNativeBtn.innerHTML = originalText;
+                            
+                            if (!blob) return;
+                            
+                            const file = new File([blob], `articlio-quote-${window.BlogPostConfig.slug || 'share'}.png`, { type: 'image/png' });
+                            
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                navigator.share({
+                                    files: [file],
+                                    title: document.title,
+                                    text: `“${selectedText}”`
+                                }).catch(err => {
+                                    console.error('Error sharing file: ', err);
+                                });
+                            } else if (navigator.share) {
+                                // Fallback to text link share
+                                navigator.share({
+                                    title: document.title,
+                                    text: `“${selectedText}”`,
+                                    url: window.location.href
+                                }).catch(err => {
+                                    console.error('Error sharing text: ', err);
+                                });
+                            } else {
+                                if (window.showToast) window.showToast('Web share not supported on this device.', 'error');
+                            }
+                        }, 'image/png');
+                    });
+                });
+            }
         });
     </script>
 
@@ -1894,10 +2357,445 @@
         </div>
     </div>
 
+    <!-- Floating Selection Popover -->
+    <button id="quote-share-popover" style="display: none;" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-quote">
+            <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H3c-1.25 0-2 .75-2 2v3c0 1.25.75 2 2 2h3c0 2.25-1.75 3.5-4 4.5V21zm14 0c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-5c-1.25 0-2 .75-2 2v3c0 1.25.75 2 2 2h3c0 2.25-1.75 3.5-4 4.5V21z"/>
+        </svg>
+        <span>Share Quote</span>
+    </button>
+
+    <!-- Quote Share Modal -->
+    <div id="quote-share-modal" class="quote-modal-backdrop">
+        <div class="quote-modal-overlay"></div>
+        <div class="quote-modal-card">
+            <button id="quote-share-modal-close" class="quote-modal-close-btn" aria-label="Close modal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </button>
+            
+            <h3 class="text-lg font-bold text-color-darkest text-center" style="margin-top: 8px;">Create Quote Card</h3>
+            
+            <!-- Card Preview Wrapper -->
+            <div class="quote-card-preview-wrapper">
+                <div id="quote-share-card" class="quote-share-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); color: #f8fafc; border: none;">
+                    <div class="quote-card-quote-mark" style="color: #a78bfa;">“</div>
+                    <div class="quote-card-content-wrapper">
+                        <blockquote id="quote-card-text" class="quote-card-text">“Your selected quote will appear here.”</blockquote>
+                    </div>
+                    <div class="quote-card-footer">
+                        <div class="quote-card-post-title" title="{{ post.title }}">{{ post.title }}</div>
+                        <div class="quote-card-author">by {{ post.author }}</div>
+                        <div class="quote-card-brand">
+                            <span>Articlio Blog</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layout & Formatting Options -->
+            <div class="quote-options-container" style="display: flex; gap: 16px; justify-content: center; align-items: center; margin-top: 12px; margin-bottom: 4px; flex-wrap: wrap;">
+                <div class="quote-option-group" style="display: flex; gap: 12px;">
+                    <label class="quote-option-label" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text-main);">
+                        <input type="radio" name="quote-layout" id="quote-layout-plain" value="plain" checked style="accent-color: var(--theme-base, #3b82f6);">
+                        <span>Plain Text</span>
+                    </label>
+                    <label class="quote-option-label" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text-main);">
+                        <input type="radio" name="quote-layout" id="quote-layout-hierarchy" value="hierarchy" style="accent-color: var(--theme-base, #3b82f6);">
+                        <span>Keep Hierarchy</span>
+                    </label>
+                </div>
+                <div style="width: 1px; height: 16px; background-color: var(--border-color); opacity: 0.5;"></div>
+                <label class="quote-option-label" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="quote-formatting-toggle" checked style="accent-color: var(--theme-base, #3b82f6);">
+                    <span>Keep Formatting</span>
+                </label>
+            </div>
+
+            <!-- Theme Picker -->
+            <div>
+                <p class="text-xs font-semibold text-color-dark text-center mb-2" style="opacity: 0.7;">Select Theme</p>
+                <div class="theme-selector-container">
+                    <div class="theme-dot active" data-theme="midnight" style="background: linear-gradient(135deg, #0f172a, #311042);" title="Midnight Aurora"></div>
+                    <div class="theme-dot" data-theme="sunset" style="background: linear-gradient(135deg, #f97316, #d946ef);" title="Sunset Glow"></div>
+                    <div class="theme-dot" data-theme="emerald" style="background: linear-gradient(135deg, #064e3b, #059669);" title="Emerald Breeze"></div>
+                    <div class="theme-dot" data-theme="lavender" style="background: linear-gradient(135deg, #a78bfa, #f472b6);" title="Lavender Mist"></div>
+                    <div class="theme-dot" data-theme="ocean" style="background: linear-gradient(135deg, #0f172a, #0284c7);" title="Ocean Depth"></div>
+                    <div class="theme-dot" data-theme="minimaldark" style="background: linear-gradient(135deg, #09090b, #27272a);" title="Minimal Dark"></div>
+                    <div class="theme-dot" data-theme="minimallight" style="background: linear-gradient(135deg, #f4f4f5, #e4e4e7); border: 1px solid rgba(0,0,0,0.15);" title="Minimal Light"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="quote-modal-btn-row">
+                <button id="quote-copy-image-btn" class="quote-modal-btn quote-btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1a1 1 0 0 1 1 1z"/>
+                    </svg>
+                    Copy Image
+                </button>
+                <button id="quote-download-btn" class="quote-modal-btn quote-btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                    </svg>
+                    Download
+                </button>
+            </div>
+
+            <!-- Native Share Option -->
+            <button id="quote-share-native-btn" class="share-native-btn" style="margin-top: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Share via device...
+            </button>
+        </div>
+    </div>
+
     <style>
-        /* ══════════════════════════════════════════
-           Share Modal — Glassmorphism (Login Card Style)
-           ══════════════════════════════════════════ */
+        /* ── Quote Share Feature Styles ── */
+        #quote-share-popover {
+            display: none;
+            position: absolute;
+            z-index: 100000;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+            user-select: none;
+        }
+        #quote-share-popover:hover {
+            background: #1e293b;
+            transform: translateY(-2px) scale(1.02);
+        }
+        #quote-share-popover:active {
+            transform: translateY(0) scale(0.98);
+        }
+        #quote-share-popover svg {
+            color: var(--theme-base, #3b82f6);
+            display: inline-block;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+
+        .quote-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 100003;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            overflow-y: auto; /* Allow vertical scrolling on overflow */
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+        .quote-modal-backdrop.active {
+            opacity: 1;
+        }
+        .quote-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .quote-modal-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 540px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin: auto; /* Flex centering when small, scrolls naturally when overflowing */
+        }
+        .dark .quote-modal-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .quote-modal-backdrop.active .quote-modal-card {
+            transform: scale(1);
+        }
+
+        .quote-card-preview-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: transparent;
+        }
+
+        .quote-share-card {
+            width: 100%;
+            max-width: 480px;
+            min-height: 320px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-align: center;
+            border-radius: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .quote-card-quote-mark {
+            font-size: 80px;
+            font-family: Georgia, serif;
+            line-height: 1;
+            opacity: 0.15;
+            position: absolute;
+            top: 15px;
+            left: 24px;
+            user-select: none;
+        }
+
+        .quote-card-content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .quote-card-text {
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            font-size: 1.35rem;
+            font-weight: 500;
+            line-height: 1.6;
+            word-break: break-word;
+            margin: 0;
+            padding: 0 12px; /* Prevent clipping of italic or wide characters */
+            border: none;
+            background: none;
+            box-sizing: border-box;
+        }
+        
+        /* ── Quote Card Formatting & Hierarchy ── */
+        .quote-card-text h1, 
+        .quote-card-text h2, 
+        .quote-card-text h3, 
+        .quote-card-text h4, 
+        .quote-card-text h5, 
+        .quote-card-text h6 {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            font-weight: 800;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            color: inherit;
+        }
+        .quote-card-text h1 { font-size: 1.55rem; }
+        .quote-card-text h2 { font-size: 1.35rem; }
+        .quote-card-text h3 { font-size: 1.2rem; }
+        .quote-card-text h4 { font-size: 1.05rem; }
+        .quote-card-text h5, .quote-card-text h6 { font-size: 0.95rem; }
+        
+        .quote-card-text p {
+            margin-top: 0;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .quote-card-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .quote-card-text ul, .quote-card-text ol {
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            text-align: left;
+        }
+        
+        .quote-card-text li {
+            margin-bottom: 4px;
+        }
+        
+        .quote-card-text strong, .quote-card-text b {
+            font-weight: 700;
+        }
+        
+        .quote-card-text em, .quote-card-text i {
+            font-style: italic;
+        }
+        
+        .quote-card-text code {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .quote-card-footer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 1;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 16px;
+        }
+
+        .quote-card-post-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            max-width: 100%;
+            white-space: normal; /* Allow wrapping */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .quote-card-author {
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.75;
+            letter-spacing: 1px;
+            line-height: 1.4;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        .quote-card-brand {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            line-height: 1.4;
+        }
+
+        .theme-selector-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .theme-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--bg-surface, #ffffff);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            display: inline-block;
+        }
+
+        .theme-dot:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        }
+
+        .theme-dot.active {
+            transform: scale(1.1);
+            outline: 2px solid var(--theme-base, #3b82f6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .quote-modal-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .quote-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+        }
+
+        .quote-btn-primary {
+            background: var(--theme-base, #3b82f6);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .quote-btn-primary:hover {
+            background: var(--theme-dark, #2563eb);
+            transform: translateY(-1px);
+        }
+
+        .quote-btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .dark .quote-btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .quote-btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .dark .quote-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .quote-btn-full {
+            grid-column: span 2;
+        }
+
+        .quote-modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            padding: 4px;
+        }
+
+        .quote-modal-close-btn:hover {
+            opacity: 1;
+        }
 
         /* ── Animated Blob Background ── */
         .share-modal-blobs {
@@ -1951,12 +2849,13 @@
             width: 90%;
             max-width: 460px;
             border-radius: 20px;
-            background: hsla(from var(--theme-base) h s l / 0.05);
+            background: rgba(255, 255, 255, 0.9);
+            background: hsla(from var(--bg-surface, #ffffff) h s l / 0.9);
             backdrop-filter: blur(24px) saturate(1.4);
             -webkit-backdrop-filter: blur(24px) saturate(1.4);
-            border: 1px solid hsla(from var(--theme-base) h s l / 0.15);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08),
-                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            border: 1px solid hsla(from var(--theme-base) h s l / 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12),
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
             overflow: hidden;
             z-index: 1;
             padding: 0;
@@ -1967,9 +2866,10 @@
                         opacity 0.3s ease;
         }
         .dark .share-modal-glass {
-            background: hsla(from var(--theme-base) h calc(s * 0.3) 14% / 0.45);
-            border: 1px solid hsla(from var(--theme-base) h s 50% / 0.12);
-            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.35);
+            background: rgba(15, 23, 42, 0.95);
+            background: hsla(from var(--theme-base) h calc(s * 0.3) 12% / 0.95);
+            border: 1px solid hsla(from var(--theme-base) h s 50% / 0.2);
+            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.4);
         }
 
         /* ── Active State ── */
@@ -2052,7 +2952,7 @@
             font-size: 0.78rem;
             font-weight: 600;
             color: var(--text-main);
-            opacity: 0.75;
+            opacity: 0.85;
             transition: opacity 0.2s, color 0.2s;
         }
         .share-option-btn:hover span {
@@ -2113,7 +3013,8 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--text-muted);
+            color: var(--text-main);
+            opacity: 0.7;
             white-space: nowrap;
         }
 
@@ -2233,6 +3134,7 @@
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/highlights.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/uiMisc.js' %}"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script defer nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script defer nonce="{{ request.csp_nonce }}" src="{% static 'js/blogPost/codeBlocks.js' %}?v=1.0"></script>
 
 <script type="application/ld+json">
