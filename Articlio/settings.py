@@ -278,15 +278,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary media storage (production)
-# When CLOUDINARY_CLOUD_NAME is set, uploaded files (e.g. profile pictures)
+# When CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME is set, uploaded files (e.g. profile pictures)
 # are stored on Cloudinary CDN instead of the ephemeral local disk.
+_cloudinary_url = os.environ.get('CLOUDINARY_URL')
 _cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME')
-if _cloud_name:
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': _cloud_name,
-        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
-    }
+
+if _cloudinary_url or _cloud_name:
+    if _cloud_name and not _cloudinary_url:
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': _cloud_name,
+            'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+            'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
+        }
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     STORAGES = {
         "default": {
