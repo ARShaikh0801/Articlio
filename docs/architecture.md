@@ -28,6 +28,15 @@ classDiagram
         +role: String (reader/author)
         +verified: Boolean
         +theme_preference: String
+        +bio: Text
+        +profile_picture: Image
+        +profile_picture_url: String
+        +github_url: URL
+        +twitter_url: URL
+        +linkedin_url: URL
+        +website_url: URL
+        +interests: JSON
+        +onboarding_completed: Boolean
         +social_profile_completed: Boolean
     }
     class Post {
@@ -36,6 +45,7 @@ classDiagram
         +content: Text
         +summary: Text
         +author: String (Indexed)
+        +author_user: ForeignKey (CustomUser)
         +slug: String (Unique)
         +category: String (Indexed)
         +views: Integer (Indexed)
@@ -88,6 +98,7 @@ classDiagram
         +timestamp: DateTime
     }
 
+    CustomUser "1" --* Post : creates
     CustomUser "1" --* BlogComment : writes
     CustomUser "1" --* Like : performs
     CustomUser "1" --* Bookmark : saves
@@ -105,8 +116,8 @@ classDiagram
 
 | Model | Application | Description | Important Constraints |
 | :--- | :--- | :--- | :--- |
-| `CustomUser` | `home` | Overrides standard User. Handles roles, themes, verification, and OAuth completion tags. | Inherits `AbstractUser` |
-| `Post` | `blog` | Represents a blog entry. Tracks views, drafts, likes, and precomputed reading time. | `slug` must be unique. |
+| `CustomUser` | `home` | Overrides standard User. Handles roles, themes, verification, bio, avatar, social links, interests, and onboarding states. | Inherits `AbstractUser` |
+| `Post` | `blog` | Represents a blog entry. Tracks views, drafts, likes, precomputed reading time, and author user relations. | `slug` must be unique. |
 | `BlogComment` | `blog` | Reusable recursive comment structure allowing nested replies and comment upvoting/likes. | ForeignKey to `self`, ManyToMany to `User` |
 | `Like` | `blog` | Represents post likes by users. | Unique combination: `(post, user)` |
 | `Bookmark` | `blog` | Allows users to save posts to their reading list. | Unique combination: `(post, user)` |

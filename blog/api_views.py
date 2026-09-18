@@ -57,11 +57,21 @@ def _serialize_post(post, bookmarked_ids=None, trending_post_ids=None):
     is_trending = False
     if trending_post_ids is not None:
         is_trending = post.sno in trending_post_ids
+
+    author_avatar_url = ''
+    if post.author_user:
+        if post.author_user.profile_picture:
+            author_avatar_url = post.author_user.profile_picture.url
+        elif post.author_user.profile_picture_url:
+            author_avatar_url = post.author_user.profile_picture_url
+
     return {
         'sno': post.sno,
         'title': post.title,
         'summary': post.summary,
         'author': post.author,
+        'author_username': post.author_user.username if post.author_user else '',
+        'author_avatar_url': author_avatar_url,
         'slug': post.slug,
         'category': post.category,
         'views': post.views,

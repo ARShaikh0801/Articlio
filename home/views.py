@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.http import JsonResponse
 import json
 from django.contrib import messages
@@ -111,14 +111,14 @@ def handleSignup(request):
         if not privacy:
             messages.error(request,"Please Accept Privacy Policy")
             return render(request,'home/signup.html', context)
-        myuser=User.objects.create_user(username=username,email=email,password=pass1,name=name,role=role,verified=verified)
+        myuser=User.objects.create_user(username=username,email=email,password=pass1,name=name,role=role,verified=verified,onboarding_completed=False)
         myuser.save()
         messages.success(request,"Your Articlio Account Is Successfully Created")
         login(request,authenticate(username=username,password=pass1))
         nextUrl = request.POST.get('next')
         if nextUrl:
             return redirect(nextUrl)
-        return redirect('home')
+        return redirect('onboarding')
     return render(request,'home/signup.html')
 
 def handleLogin(request):
@@ -132,6 +132,8 @@ def handleLogin(request):
             nextUrl = request.POST.get('next')
             if nextUrl:
                 return redirect(nextUrl)
+            if not user.onboarding_completed:
+                return redirect('onboarding')
             return redirect('home')
         else:
             messages.error(request,"Invalid Credentials")
@@ -346,3 +348,335 @@ def check_username_availability(request):
         else:
             # False positive! It's actually available.
             return JsonResponse({'available': True, 'message': 'Available!'})
+
+# ── PROFILES & FOLLOW SYSTEM VIEWS ──
+
+from django.db.models import Sum, Q
+from blog.models import Post
+from home.models import CustomUser, Follow
+from django.core.paginator import Paginator, EmptyPage
+from django.views.decorators.http import require_POST
+
+def profile(request, username=None):
+    if username is None:
+        if not request.user.is_authenticated:
+            return redirect('handleLogin')
+        user = request.user
+        is_own_profile = True
+    else:
+        user = get_object_or_404(CustomUser, username=username)
+        is_own_profile = (request.user.is_authenticated and request.user.username == user.username)
+        if is_own_profile:
+            return redirect('profile')
+
+    # Calculate stats
+    user_posts = Post.objects.filter(Q(author_user=user) | Q(author_user__isnull=True, author=user.name))
+    total_posts = user_posts.count()
+    total_views = user_posts.aggregate(Sum('views'))['views__sum'] or 0
+    total_likes = user_posts.aggregate(Sum('likes'))['likes__sum'] or 0
+    
+    followers_count = Follow.objects.filter(followed=user).count()
+    following_count = Follow.objects.filter(follower=user).count()
+    
+    is_following = False
+    if request.user.is_authenticated and not is_own_profile:
+        is_following = Follow.objects.filter(follower=request.user, followed=user).exists()
+        
+    written_categories = list(user_posts.filter(draft=False).values_list('category', flat=True).distinct())
+    
+    all_categories_qs = Post.objects.filter(draft=False).values_list('category', flat=True).distinct()
+    all_categories = sorted(list(set(list(all_categories_qs) + ['technology', 'design', 'development', 'productivity', 'general'])))
+    
+    followed_relations = Follow.objects.filter(follower=user).select_related('followed')
+    followed_authors = [rel.followed for rel in followed_relations]
+    
+    follower_relations = Follow.objects.filter(followed=user).select_related('follower')
+    followers_list = [rel.follower for rel in follower_relations]
+    
+    user_interests = [i.strip() for i in user.interests.split(',') if i.strip()] if user.interests else []
+
+    context = {
+        'profile_user': user,
+        'is_own_profile': is_own_profile,
+        'total_posts': total_posts,
+        'total_views': total_views,
+        'total_likes': total_likes,
+        'followers_count': followers_count,
+        'following_count': following_count,
+        'is_following': is_following,
+        'written_categories': written_categories,
+        'all_categories': all_categories,
+        'followed_authors': followed_authors,
+        'followers_list': followers_list,
+        'user_interests': user_interests,
+    }
+    return render(request, 'home/profile.html', context)
+
+@require_POST
+def toggle_follow(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        data = json.loads(request.body)
+        username_to_follow = data.get('username')
+        target_user = get_object_or_404(CustomUser, username=username_to_follow)
+        
+        if target_user == request.user:
+            return JsonResponse({'error': 'You cannot follow yourself'}, status=400)
+            
+        follow_rel = Follow.objects.filter(follower=request.user, followed=target_user)
+        if follow_rel.exists():
+            follow_rel.delete()
+            following = False
+        else:
+            Follow.objects.create(follower=request.user, followed=target_user)
+            following = True
+            
+        followers_count = Follow.objects.filter(followed=target_user).count()
+        following_count = Follow.objects.filter(follower=request.user).count()
+        
+        return JsonResponse({
+            'status': 'success',
+            'following': following,
+            'followers_count': followers_count,
+            'following_count': following_count
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@require_POST
+def update_profile(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            bio = data.get('bio', '')
+            profile_picture_url = data.get('profile_picture_url', '')
+            github_url = data.get('github_url', '')
+            twitter_url = data.get('twitter_url', '')
+            linkedin_url = data.get('linkedin_url', '')
+            website_url = data.get('website_url', '')
+            interests_list = data.get('interests', [])
+            interests = ','.join(interests_list)
+        else:
+            bio = request.POST.get('bio', '')
+            profile_picture_url = request.POST.get('profile_picture_url', '')
+            github_url = request.POST.get('github_url', '')
+            twitter_url = request.POST.get('twitter_url', '')
+            linkedin_url = request.POST.get('linkedin_url', '')
+            website_url = request.POST.get('website_url', '')
+            interests_list = request.POST.getlist('interests')
+            interests = ','.join(interests_list)
+            
+        user = request.user
+        user.bio = bio
+        user.profile_picture_url = profile_picture_url
+        if not request.content_type == 'application/json' and request.FILES.get('profile_picture'):
+            user.profile_picture = request.FILES.get('profile_picture')
+        user.github_url = github_url
+        user.twitter_url = twitter_url
+        user.linkedin_url = linkedin_url
+        user.website_url = website_url
+        user.interests = interests
+        user.save()
+        
+        if request.content_type == 'application/json':
+            return JsonResponse({'status': 'success'})
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('profile')
+    except Exception as e:
+        if request.content_type == 'application/json':
+            return JsonResponse({'error': str(e)}, status=400)
+        messages.error(request, f'Failed to update profile: {e}')
+        return redirect('profile')
+
+def api_author_posts(request, username):
+    author = get_object_or_404(CustomUser, username=username)
+    
+    sort_by = request.GET.get('sort_by', '-timestamp')
+    valid_sorts = ['timestamp', '-timestamp', 'views', '-views', 'likes', '-likes']
+    if sort_by not in valid_sorts:
+        sort_by = '-timestamp'
+        
+    all_posts = Post.objects.filter(Q(author_user=author) | Q(author_user__isnull=True, author=author.name), draft=False).order_by(sort_by)
+    
+    from django.db.models import Subquery, OuterRef
+    max_views_subquery = Post.objects.filter(
+        draft=False, category=OuterRef('category')
+    ).order_by('-views').values('views')[:1]
+    trending_post_ids = set(Post.objects.filter(
+        draft=False,
+        views=Subquery(max_views_subquery)
+    ).values_list('sno', flat=True))
+    
+    from django.utils import timezone
+    
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+        
+    paginator = Paginator(all_posts, 6)
+    try:
+        page_obj = paginator.page(page)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages) if paginator.num_pages > 0 else []
+        
+    posts_data = []
+    for p in page_obj:
+        posts_data.append({
+            'sno': p.sno,
+            'title': p.title,
+            'summary': p.summary,
+            'slug': p.slug,
+            'category': p.category,
+            'views': p.views,
+            'likes': p.likes,
+            'reading_time': p.reading_time,
+            'timestamp': p.timestamp.strftime('%b. %d, %Y'),
+            'is_new': (timezone.now() - p.timestamp).days <= 7 if p.timestamp else False,
+            'is_trending': p.sno in trending_post_ids,
+        })
+        
+    return JsonResponse({
+        'posts': posts_data,
+        'page': page_obj.number if page_obj else 1,
+        'total_pages': paginator.num_pages,
+        'has_next': page_obj.has_next() if page_obj else False,
+        'total_posts': paginator.count
+    })
+
+
+def api_profile_followers(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    follower_relations = Follow.objects.filter(followed=user).select_related('follower')
+    followers_data = []
+    for rel in follower_relations:
+        follower = rel.follower
+        avatar_url = ''
+        if follower.profile_picture:
+            avatar_url = follower.profile_picture.url
+        elif follower.profile_picture_url:
+            avatar_url = follower.profile_picture_url
+            
+        followers_data.append({
+            'username': follower.username,
+            'name': follower.name,
+            'avatar_url': avatar_url,
+        })
+    return JsonResponse({'followers': followers_data})
+
+
+def api_profile_following(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    followed_relations = Follow.objects.filter(follower=user).select_related('followed')
+    following_data = []
+    for rel in followed_relations:
+        author = rel.followed
+        avatar_url = ''
+        if author.profile_picture:
+            avatar_url = author.profile_picture.url
+        elif author.profile_picture_url:
+            avatar_url = author.profile_picture_url
+            
+        following_data.append({
+            'username': author.username,
+            'name': author.name,
+            'avatar_url': avatar_url,
+        })
+    return JsonResponse({'following': following_data})
+
+
+# ── ONBOARDING VIEWS ──
+
+def onboarding(request):
+    """New user onboarding: category selection + author suggestions."""
+    if not request.user.is_authenticated:
+        return redirect('handleLogin')
+    if request.user.onboarding_completed:
+        return redirect('home')
+
+    if request.method == 'POST':
+        interests_list = request.POST.getlist('interests')
+        follow_usernames = request.POST.getlist('follow_authors')
+
+        user = request.user
+        user.interests = ','.join(interests_list)
+        user.onboarding_completed = True
+        user.save(update_fields=['interests', 'onboarding_completed'])
+
+        # Create follow relationships
+        for uname in follow_usernames:
+            try:
+                target = CustomUser.objects.get(username=uname)
+                if target != user:
+                    Follow.objects.get_or_create(follower=user, followed=target)
+            except CustomUser.DoesNotExist:
+                continue
+
+        messages.success(request, "Welcome to Articlio! Your feed is personalized.")
+        return redirect('home')
+
+    all_categories_qs = Post.objects.filter(draft=False).values_list('category', flat=True).distinct()
+    all_categories = sorted(list(set(list(all_categories_qs) + ['technology', 'design', 'development', 'productivity', 'general'])))
+
+    return render(request, 'home/onboarding.html', {
+        'all_categories': all_categories,
+    })
+
+
+def api_suggested_authors(request):
+    """Return top 3 most-followed authors per selected category."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    categories = request.GET.getlist('categories')
+    if not categories:
+        return JsonResponse({'authors': []})
+
+    from django.db.models import Count
+
+    # Find authors who write in the selected categories, ordered by follower count
+    authors_in_categories = (
+        CustomUser.objects.filter(
+            role='author',
+            posts__draft=False,
+            posts__category__in=categories
+        )
+        .exclude(pk=request.user.pk)
+        .annotate(follower_count=Count('follower_relations', distinct=True))
+        .order_by('-follower_count')
+        .distinct()[:9]  # Top 9 unique authors across all selected categories
+    )
+
+    authors_data = []
+    seen = set()
+    for author in authors_in_categories:
+        if author.username in seen:
+            continue
+        seen.add(author.username)
+
+        avatar_url = ''
+        if author.profile_picture:
+            avatar_url = author.profile_picture.url
+        elif author.profile_picture_url:
+            avatar_url = author.profile_picture_url
+
+        # Get categories this author writes in (from selected ones)
+        author_cats = list(
+            Post.objects.filter(author_user=author, draft=False, category__in=categories)
+            .values_list('category', flat=True).distinct()
+        )
+
+        authors_data.append({
+            'username': author.username,
+            'name': author.name,
+            'bio': (author.bio or '')[:120],
+            'avatar_url': avatar_url,
+            'follower_count': author.follower_count,
+            'categories': author_cats,
+        })
+
+    return JsonResponse({'authors': authors_data})

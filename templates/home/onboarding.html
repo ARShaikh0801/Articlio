@@ -1,0 +1,642 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script nonce="{{ request.csp_nonce }}">
+        (function() {
+            const darkMode = localStorage.getItem('articlio_dark_mode');
+            if (darkMode === 'true' || (darkMode === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{% static 'img/articlio logo.png' %}">
+    <meta name="description" content="Welcome to Articlio! Pick your interests and discover amazing authors.">
+    <title>Welcome to Articlio — Set Up Your Feed</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <style>
+        * { font-family: 'Inter', system-ui, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-body);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated background ── */
+        .onboard-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .onboard-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+            animation: float-blob 20s infinite alternate ease-in-out;
+        }
+
+        .onboard-blob-1 {
+            top: -15%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: var(--theme-light);
+        }
+
+        .onboard-blob-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: var(--theme-base);
+            animation-delay: -8s;
+        }
+
+        .onboard-blob-3 {
+            top: 40%;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            background: var(--theme-dark);
+            animation-delay: -4s;
+        }
+
+        @keyframes float-blob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.15); }
+        }
+
+        /* ── Layout ── */
+        .onboard-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Logo ── */
+        .onboard-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .onboard-logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .onboard-logo span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-color-darkest, #111827);
+            font-family: 'Pacifico', cursive;
+        }
+
+        /* ── Step Indicator ── */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 2.5rem;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-color, #d1d5db);
+            transition: all 0.4s ease;
+        }
+
+        .step-dot.active {
+            width: 32px;
+            border-radius: 999px;
+            background: var(--theme-base);
+            box-shadow: 0 0 12px hsla(from var(--theme-base) h s l / 0.4);
+        }
+
+        .step-dot.done {
+            background: var(--theme-base);
+        }
+
+        /* ── Card ── */
+        .onboard-card {
+            background: var(--bg-card, #fff);
+            border: 1px solid var(--border-color, #e5e7eb);
+            border-radius: 28px;
+            padding: 2.5rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            animation: card-in 0.5s ease;
+        }
+
+        @keyframes card-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .onboard-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-color-darkest, #111827);
+            text-align: center;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .onboard-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-color-darkest, #6b7280);
+            text-align: center;
+            opacity: 0.7;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* ── Category Selection Grid ── */
+        .category-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .category-option {
+            display: none;
+        }
+
+        .category-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid var(--border-color, #d1d5db);
+            background: var(--bg-card, #fff);
+            color: var(--text-color-darkest, #374151);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .category-label:hover {
+            border-color: var(--theme-base);
+            background: hsla(from var(--theme-base) h s l / 0.05);
+            transform: translateY(-2px);
+        }
+
+        .category-option:checked + .category-label {
+            background: var(--theme-base);
+            color: #fff;
+            border-color: var(--theme-base);
+            box-shadow: 0 4px 16px hsla(from var(--theme-base) h s l / 0.35);
+            transform: scale(1.05);
+        }
+
+        .category-option:checked + .category-label .cat-check {
+            display: inline-flex;
+        }
+
+        .cat-check {
+            display: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ── Author Cards ── */
+        .authors-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 500px) {
+            .authors-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .author-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color, #e5e7eb);
+            background: var(--bg-card, #fff);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .author-card:hover {
+            border-color: var(--theme-base);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .author-card.selected {
+            border-color: var(--theme-base);
+            background: hsla(from var(--theme-base) h s l / 0.04);
+            box-shadow: 0 4px 16px hsla(from var(--theme-base) h s l / 0.15);
+        }
+
+        .author-card-check {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--theme-base);
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px hsla(from var(--theme-base) h s l / 0.4);
+        }
+
+        .author-card.selected .author-card-check {
+            display: flex;
+        }
+
+        .author-card-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid var(--theme-base);
+        }
+
+        .author-card-avatar-initial {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--theme-medium) 0%, var(--theme-darkest) 100%);
+            color: var(--theme-lightest);
+            flex-shrink: 0;
+        }
+
+        .author-card-info { flex: 1; min-width: 0; }
+
+        .author-card-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--text-color-darkest, #111827);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .author-card-bio {
+            font-size: 0.78rem;
+            color: var(--text-color-darkest, #6b7280);
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .author-card-meta {
+            font-size: 0.72rem;
+            color: var(--theme-base);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* ── Buttons ── */
+        .onboard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-onboard-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 32px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            background: var(--theme-base);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px hsla(from var(--theme-base) h s l / 0.35);
+        }
+
+        .btn-onboard-primary:hover {
+            background: var(--theme-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px hsla(from var(--theme-base) h s l / 0.45);
+        }
+
+        .btn-onboard-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-onboard-skip {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-color-darkest, #6b7280);
+            opacity: 0.6;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-onboard-skip:hover { opacity: 1; }
+
+        /* ── Loading Spinner ── */
+        .authors-loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--theme-base);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color, #e5e7eb);
+            border-top-color: var(--theme-base);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-authors-msg {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-color-darkest);
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .onboard-container { padding: 2rem 1rem; }
+            .onboard-card { padding: 1.75rem; border-radius: 20px; }
+            .onboard-title { font-size: 1.4rem; }
+            .category-label { padding: 8px 16px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="onboard-bg">
+        <div class="onboard-blob onboard-blob-1"></div>
+        <div class="onboard-blob onboard-blob-2"></div>
+        <div class="onboard-blob onboard-blob-3"></div>
+    </div>
+
+    <div class="onboard-container">
+        <!-- Logo -->
+        <div class="onboard-logo">
+            <img src="{% static 'img/articlio logo.png' %}" alt="Articlio Logo">
+            <span>Articlio</span>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="step-dot-1"></div>
+            <div class="step-dot" id="step-dot-2"></div>
+        </div>
+
+        <!-- ═══════════════ STEP 1: PICK INTERESTS ═══════════════ -->
+        <div class="onboard-card" id="step-1">
+            <h1 class="onboard-title">What interests you?</h1>
+            <p class="onboard-subtitle">Pick topics you love. We'll curate your feed to show you the best stories in these fields.</p>
+
+            <div class="category-grid" id="category-grid">
+                {% for cat in all_categories %}
+                    <div>
+                        <input type="checkbox" class="category-option" id="cat-{{ forloop.counter }}" value="{{ cat }}" name="interest">
+                        <label for="cat-{{ forloop.counter }}" class="category-label">
+                            <svg class="cat-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                            {{ cat|capfirst }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="onboard-actions">
+                <button class="btn-onboard-skip" id="skip-step1" type="button">Skip for now</button>
+                <button class="btn-onboard-primary" id="continue-to-step2" type="button" disabled>
+                    Continue
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══════════════ STEP 2: SUGGESTED AUTHORS ═══════════════ -->
+        <div class="onboard-card" id="step-2" style="display: none;">
+            <h1 class="onboard-title">Authors you might love</h1>
+            <p class="onboard-subtitle">Based on your interests, here are some amazing authors. Follow them to see their stories in your feed.</p>
+
+            <div id="authors-container">
+                <div class="authors-loading">
+                    <div class="spinner"></div>
+                    <p>Finding great authors for you...</p>
+                </div>
+            </div>
+
+            <div class="onboard-actions" id="step2-actions" style="display: none;">
+                <button class="btn-onboard-skip" id="skip-step2" type="button">Skip</button>
+                <button class="btn-onboard-primary" id="finish-onboarding" type="button">
+                    Get Started
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form for final submission -->
+    <form id="onboarding-form" method="POST" action="{% url 'onboarding' %}" style="display: none;">
+        {% csrf_token %}
+        <div id="form-interests"></div>
+        <div id="form-follow-authors"></div>
+    </form>
+
+    <script nonce="{{ request.csp_nonce }}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const dot1 = document.getElementById('step-dot-1');
+        const dot2 = document.getElementById('step-dot-2');
+        const continueBtn = document.getElementById('continue-to-step2');
+        const skipStep1Btn = document.getElementById('skip-step1');
+        const skipStep2Btn = document.getElementById('skip-step2');
+        const finishBtn = document.getElementById('finish-onboarding');
+        const authorsContainer = document.getElementById('authors-container');
+        const step2Actions = document.getElementById('step2-actions');
+        const categoryCheckboxes = document.querySelectorAll('.category-option');
+
+        let selectedCategories = [];
+        let selectedAuthors = new Set();
+
+        // ── Category Selection ──
+        categoryCheckboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                selectedCategories = Array.from(categoryCheckboxes).filter(c => c.checked).map(c => c.value);
+                continueBtn.disabled = selectedCategories.length === 0;
+            });
+        });
+
+        // ── Transition to Step 2 ──
+        function goToStep2() {
+            step1.style.animation = 'card-in 0.3s ease reverse';
+            setTimeout(() => {
+                step1.style.display = 'none';
+                step2.style.display = 'block';
+                step2.style.animation = 'card-in 0.5s ease';
+                dot1.classList.remove('active');
+                dot1.classList.add('done');
+                dot2.classList.add('active');
+
+                if (selectedCategories.length > 0) {
+                    fetchSuggestedAuthors();
+                } else {
+                    authorsContainer.innerHTML = '<p class="no-authors-msg">No interests selected — you can discover authors anytime from the Blog page.</p>';
+                    step2Actions.style.display = 'flex';
+                }
+            }, 280);
+        }
+
+        continueBtn.addEventListener('click', goToStep2);
+        skipStep1Btn.addEventListener('click', () => {
+            selectedCategories = [];
+            goToStep2();
+        });
+
+        // ── Fetch Suggested Authors ──
+        function fetchSuggestedAuthors() {
+            const params = new URLSearchParams();
+            selectedCategories.forEach(cat => params.append('categories', cat));
+
+            fetch(`/api/suggested-authors/?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.authors.length === 0) {
+                        authorsContainer.innerHTML = '<p class="no-authors-msg">No authors found yet for your selected categories. You can discover authors later!</p>';
+                        step2Actions.style.display = 'flex';
+                        return;
+                    }
+
+                    let html = '<div class="authors-grid">';
+                    data.authors.forEach(author => {
+                        const avatarHtml = author.avatar_url
+                            ? `<img src="${author.avatar_url}" alt="${author.name}" class="author-card-avatar">`
+                            : `<div class="author-card-avatar-initial">${author.name ? author.name.charAt(0).toUpperCase() : 'A'}</div>`;
+
+                        const catsHtml = author.categories.map(c => `<span style="background: hsla(from var(--theme-base) h s l / 0.08); padding: 1px 6px; border-radius: 4px; font-size: 0.65rem;">${c}</span>`).join(' ');
+
+                        html += `
+                        <div class="author-card" data-username="${author.username}" onclick="toggleAuthor(this)">
+                            <div class="author-card-check">
+                                <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                            </div>
+                            ${avatarHtml}
+                            <div class="author-card-info">
+                                <div class="author-card-name">${author.name || author.username}</div>
+                                ${author.bio ? `<div class="author-card-bio">${author.bio}</div>` : ''}
+                                <div class="author-card-meta">${author.follower_count} followers ${catsHtml ? '· ' + catsHtml : ''}</div>
+                            </div>
+                        </div>`;
+                    });
+                    html += '</div>';
+
+                    authorsContainer.innerHTML = html;
+                    step2Actions.style.display = 'flex';
+                })
+                .catch(err => {
+                    console.error(err);
+                    authorsContainer.innerHTML = '<p class="no-authors-msg">Could not load suggestions. You can discover authors from the Blog page!</p>';
+                    step2Actions.style.display = 'flex';
+                });
+        }
+
+        // ── Toggle Author Selection ──
+        window.toggleAuthor = function(card) {
+            const username = card.getAttribute('data-username');
+            if (selectedAuthors.has(username)) {
+                selectedAuthors.delete(username);
+                card.classList.remove('selected');
+            } else {
+                selectedAuthors.add(username);
+                card.classList.add('selected');
+            }
+        };
+
+        // ── Submit Onboarding ──
+        function submitOnboarding() {
+            const form = document.getElementById('onboarding-form');
+            const interestsDiv = document.getElementById('form-interests');
+            const authorsDiv = document.getElementById('form-follow-authors');
+
+            interestsDiv.innerHTML = '';
+            authorsDiv.innerHTML = '';
+
+            selectedCategories.forEach(cat => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'interests';
+                input.value = cat;
+                interestsDiv.appendChild(input);
+            });
+
+            selectedAuthors.forEach(uname => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'follow_authors';
+                input.value = uname;
+                authorsDiv.appendChild(input);
+            });
+
+            form.submit();
+        }
+
+        finishBtn.addEventListener('click', submitOnboarding);
+        skipStep2Btn.addEventListener('click', submitOnboarding);
+    });
+    </script>
+</body>
+</html>

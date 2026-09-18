@@ -1,0 +1,1710 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.name }} (@{{ profile_user.username }}) - Articlio{% endblock title %}
+
+{% block css %}
+<style>
+    /* ══════════════════════════════════════════════════════════════
+       MODERN PROFILE PAGE — Social Platform Aesthetic
+       ══════════════════════════════════════════════════════════════ */
+
+    :root {
+        --text-color-darkest: var(--text-main, #111827);
+    }
+
+    .profile-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* ── Cover Banner (Auto-generated gradient) ── */
+    .profile-cover {
+        position: relative;
+        height: 220px;
+        border-radius: 24px 24px 0 0;
+        background:
+            radial-gradient(ellipse at 20% 50%, hsla(from var(--theme-light) h s l / 0.6) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 20%, hsla(from var(--theme-base) h s l / 0.4) 0%, transparent 50%),
+            radial-gradient(ellipse at 60% 80%, hsla(from var(--theme-dark) h s l / 0.5) 0%, transparent 50%),
+            linear-gradient(135deg, var(--theme-darkest) 0%, var(--theme-dark) 50%, var(--theme-medium) 100%);
+        overflow: hidden;
+    }
+
+    .profile-banner-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        z-index: 5;
+        transition: all 0.25s ease;
+        user-select: none;
+    }
+
+    .profile-banner-badge svg {
+        width: 14px !important;
+        height: 14px !important;
+        max-width: 14px !important;
+        max-height: 14px !important;
+        min-width: 14px !important;
+        min-height: 14px !important;
+        flex-shrink: 0 !important;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .profile-banner-badge:hover {
+        background: rgba(15, 23, 42, 0.85);
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .profile-cover::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+
+    .profile-cover-mesh {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        filter: blur(80px);
+        animation: cover-float 12s ease-in-out infinite alternate;
+    }
+
+    .profile-cover-mesh-1 {
+        top: -40%;
+        left: 10%;
+        background: var(--theme-light);
+        opacity: 0.3;
+    }
+
+    .profile-cover-mesh-2 {
+        bottom: -50%;
+        right: 15%;
+        background: var(--theme-base);
+        opacity: 0.25;
+        animation-delay: -4s;
+        animation-direction: alternate-reverse;
+    }
+
+    @keyframes cover-float {
+        0% { transform: translateY(0) scale(1); }
+        100% { transform: translateY(-20px) scale(1.1); }
+    }
+
+    /* ── Profile Card (overlapping cover) ── */
+    .profile-main-card {
+        position: relative;
+        background: var(--bg-card, #fff);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 0 0 24px 24px;
+        margin-top: -1px;
+        padding: 0 2rem 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    /* ── Floating Avatar ── */
+    .profile-avatar-float {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-top: -60px;
+        margin-bottom: 1rem;
+    }
+
+    .avatar-ring {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        padding: 4px;
+        background: linear-gradient(135deg, var(--theme-light), var(--theme-base), var(--theme-dark));
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        animation: ring-glow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes ring-glow {
+        0% { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 0 0 hsla(from var(--theme-base) h s l / 0); }
+        100% { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 20px 4px hsla(from var(--theme-base) h s l / 0.2); }
+    }
+
+    .avatar-ring img,
+    .avatar-ring .avatar-initial {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--bg-card, #fff);
+    }
+
+    .avatar-initial {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--theme-medium) 0%, var(--theme-darkest) 100%);
+        color: var(--theme-lightest);
+    }
+
+    /* ── Profile Info Center ── */
+    .profile-identity {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+    }
+
+    .profile-name {
+        font-size: clamp(1.35rem, 4vw, 1.75rem);
+        font-weight: 800;
+        color: var(--text-color-darkest, #111827);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    /* ── Verified Badge (1000+ followers) ── */
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: #fff;
+        flex-shrink: 0;
+        position: relative;
+        top: 1px;
+    }
+
+    .verified-badge svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .verified-badge-sm {
+        width: 16px;
+        height: 16px;
+    }
+
+    .verified-badge-sm svg {
+        width: 10px;
+        height: 10px;
+    }
+
+    .profile-username-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: var(--theme-base);
+        font-weight: 500;
+        background: hsla(from var(--theme-base) h s l / 0.08);
+        padding: 4px 14px;
+        border-radius: 999px;
+        margin-bottom: 0.75rem;
+    }
+
+    .role-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--theme-base), var(--theme-dark));
+        color: #fff;
+    }
+
+    .profile-bio {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--text-color-darkest, #374151);
+        opacity: 0.8;
+        max-width: 520px;
+        margin: 0 auto 1rem;
+    }
+
+    .profile-member-since {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        color: var(--theme-base);
+        opacity: 0.7;
+        margin-bottom: 1rem;
+    }
+
+    .profile-member-since svg {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+        flex-shrink: 0;
+    }
+
+    /* ── Social Links Row ── */
+    .profile-socials-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 1.25rem;
+    }
+
+    .social-icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: hsla(from var(--theme-base) h s l / 0.06);
+        border: 1px solid var(--border-color, #e5e7eb);
+        color: var(--text-color-darkest, #374151);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .social-icon-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-icon-btn.github:hover { background: #24292e; color: #fff; }
+    .social-icon-btn.twitter:hover { background: #1DA1F2; color: #fff; }
+    .social-icon-btn.linkedin:hover { background: #0A66C2; color: #fff; }
+    .social-icon-btn.website:hover { background: var(--theme-base); color: #fff; }
+
+    .social-icon-btn svg { width: 18px; height: 18px; }
+
+    /* ── Actions Row ── */
+    .profile-actions-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Stats Strip ── */
+    .profile-stats-strip {
+        display: flex;
+        justify-content: center;
+        gap: 0;
+        padding: 1.25rem 0;
+        margin: 0 -2rem;
+        border-top: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    .stat-block {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        position: relative;
+    }
+
+    .stat-block + .stat-block::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 25%;
+        height: 50%;
+        width: 1px;
+        background: var(--border-color, #e5e7eb);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-color-darkest, #111827);
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        color: var(--theme-base);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 2px;
+    }
+
+    /* ── Action Buttons ── */
+    .btn-primary-profile {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--theme-base);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 10px 24px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 12px hsla(from var(--theme-base) h s l / 0.3);
+        text-decoration: none;
+    }
+
+    .btn-primary-profile:hover {
+        background: var(--theme-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px hsla(from var(--theme-base) h s l / 0.4);
+    }
+
+    .btn-outline-profile {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: var(--theme-base);
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 10px 24px;
+        border-radius: 999px;
+        border: 1.5px solid var(--theme-base);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .btn-outline-profile:hover {
+        background: hsla(from var(--theme-base) h s l / 0.08);
+    }
+
+    /* ── Pill Tabs ── */
+    .profile-pill-tabs {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        background: hsla(from var(--theme-base) h s l / 0.04);
+        border-radius: 16px;
+        margin: 2rem 0 1.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        border: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    .profile-pill-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    @media (min-width: 640px) {
+        .profile-pill-tabs {
+            justify-content: center;
+        }
+    }
+
+    .pill-tab {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-color-darkest, #374151);
+        padding: 8px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        background: none;
+        border: none;
+        opacity: 0.7;
+    }
+
+    .pill-tab:hover {
+        opacity: 1;
+        background: hsla(from var(--theme-base) h s l / 0.06);
+    }
+
+    .pill-tab.active {
+        background: var(--theme-base);
+        color: #fff;
+        opacity: 1;
+        box-shadow: 0 2px 8px hsla(from var(--theme-base) h s l / 0.3);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fade-in 0.3s ease;
+        height: 430px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .tab-content::-webkit-scrollbar { width: 6px; }
+    .tab-content::-webkit-scrollbar-track { background: transparent; }
+    .tab-content::-webkit-scrollbar-thumb {
+        background-color: hsla(from var(--theme-base) h s l / 0.2);
+        border-radius: 99px;
+    }
+    .tab-content::-webkit-scrollbar-thumb:hover { background-color: var(--theme-base); }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Category Chips (Author Profile) ── */
+    .profile-category-chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 1rem;
+    }
+
+    .category-chip {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: hsla(from var(--theme-base) h s l / 0.08);
+        color: var(--theme-base);
+        border: 1px solid hsla(from var(--theme-base) h s l / 0.15);
+    }
+
+    /* ── Author Card Grid ── */
+    .people-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .people-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .person-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--bg-card, #fff);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 16px;
+        padding: 14px 16px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .person-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .person-card-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .person-card-avatar-initial {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--theme-medium) 0%, var(--theme-darkest) 100%);
+        color: var(--theme-lightest);
+        flex-shrink: 0;
+    }
+
+    .person-card-info {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    .person-card-name {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: var(--text-color-darkest, #111827);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .person-card-username {
+        font-size: 0.78rem;
+        color: var(--theme-base);
+    }
+
+    .btn-follow-sm {
+        background: var(--theme-base);
+        color: #fff;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-follow-sm:hover {
+        background: var(--theme-dark);
+    }
+
+    .btn-following-sm {
+        background: transparent;
+        color: var(--theme-base);
+        border: 1.5px solid var(--theme-base);
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-following-sm:hover {
+        background: hsla(from var(--theme-base) h s l / 0.08);
+    }
+
+    /* ── Interest Tags ── */
+    .interest-tag-checkbox {
+        display: none;
+    }
+
+    .interest-label {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border-color, #e5e7eb);
+        background: var(--bg-card, #fff);
+        color: var(--theme-base);
+        transition: all 0.2s ease;
+    }
+
+    .interest-tag-checkbox:checked + .interest-label {
+        background: var(--theme-base);
+        color: #fff;
+        border-color: var(--theme-base);
+        box-shadow: 0 4px 12px hsla(from var(--theme-base) h s l / 0.3);
+    }
+
+    /* ── Edit Settings Modal ── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .profile-modal {
+        background: var(--bg-card, #fff);
+        width: 92%;
+        max-width: 650px;
+        max-height: 85vh;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: 0;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+        transform: translateY(30px) scale(0.97);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-modal-scroll-content {
+        overflow-y: auto;
+        padding: 2.25rem;
+        max-height: 85vh;
+        width: 100%;
+    }
+
+    .profile-modal-scroll-content::-webkit-scrollbar { width: 8px; }
+    .profile-modal-scroll-content::-webkit-scrollbar-track { background: transparent; }
+    .profile-modal-scroll-content::-webkit-scrollbar-thumb {
+        background-color: hsla(from var(--theme-base) h s l / 0.3);
+        border-radius: 99px;
+    }
+    .profile-modal-scroll-content::-webkit-scrollbar-thumb:hover { background-color: var(--theme-base); }
+
+    .modal-overlay.active .profile-modal {
+        transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        padding-bottom: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-color-darkest, #111827);
+        letter-spacing: -0.02em;
+    }
+
+    .modal-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: hsla(from var(--theme-base) h s l / 0.05);
+        border: 1px solid var(--border-color, #e5e7eb);
+        color: var(--text-color-darkest, #111827);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1.25rem;
+        border-style: solid;
+    }
+
+    .modal-close-btn:hover {
+        background: var(--theme-base);
+        color: var(--theme-lightest);
+        transform: rotate(90deg);
+    }
+
+    .modal-section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--theme-base);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-input-group { margin-bottom: 1.25rem; }
+
+    .profile-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-color-darkest, #374151);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-field {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1.5px solid var(--border-color, #d1d5db);
+        background: var(--bg-card, #fff);
+        color: var(--text-color-darkest, #111827);
+        font-size: 0.92rem;
+        transition: all 0.25s ease;
+        outline: none;
+    }
+
+    .profile-field:focus {
+        border-color: var(--theme-base);
+        box-shadow: 0 0 0 4px hsla(from var(--theme-base) h s l / 0.15);
+    }
+
+    .custom-file-upload-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 2px dashed var(--border-color, #d1d5db);
+        padding: 12px 16px;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: hsla(from var(--theme-base) h s l / 0.02);
+    }
+
+    .custom-file-upload-wrapper:hover {
+        border-color: var(--theme-base);
+        background: hsla(from var(--theme-base) h s l / 0.05);
+    }
+
+    .custom-file-upload-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .custom-file-upload-icon {
+        color: var(--theme-base);
+        display: flex;
+        align-items: center;
+    }
+
+    .custom-file-upload-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--theme-base);
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-color-darkest, #6b7280);
+        opacity: 0.6;
+    }
+
+    .empty-state svg {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: var(--theme-base);
+        opacity: 0.4;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+        .profile-cover { height: 160px; border-radius: 16px 16px 0 0; }
+        .profile-main-card { border-radius: 0 0 16px 16px; padding: 0 1rem 1.5rem; }
+        .profile-name { font-size: clamp(1.25rem, 5vw, 1.45rem); }
+        .profile-stats-strip { margin: 0 -1rem; padding: 0.85rem 0; }
+        .stat-number { font-size: 1.15rem; }
+        .stat-label { font-size: 0.68rem; }
+        .profile-pill-tabs { margin: 1.25rem 0 1rem; padding: 4px; border-radius: 14px; }
+        .pill-tab { padding: 6px 14px; font-size: 0.78rem; border-radius: 10px; }
+        .avatar-ring { width: 96px; height: 96px; }
+        .profile-avatar-float { margin-top: -48px; }
+        .profile-banner-badge {
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            font-size: 0.68rem;
+            gap: 4px;
+        }
+        .profile-banner-badge svg {
+            width: 12px !important;
+            height: 12px !important;
+            min-width: 12px !important;
+            min-height: 12px !important;
+            max-width: 12px !important;
+            max-height: 12px !important;
+        }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock css %}
+
+{% block body %}
+<div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+    <div class="profile-container">
+
+        <!-- ═══════════════ COVER BANNER ═══════════════ -->
+        <div class="profile-cover">
+            <div class="profile-cover-mesh profile-cover-mesh-1"></div>
+            <div class="profile-cover-mesh profile-cover-mesh-2"></div>
+            
+            <!-- Banner Coming Soon Badge -->
+            <div class="profile-banner-badge" title="Customizable profile cover banners are coming soon!">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; min-width:14px; min-height:14px; max-width:14px; max-height:14px; flex-shrink:0; display:inline-block;">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Banner &bull; Coming Soon</span>
+            </div>
+        </div>
+
+        <!-- ═══════════════ MAIN PROFILE CARD ═══════════════ -->
+        <div class="profile-main-card">
+            <!-- Floating Avatar -->
+            <div class="profile-avatar-float">
+                <div class="avatar-ring">
+                    {% if profile_user.profile_picture %}
+                        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.name }}">
+                    {% elif profile_user.profile_picture_url %}
+                        <img src="{{ profile_user.profile_picture_url }}" alt="{{ profile_user.name }}">
+                    {% else %}
+                        <div class="avatar-initial">{{ profile_user.name|slice:":1"|upper }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Identity -->
+            <div class="profile-identity">
+                <div class="profile-name-row">
+                    <h1 class="profile-name">{{ profile_user.name }}</h1>
+                    {% if followers_count >= 1000 %}
+                    <span class="verified-badge" title="Verified · 1,000+ followers">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span class="profile-username-badge">
+                        @{{ profile_user.username }}
+                        <span class="role-badge">{{ profile_user.role|capfirst }}</span>
+                    </span>
+                </div>
+
+                <p class="profile-bio">
+                    {% if profile_user.bio %}
+                        {{ profile_user.bio }}
+                    {% else %}
+                        {% if is_own_profile %}
+                            Tell the community about yourself — click Edit Profile to add a bio.
+                        {% else %}
+                            This user hasn't added a bio yet.
+                        {% endif %}
+                    {% endif %}
+                </p>
+
+                <!-- Member Since -->
+                <div class="profile-member-since">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Member since {{ profile_user.date_joined|date:"F Y" }}
+                </div>
+
+                <!-- Category Chips (what this author writes about) -->
+                {% if written_categories %}
+                <div class="profile-category-chips">
+                    {% for cat in written_categories %}
+                        <span class="category-chip">{{ cat|capfirst }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Social Links -->
+                {% if profile_user.github_url or profile_user.twitter_url or profile_user.linkedin_url or profile_user.website_url %}
+                <div class="profile-socials-row">
+                    {% if profile_user.github_url %}
+                    <a href="{{ profile_user.github_url }}" class="social-icon-btn github" target="_blank" rel="noopener noreferrer" title="GitHub">
+                        <svg fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                    </a>
+                    {% endif %}
+                    {% if profile_user.twitter_url %}
+                    <a href="{{ profile_user.twitter_url }}" class="social-icon-btn twitter" target="_blank" rel="noopener noreferrer" title="Twitter/X">
+                        <svg fill="currentColor" viewBox="0 0 16 16"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.6.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/></svg>
+                    </a>
+                    {% endif %}
+                    {% if profile_user.linkedin_url %}
+                    <a href="{{ profile_user.linkedin_url }}" class="social-icon-btn linkedin" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                        <svg fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+                    </a>
+                    {% endif %}
+                    {% if profile_user.website_url %}
+                    <a href="{{ profile_user.website_url }}" class="social-icon-btn website" target="_blank" rel="noopener noreferrer" title="Website">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20M2 12h20"></path>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="profile-actions-row">
+                    {% if is_own_profile %}
+                        <button id="open-edit-modal-btn" class="btn-primary-profile">
+                            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Edit Profile
+                        </button>
+                    {% elif request.user.is_authenticated %}
+                        <button id="follow-btn" class="{% if is_following %}btn-outline-profile{% else %}btn-primary-profile{% endif %}" data-username="{{ profile_user.username }}">
+                            {% if is_following %}Following{% else %}Follow{% endif %}
+                        </button>
+                    {% else %}
+                        <a href="{% url 'handleLogin' %}?next={{ request.path }}" class="btn-primary-profile">Follow</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Stats Strip -->
+            {% if profile_user.role == 'author' %}
+            <div class="profile-stats-strip">
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-posts">{{ total_posts }}</div>
+                    <div class="stat-label">Articles</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-views">{{ total_views }}</div>
+                    <div class="stat-label">Views</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-likes">{{ total_likes }}</div>
+                    <div class="stat-label">Likes</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-followers">{{ followers_count }}</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="profile-stats-strip">
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-followers">{{ followers_count }}</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-number" id="stats-following">{{ following_count }}</div>
+                    <div class="stat-label">Following</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ═══════════════ PILL TABS ═══════════════ -->
+        <div class="profile-pill-tabs">
+            {% if profile_user.role == 'author' %}
+                <button class="pill-tab active" data-tab="articles">Articles ({{ total_posts }})</button>
+                <button class="pill-tab" data-tab="followers">Followers ({{ followers_count }})</button>
+            {% endif %}
+            <button class="pill-tab {% if profile_user.role != 'author' %}active{% endif %}" data-tab="following">Following ({{ following_count }})</button>
+            {% if is_own_profile %}
+                <button class="pill-tab" data-tab="interests">My Interests</button>
+            {% endif %}
+        </div>
+
+        <!-- ═══════════════ TAB CONTENTS ═══════════════ -->
+
+        <!-- 1. Articles Tab -->
+        {% if profile_user.role == 'author' %}
+        <div id="tab-articles" class="tab-content active">
+            <!-- Filter Bar -->
+            <div class="articles-filter-bar" style="position: sticky; top: 0; z-index: 10; background: var(--bg-card, #fff); display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:1rem; padding: 8px 4px; border-bottom: 1px solid var(--border-color, #e5e7eb);">
+                <label for="article-sort-by" style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Sort By:</label>
+                <select id="article-sort-by" style="background:var(--bg-card, #fff); border:1px solid var(--border-color, #e5e7eb); padding:6px 10px; border-radius:10px; font-size:0.8rem; color:var(--text-color-darkest); outline:none; cursor:pointer;">
+                    <option value="-timestamp">Published Date (Newest)</option>
+                    <option value="timestamp">Published Date (Oldest)</option>
+                    <option value="-views">Views (High to Low)</option>
+                    <option value="views">Views (Low to High)</option>
+                    <option value="-likes">Likes (High to Low)</option>
+                    <option value="likes">Likes (Low to High)</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="author-articles-container">
+            </div>
+            <div id="author-articles-pagination" class="mt-8 flex justify-center"></div>
+        </div>
+
+        <!-- 2. Followers Tab -->
+        <div id="tab-followers" class="tab-content">
+            <div class="tab-loader" style="display:none; justify-content:center; align-items:center; height:150px; width:100%;">
+                <div class="spinner" style="width:28px; height:28px; border:3px solid var(--border-color, #e5e7eb); border-top-color:var(--theme-base); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            </div>
+            <div class="people-grid" id="followers-container"></div>
+            <div class="empty-state" id="followers-empty" style="display:none;">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                <p>No followers yet. Great content attracts great readers!</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3. Following Tab -->
+        <div id="tab-following" class="tab-content {% if profile_user.role != 'author' %}active{% endif %}">
+            <div class="tab-loader" style="display:none; justify-content:center; align-items:center; height:150px; width:100%;">
+                <div class="spinner" style="width:28px; height:28px; border:3px solid var(--border-color, #e5e7eb); border-top-color:var(--theme-base); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+            </div>
+            <div class="people-grid" id="following-container"></div>
+            <div class="empty-state" id="following-empty" style="display:none;">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <p>Not following anyone yet. Discover great authors!</p>
+            </div>
+        </div>
+
+        <!-- 4. Interests Tab (Own Profile Only) -->
+        {% if is_own_profile %}
+        <div id="tab-interests" class="tab-content">
+            <div style="background: var(--bg-card, #fff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; padding: 2rem;">
+                <h3 style="font-weight: 800; color: var(--text-color-darkest); font-size: 1.1rem; margin-bottom: 0.5rem;">Manage Your Interests</h3>
+                <p style="font-size: 0.85rem; color: var(--text-color-darkest); opacity: 0.6; margin-bottom: 1.5rem;">Select topics you love. We'll customize your feed to prioritize stories in these fields.</p>
+                
+                <form id="interests-form" method="POST" action="{% url 'update_profile' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="bio" value="{{ profile_user.bio }}">
+                    <input type="hidden" name="profile_picture_url" value="{{ profile_user.profile_picture_url }}">
+                    <input type="hidden" name="github_url" value="{{ profile_user.github_url }}">
+                    <input type="hidden" name="twitter_url" value="{{ profile_user.twitter_url }}">
+                    <input type="hidden" name="linkedin_url" value="{{ profile_user.linkedin_url }}">
+                    <input type="hidden" name="website_url" value="{{ profile_user.website_url }}">
+
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom: 2rem;">
+                        {% for cat in all_categories %}
+                            <div style="position:relative;">
+                                <input type="checkbox" id="cat-{{ cat }}" name="interests" value="{{ cat }}" class="interest-tag-checkbox"
+                                    {% if cat in user_interests %}checked{% endif %}>
+                                <label for="cat-{{ cat }}" class="interest-label">{{ cat|capfirst }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="submit" class="btn-primary-profile">Save My Interests</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- ═══════════════ EDIT PROFILE MODAL ═══════════════ -->
+{% if is_own_profile %}
+<div class="modal-overlay" id="edit-profile-modal">
+    <div class="profile-modal">
+        <div class="profile-modal-scroll-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile Details</h2>
+                <button id="close-modal-btn" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+
+            <form method="POST" action="{% url 'update_profile' %}" id="profile-edit-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="modal-section-title">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    About You
+                </div>
+                
+                <div class="profile-input-group">
+                    <label for="id_bio" class="profile-label">Short Bio</label>
+                    <textarea name="bio" id="id_bio" rows="3" class="profile-field" style="resize:none;" placeholder="Tell the community about yourself...">{{ profile_user.bio }}</textarea>
+                </div>
+
+                <div class="modal-section-title">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Avatar Settings
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="profile-input-group">
+                        <label class="profile-label">Upload Profile Picture (Device)</label>
+                        <div class="custom-file-upload-wrapper">
+                            <div class="custom-file-upload-icon">
+                                <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            </div>
+                            <span class="custom-file-upload-text" id="file-name-label">Choose image file...</span>
+                            <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" class="custom-file-upload-input">
+                        </div>
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="id_profile_picture_url" class="profile-label">OR Paste Image URL</label>
+                        <input type="url" name="profile_picture_url" id="id_profile_picture_url" class="profile-field" value="{{ profile_user.profile_picture_url }}" placeholder="https://example.com/avatar.jpg">
+                    </div>
+                </div>
+
+                <div class="modal-section-title">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    Social Connections
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="profile-input-group">
+                        <label for="id_github_url" class="profile-label">GitHub Profile URL</label>
+                        <input type="url" name="github_url" id="id_github_url" class="profile-field" value="{{ profile_user.github_url }}" placeholder="https://github.com/username">
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="id_twitter_url" class="profile-label">Twitter/X Profile URL</label>
+                        <input type="url" name="twitter_url" id="id_twitter_url" class="profile-field" value="{{ profile_user.twitter_url }}" placeholder="https://twitter.com/username">
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="id_linkedin_url" class="profile-label">LinkedIn Profile URL</label>
+                        <input type="url" name="linkedin_url" id="id_linkedin_url" class="profile-field" value="{{ profile_user.linkedin_url }}" placeholder="https://linkedin.com/in/username">
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="id_website_url" class="profile-label">Personal Website URL</label>
+                        <input type="url" name="website_url" id="id_website_url" class="profile-field" value="{{ profile_user.website_url }}" placeholder="https://example.com">
+                    </div>
+                </div>
+
+                <!-- Keep interest values intact -->
+                {% for interest in user_interests %}
+                    <input type="hidden" name="interests" value="{{ interest }}">
+                {% endfor %}
+
+                <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px solid var(--border-color, #e5e7eb); padding-top:1.25rem; margin-top:1.5rem;">
+                    <button type="button" id="cancel-edit-btn" class="btn-outline-profile">Cancel</button>
+                    <button type="submit" class="btn-primary-profile">Save Changes</button>
+                </div>
+            </form>
+        </div>
+</div>
+</div>
+{% endif %}
+{% endblock body %}
+
+{% block js %}
+<script nonce="{{ request.csp_nonce }}">
+document.addEventListener('DOMContentLoaded', () => {
+    // ── Stats Normalization ──
+    function formatStatNumber(val) {
+        const num = parseInt(val, 10);
+        if (isNaN(num)) return val;
+        if (num > 10000) {
+            return Math.floor(num / 1000) + 'k+';
+        }
+        return num;
+    }
+
+    function normalizeStats() {
+        document.querySelectorAll('.stat-number').forEach(el => {
+            const rawVal = el.getAttribute('data-raw') || el.textContent.trim();
+            el.setAttribute('data-raw', rawVal);
+            el.textContent = formatStatNumber(rawVal);
+        });
+    }
+
+    normalizeStats();
+
+    window.IS_OWN_PROFILE = {% if is_own_profile %}true{% else %}false{% endif %};
+
+    // ── Tab Management ──
+    const tabLinks = document.querySelectorAll('.pill-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    let followersLoaded = false;
+    let followingLoaded = false;
+
+    function fetchFollowers() {
+        if (followersLoaded) return;
+        const container = document.getElementById('followers-container');
+        const emptyState = document.getElementById('followers-empty');
+        const loader = document.querySelector('#tab-followers .tab-loader');
+        
+        loader.style.display = 'flex';
+        container.innerHTML = '';
+        emptyState.style.display = 'none';
+
+        fetch(`/api/profile/followers/{{ profile_user.username }}/`)
+            .then(res => res.json())
+            .then(data => {
+                loader.style.display = 'none';
+                followersLoaded = true;
+                if (data.followers.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                let html = '';
+                data.followers.forEach(follower => {
+                    const displayName = follower.name || follower.username || 'User';
+                    const avatarHtml = follower.avatar_url 
+                        ? `<img src="${escapeHtml(follower.avatar_url)}" alt="${escapeHtml(displayName)}" class="person-card-avatar">`
+                        : `<div class="person-card-avatar-initial">${escapeHtml(displayName[0].toUpperCase())}</div>`;
+                    html += `
+                        <a href="/profile/${encodeURIComponent(follower.username)}/" class="person-card">
+                            ${avatarHtml}
+                            <div class="person-card-info">
+                                <div class="person-card-name">${escapeHtml(displayName)}</div>
+                                <div class="person-card-username">@${escapeHtml(follower.username)}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+                container.innerHTML = html;
+            });
+    }
+
+    function fetchFollowing() {
+        if (followingLoaded) return;
+        const container = document.getElementById('following-container');
+        const emptyState = document.getElementById('following-empty');
+        const loader = document.querySelector('#tab-following .tab-loader');
+        
+        loader.style.display = 'flex';
+        container.innerHTML = '';
+        emptyState.style.display = 'none';
+
+        fetch(`/api/profile/following/{{ profile_user.username }}/`)
+            .then(res => res.json())
+            .then(data => {
+                loader.style.display = 'none';
+                followingLoaded = true;
+                if (data.following.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                let html = '';
+                data.following.forEach(author => {
+                    const displayName = author.name || author.username || 'User';
+                    const avatarHtml = author.avatar_url 
+                        ? `<img src="${escapeHtml(author.avatar_url)}" alt="${escapeHtml(displayName)}" class="person-card-avatar">`
+                        : `<div class="person-card-avatar-initial">${escapeHtml(displayName[0].toUpperCase())}</div>`;
+                    const unfollowBtn = window.IS_OWN_PROFILE ? `<button class="btn-following-sm quick-unfollow-btn" data-username="${escapeHtml(author.username)}">Unfollow</button>` : '';
+                    html += `
+                        <div class="person-card" style="justify-content: space-between;">
+                            <a href="/profile/${encodeURIComponent(author.username)}/" style="display:flex; align-items:center; gap:1rem; text-decoration:none; color:inherit; min-width:0;">
+                                ${avatarHtml}
+                                <div class="person-card-info">
+                                    <div class="person-card-name">${escapeHtml(displayName)}</div>
+                                    <div class="person-card-username">@${escapeHtml(author.username)}</div>
+                                </div>
+                            </a>
+                            ${unfollowBtn}
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                
+                container.querySelectorAll('.quick-unfollow-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const username = btn.getAttribute('data-username');
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        
+                        const card = btn.closest('.person-card') || btn.parentElement;
+                        const followingTabBtn = document.querySelector('.pill-tab[data-tab="following"]');
+                        const statsFollowingEl = document.getElementById('stats-following');
+                        
+                        let previousTabCount = null;
+                        if (followingTabBtn) {
+                            const match = followingTabBtn.textContent.match(/\d+/);
+                            if (match) previousTabCount = parseInt(match[0], 10);
+                        }
+                        
+                        let previousStatsCount = null;
+                        if (statsFollowingEl) {
+                            previousStatsCount = parseInt(statsFollowingEl.textContent.replace(/,/g, ''), 10);
+                        }
+
+                        // Optimistically hide card
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        card.setAttribute('data-optimistic-hidden', 'true');
+                        setTimeout(() => {
+                            if (card.getAttribute('data-optimistic-hidden') === 'true') {
+                                card.style.display = 'none';
+                            }
+                        }, 300);
+
+                        // Optimistically decrement counts
+                        if (followingTabBtn && previousTabCount !== null) {
+                            const newTabCount = Math.max(0, previousTabCount - 1);
+                            followingTabBtn.textContent = `Following (${newTabCount})`;
+                        }
+                        if (statsFollowingEl && previousStatsCount !== null) {
+                            const newStatsCount = Math.max(0, previousStatsCount - 1);
+                            statsFollowingEl.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(newStatsCount) : newStatsCount;
+                        }
+
+                        fetch('{% url "toggle_follow" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({ username: username })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+                            card.remove();
+                            showToast('Unfollowed author.', 'success');
+                            if (statsFollowingEl && data.following_count !== undefined) {
+                                statsFollowingEl.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(data.following_count) : data.following_count;
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showToast(err.message || 'Something went wrong.', 'error');
+                            card.removeAttribute('data-optimistic-hidden');
+                            card.style.display = 'flex';
+                            card.style.opacity = '1';
+                            card.style.transform = 'scale(1)';
+                            if (followingTabBtn && previousTabCount !== null) {
+                                followingTabBtn.textContent = `Following (${previousTabCount})`;
+                            }
+                            if (statsFollowingEl && previousStatsCount !== null) {
+                                statsFollowingEl.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(previousStatsCount) : previousStatsCount;
+                            }
+                        });
+                    });
+                });
+            });
+    }
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const targetTab = link.getAttribute('data-tab');
+
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            link.classList.add('active');
+            const targetContentEl = document.getElementById(`tab-${targetTab}`);
+            if (targetContentEl) {
+                targetContentEl.classList.add('active');
+                
+                // Fetch dynamic tab content if activated
+                if (targetTab === 'articles') {
+                    fetchAuthorArticles(1);
+                } else if (targetTab === 'followers') {
+                    fetchFollowers();
+                } else if (targetTab === 'following') {
+                    fetchFollowing();
+                }
+
+                // Show tab-loader spinner briefly if it exists
+                const loader = targetContentEl.querySelector('.tab-loader');
+                const actualContent = targetContentEl.querySelector('.people-grid') || targetContentEl.querySelector('.empty-state') || targetContentEl.querySelector('form') || targetContentEl.querySelector('#interests-form');
+                if (loader && actualContent) {
+                    loader.style.display = 'flex';
+                    actualContent.style.display = 'none';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                        actualContent.style.display = '';
+                    }, 300);
+                }
+            }
+        });
+    });
+
+    // ── Edit Profile Modal ──
+    const openEditBtn = document.getElementById('open-edit-modal-btn');
+    const closeEditBtn = document.getElementById('close-modal-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const editModal = document.getElementById('edit-profile-modal');
+
+    if (openEditBtn && editModal) {
+        openEditBtn.addEventListener('click', () => editModal.classList.add('active'));
+        [closeEditBtn, cancelEditBtn].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => editModal.classList.remove('active'));
+            }
+        });
+        const fileInput = document.getElementById('id_profile_picture');
+        const fileLabel = document.getElementById('file-name-label');
+        if (fileInput && fileLabel) {
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    fileLabel.textContent = e.target.files[0].name;
+                } else {
+                    fileLabel.textContent = "Choose image file...";
+                }
+            });
+        }
+    }
+
+    // ── Follow System (AJAX) ──
+    const followBtn = document.getElementById('follow-btn');
+    if (followBtn) {
+        followBtn.addEventListener('click', () => {
+            const username = followBtn.getAttribute('data-username');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // 1. Determine target state
+            const isFollowing = followBtn.textContent.trim() === 'Following';
+            const nextFollowingState = !isFollowing;
+
+            // Save previous state for rollback
+            const previousState = {
+                text: followBtn.textContent.trim(),
+                className: followBtn.className,
+                isFollowing: isFollowing
+            };
+
+            const followersCountVal = document.getElementById('stats-followers');
+            let previousFollowersCount = null;
+            if (followersCountVal) {
+                const countAttr = followersCountVal.getAttribute('data-raw');
+                previousFollowersCount = countAttr ? parseInt(countAttr, 10) : parseInt(followersCountVal.textContent.replace(/,/g, ''), 10);
+            }
+
+            // 2. Update UI Optimistically
+            if (nextFollowingState) {
+                followBtn.textContent = 'Following';
+                followBtn.className = 'btn-outline-profile';
+            } else {
+                followBtn.textContent = 'Follow';
+                followBtn.className = 'btn-primary-profile';
+            }
+
+            // Update followers count optimistically
+            if (followersCountVal && previousFollowersCount !== null) {
+                const nextCount = nextFollowingState ? previousFollowersCount + 1 : Math.max(0, previousFollowersCount - 1);
+                followersCountVal.setAttribute('data-raw', nextCount);
+                followersCountVal.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(nextCount) : nextCount;
+
+                // Also update the Followers tab pill count if it exists
+                const followersTabBtn = document.querySelector('.pill-tab[data-tab="followers"]');
+                if (followersTabBtn) {
+                    followersTabBtn.textContent = `Followers (${nextCount})`;
+                }
+            }
+
+            // 3. Send Request
+            fetch('{% url "toggle_follow" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ username: username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Confirm actual state from response
+                if (data.following) {
+                    followBtn.textContent = 'Following';
+                    followBtn.className = 'btn-outline-profile';
+                } else {
+                    followBtn.textContent = 'Follow';
+                    followBtn.className = 'btn-primary-profile';
+                }
+
+                if (followersCountVal) {
+                    followersCountVal.setAttribute('data-raw', data.followers_count);
+                    followersCountVal.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(data.followers_count) : data.followers_count;
+                }
+                
+                const followersTabBtn = document.querySelector('.pill-tab[data-tab="followers"]');
+                if (followersTabBtn) {
+                    followersTabBtn.textContent = `Followers (${data.followers_count})`;
+                }
+                
+                showToast(data.following ? 'Followed successfully!' : 'Unfollowed successfully!', 'success');
+            })
+            .catch(err => {
+                console.error(err);
+                showToast(err.message || 'Something went wrong. Please try again.', 'error');
+                
+                // Revert to original state on failure
+                followBtn.textContent = previousState.text;
+                followBtn.className = previousState.className;
+
+                if (followersCountVal && previousFollowersCount !== null) {
+                    followersCountVal.setAttribute('data-raw', previousFollowersCount);
+                    followersCountVal.textContent = typeof formatStatNumber === 'function' ? formatStatNumber(previousFollowersCount) : previousFollowersCount;
+                    
+                    const followersTabBtn = document.querySelector('.pill-tab[data-tab="followers"]');
+                    if (followersTabBtn) {
+                        followersTabBtn.textContent = `Followers (${previousFollowersCount})`;
+                    }
+                }
+            });
+        });
+    }
+
+    // ── Fetch Author Articles (AJAX) ──
+    {% if profile_user.role == 'author' %}
+    let articlesPage = 1;
+    const articlesContainer = document.getElementById('author-articles-container');
+    const articlesPagination = document.getElementById('author-articles-pagination');
+
+    function buildSkeletons(count) {
+        return Array(count).fill(`
+            <div class="skeleton-card" style="min-height: 250px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 16px; border: 1px solid var(--border-color, #e5e7eb); background: var(--bg-card, #fff); padding: 1.5rem;">
+                <div class="skeleton-bar skeleton-bar-sm"></div>
+                <div class="skeleton-bar skeleton-bar-lg"></div>
+                <div class="skeleton-bar skeleton-bar-sm" style="width: 45%;"></div>
+                <div style="display:flex; gap:12px;">
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 60px;"></div>
+                    <div class="skeleton-bar skeleton-bar-sm" style="width: 80px;"></div>
+                </div>
+                <div class="skeleton-bar skeleton-bar-xl"></div>
+                <div class="skeleton-bar skeleton-bar-xl" style="width: 80%;"></div>
+            </div>
+        `).join('');
+    }
+
+    function fetchAuthorArticles(page = 1) {
+        articlesPage = page;
+        articlesContainer.innerHTML = buildSkeletons(2);
+        articlesPagination.innerHTML = '';
+
+        const sortBySelect = document.getElementById('article-sort-by');
+        const sortBy = sortBySelect ? sortBySelect.value : '-timestamp';
+
+        fetch(`/api/profile/articles/{{ profile_user.username }}/?page=${articlesPage}&sort_by=${sortBy}`)
+            .then(res => res.json())
+            .then(data => {
+                articlesContainer.innerHTML = '';
+                if (data.posts.length === 0) {
+                    articlesContainer.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><p>No articles published yet.</p></div>';
+                    return;
+                }
+
+                data.posts.forEach(post => {
+                    let badgesHtml = '';
+                    if (post.is_new) {
+                        badgesHtml += `<span class="badge-new">✦ New</span>`;
+                    }
+                    if (post.is_trending) {
+                        badgesHtml += `<span class="badge-trending">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.44-.714-2.378-1.318-3.114l-.5-.55a.626.626 0 0 0-1.19.263c-.067.71-.778 1.615-1.492 2.151C10.5 6.5 8 3 8 0c0 0-6 4-6 11.5S4.686 16 8 16"/></svg>
+                            Trending</span>`;
+                    }
+
+                    const postCard = `
+                    <div class="post-card" style="border-radius: 16px; border: 1px solid var(--border-color, #e5e7eb); background: var(--bg-card, #fff); overflow: hidden;">
+                        <div class="post-card-inner" style="padding: 1.5rem;">
+                            <div class="post-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div class="post-card-tags" style="display: flex; gap: 6px; align-items: center;">
+                                    <span class="category-pill">${escapeHtml(post.category)}</span>
+                                    ${badgesHtml}
+                                </div>
+                            </div>
+
+                            <h3 class="post-card-title" style="margin-bottom: 0.75rem;">
+                                <a href="/blog/${encodeURIComponent(post.slug)}" style="color: var(--text-color-darkest); text-decoration: none; font-weight: 700; font-size: 1.25rem;">${escapeHtml(post.title)}</a>
+                            </h3>
+
+                            <div class="stats-row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <span class="stat-chip" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/></svg>
+                                    <span>${post.views}</span> views
+                                </span>
+                                <span class="stat-separator" style="width: 1px; height: 12px; background: var(--border-color, #e5e7eb);"></span>
+                                <span class="stat-chip" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/></svg>
+                                    <span>${post.likes}</span> likes
+                                </span>
+                                <span class="stat-separator" style="width: 1px; height: 12px; background: var(--border-color, #e5e7eb);"></span>
+                                <span class="stat-chip" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                                    ${post.reading_time} min read
+                                </span>
+                                <span class="stat-separator" style="width: 1px; height: 12px; background: var(--border-color, #e5e7eb);"></span>
+                                <span class="stat-chip" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    ${escapeHtml(post.timestamp)}
+                                </span>
+                            </div>
+
+                            <p class="post-card-summary" style="color: var(--text-color-darkest); opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.5;">${escapeHtml(post.summary)}</p>
+
+                            <div class="post-card-footer">
+                                <a href="/blog/${encodeURIComponent(post.slug)}" class="post-card-read-link" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.88rem; color: var(--theme-base); text-decoration: none; transition: color 0.2s;" aria-label="Continue reading ${escapeHtml(post.title)}">
+                                    Continue reading
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>`;
+                    articlesContainer.insertAdjacentHTML('beforeend', postCard);
+                });
+
+                if (data.total_pages > 1) {
+                    let paginationHtml = `<div style="display:flex; gap:8px;">`;
+                    for (let i = 1; i <= data.total_pages; i++) {
+                        paginationHtml += `
+                            <button class="${i === data.page ? 'btn-primary-profile' : 'btn-outline-profile'} page-btn" data-page="${i}" style="padding: 6px 14px; min-width: 40px;">
+                                ${i}
+                            </button>
+                        `;
+                    }
+                    paginationHtml += `</div>`;
+                    articlesPagination.innerHTML = paginationHtml;
+
+                    document.querySelectorAll('.page-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const p = parseInt(btn.getAttribute('data-page'));
+                            fetchAuthorArticles(p);
+                        });
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                articlesContainer.innerHTML = '<p class="text-color-lightest">Failed to load articles.</p>';
+            });
+    }
+
+    const sortBySelect = document.getElementById('article-sort-by');
+    if (sortBySelect) {
+        sortBySelect.addEventListener('change', () => {
+            fetchAuthorArticles(1);
+        });
+    }
+
+    {% endif %}
+
+    // Load initial active tab data
+    const activeTab = document.querySelector('.pill-tab.active');
+    if (activeTab) {
+        const targetTab = activeTab.getAttribute('data-tab');
+        if (targetTab === 'articles') {
+            if (typeof fetchAuthorArticles === 'function') {
+                fetchAuthorArticles(1);
+            }
+        }
+        else if (targetTab === 'followers') fetchFollowers();
+        else if (targetTab === 'following') fetchFollowing();
+    }
+});
+
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+</script>
+{% endblock js %}

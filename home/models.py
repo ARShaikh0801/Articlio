@@ -19,9 +19,30 @@ class CustomUser(AbstractUser):
     verified=models.BooleanField(default=False)
     theme_preference = models.CharField(max_length=20, default='ocean')
     social_profile_completed = models.BooleanField(default=True)
+    bio = models.TextField(max_length=500, blank=True)
+    profile_picture_url = models.URLField(max_length=500, blank=True, default='')
+    profile_picture = models.FileField(upload_to='profile_pics/', blank=True, null=True)
+    github_url = models.URLField(max_length=200, blank=True, default='')
+    twitter_url = models.URLField(max_length=200, blank=True, default='')
+    linkedin_url = models.URLField(max_length=200, blank=True, default='')
+    website_url = models.URLField(max_length=200, blank=True, default='')
+    interests = models.TextField(blank=True, default='')
+    onboarding_completed = models.BooleanField(default=True)  # True so existing users skip onboarding
     
     def __str__(self):
         return self.username
+
+class Follow(models.Model):
+    follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following_relations')
+    followed = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_relations')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'followed')
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.followed.username}"
+
 
 @receiver(post_save, sender=CustomUser)
 def update_bloom_filter_on_user_save(sender, instance, created, **kwargs):

@@ -11,11 +11,23 @@ def _serialize_post(post, bookmarked_ids=None, trending_post_ids=None):
     is_trending = False
     if trending_post_ids is not None:
         is_trending = post.sno in trending_post_ids
+
+    author_username = ''
+    author_avatar_url = ''
+    if post.author_user:
+        author_username = post.author_user.username
+        if post.author_user.profile_picture:
+            author_avatar_url = post.author_user.profile_picture.url
+        elif post.author_user.profile_picture_url:
+            author_avatar_url = post.author_user.profile_picture_url
+
     return {
         'sno': post.sno,
         'title': post.title,
         'summary': post.summary,
         'author': post.author,
+        'author_username': author_username,
+        'author_avatar_url': author_avatar_url,
         'slug': post.slug,
         'category': post.category,
         'views': post.views,
@@ -33,7 +45,7 @@ def api_home_posts(request):
     if _check_rate_limit(request, 'api_home_rate'):
         return JsonResponse({'error': 'Rate limited. Please wait 10 minutes or login to continue.'}, status=429)
 
-    top_posts = Post.objects.filter(draft=False).defer('content').order_by('-views')[:2]
+    top_posts = Post.objects.filter(draft=False).select_related('author_user').defer('content').order_by('-views')[:2]
 
     bookmarked_ids = set()
     if request.user.is_authenticated:
@@ -66,7 +78,7 @@ def api_search(request):
         Q(title__icontains=query) | Q(category__icontains=query) |
         Q(content__icontains=query) | Q(author__icontains=query),
         draft=False
-    ).order_by('-views')
+    ).select_related('author_user').order_by('-views')
 
     total_results = allPosts.count()
 

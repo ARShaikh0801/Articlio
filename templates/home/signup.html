@@ -311,7 +311,7 @@
     </div>
 
 
-    <div class="max-w-xl mx-auto px-4 py-12 relative z-10 animate-fade-in-up">
+    <div class="max-w-xl mx-auto px-3 sm:px-4 py-6 sm:py-12 relative z-10 animate-fade-in-up">
 
         {% for message in messages %}
         <div class="max-w-4xl mx-auto my-3 px-4">
@@ -328,7 +328,7 @@
         <main>
             <div class="mb-6 flex justify-start animate-fade-in-up delay-100">
                 <a
-                    class="go-back-btn auth-btn-secondary px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2">
+                    class="go-back-btn auth-btn-secondary px-4 py-2 rounded-lg cursor-pointer inline-flex items-center gap-2 text-sm font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-arrow-left" viewBox="0 0 16 16">
                         <path fill-rule="evenodd"
@@ -337,16 +337,16 @@
                     Go Back
                 </a>
             </div>
-            <div class="text-center mb-10 animate-fade-in-up delay-100">
-                <h2 class="text-3xl font-bold text-color-darkest dark:text-color-lightest">
+            <div class="text-center mb-6 sm:mb-8 animate-fade-in-up delay-100">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-color-darkest dark:text-color-lightest tracking-tight break-words">
                     Sign Up
                 </h2>
-                <p class="text-color-muted dark:text-color-lightest mt-3">
+                <p class="text-sm sm:text-base text-color-muted dark:text-color-lightest mt-2">
                     Already have an account? <a href="/login" class="underline font-semibold text-color-darkest dark:text-color-lightest">Log In</a>
                 </p>
             </div>
 
-            <div class="auth-card-glass transition-all duration-300 rounded-xl p-8 hover:shadow-2xl hover:scale-[1.01] animate-fade-in-up delay-200">
+            <div class="auth-card-glass transition-all duration-300 rounded-2xl p-4 xs:p-5 sm:p-7 md:p-8 hover:shadow-2xl hover:scale-[1.01] animate-fade-in-up delay-200">
                 <div class="mb-6 space-y-3">
                     <a href="{% provider_login_url 'google' %}"
                         class="w-full flex items-center justify-center gap-2 auth-btn-secondary px-4 py-2 rounded-lg font-medium transition">

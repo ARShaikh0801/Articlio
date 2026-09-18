@@ -15,6 +15,7 @@ class Post(models.Model):
     content=models.TextField()
     summary = models.TextField(max_length=200, blank=True)
     author=models.CharField(max_length=100, db_index=True)
+    author_user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     slug=models.CharField(max_length=100,unique=True)
     category=models.CharField(max_length=200, default="general", db_index=True)
     views=models.IntegerField(default=0,editable=False, db_index=True)

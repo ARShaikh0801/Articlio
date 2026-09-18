@@ -172,9 +172,16 @@
 
         let autosaveTimer = null;
         const AUTOSAVE_INTERVAL = 3000; // 3 seconds
+        let isSaving = false;
 
         function autoSave() {
-            if (submitBtn.disabled) return; // Don't autosave if fields are incomplete
+            if (submitBtn.disabled || isSaving) return; // Don't autosave if fields are incomplete or saving is in progress
+
+            isSaving = true;
+            submitBtn.disabled = true;
+            draftBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+            draftBtn.classList.add("opacity-50", "cursor-not-allowed");
 
             const contentVal = quill.root.innerHTML;
             const titleVal = titleInput.value.trim();
@@ -203,6 +210,11 @@
             })
             .then(response => response.json())
             .then(data => {
+                isSaving = false;
+                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                draftBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                togglePublish();
+
                 if (data.status === 'success') {
                     document.getElementById("slug").value = data.slug;
                     const now = new Date();
@@ -212,6 +224,10 @@
                 }
             })
             .catch(error => {
+                isSaving = false;
+                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                draftBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                togglePublish();
                 console.error('Autosave error:', error);
                 statusEl.textContent = 'Error autosaving';
             });
@@ -284,7 +300,11 @@
         });
         togglePublish();
 
-        submitBtn.addEventListener("click", function () {
+        submitBtn.addEventListener("click", function (e) {
+            if (isSaving) {
+                e.preventDefault();
+                return;
+            }
             submitBtn.disabled = true;
             submitBtn.classList.add("opacity-80");
             document.getElementById("publish-text").innerHTML = "Publishing...&nbsp;";
@@ -294,7 +314,11 @@
             document.getElementById("blogForm").submit();
         });
 
-        draftBtn.addEventListener("click", function () {
+        draftBtn.addEventListener("click", function (e) {
+            if (isSaving) {
+                e.preventDefault();
+                return;
+            }
             draftBtn.disabled = true;
             draftBtn.classList.add("opacity-80");
             document.getElementById("draft-text").innerHTML = "Saving...&nbsp;";

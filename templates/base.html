@@ -56,7 +56,12 @@
     <link href="{% static 'css/output.css' %}" rel="stylesheet">
 
     <style>
-        * { font-family: 'Inter', system-ui, sans-serif; }
+        * { font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            -webkit-text-size-adjust: 100%;
+        }
         .close-msg { cursor: pointer; }
 
         /* ── Loader ── */
@@ -490,7 +495,7 @@
                     
                     <div class="nav-auth-desktop" style="display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0;">
                         {% if user.is_authenticated %}
-                            <span style="font-size:0.8rem; color:var(--theme-light); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;" title="{{ request.user }}">Hi, {{ request.user }}</span>
+                            <a href="{% url 'profile' %}" style="font-size:0.8rem; color:var(--theme-light); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; text-decoration: none;" title="{{ request.user }}">Hi, {{ request.user }}</a>
                             <form action="{% url 'handleLogout' %}" method="get" id="logoutForm" style="margin:0; flex-shrink: 0;">
                                 <input type="hidden" value="{{ request.get_full_path }}" name="next">
                                 <button id="logoutBtn" class="logout-btn" style="padding: 5px 16px; border-radius: 999px; border: 1px solid var(--theme-light); background: transparent; color: var(--theme-lightest); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; gap:6px; white-space: nowrap; flex-shrink: 0;">
@@ -531,6 +536,7 @@
                 <a href="/blog/history" class="{% block historyactive %}{% endblock historyactive %} nav-link">History</a>
                 {% if user.is_authenticated %}
                 <a href="/blog/bookmarks" class="{% block bookmarkactive %}{% endblock bookmarkactive %} nav-link">Bookmarks</a>
+                <a href="{% url 'profile' %}" class="{% block profileactive %}{% endblock profileactive %} nav-link">Profile</a>
                 {% if request.user.role == "author" %}
                     {% if request.user.verified == False %}
                     <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link">Verify</a>
@@ -565,6 +571,7 @@
         <a href="/blog/history" class="nav-link">History</a>
         {% if user.is_authenticated %}
         <a href="/blog/bookmarks" class="nav-link">Bookmarks</a>
+        <a href="{% url 'profile' %}" class="nav-link">Profile</a>
         {% if request.user.role == "author" %}
             {% if request.user.verified == False %}
             <a href="{% url 'emailVerification' %}?next={{ request.get_full_path }}" class="nav-link">Verify</a>
@@ -606,7 +613,7 @@
         <!-- Mobile auth -->
         <div class="drawer-section">
             {% if user.is_authenticated %}
-                <p style="font-size:0.85rem; color:var(--theme-light); margin-bottom:8px;">Hi, {{ request.user }}</p>
+                <a href="{% url 'profile' %}" style="font-size:0.85rem; color:var(--theme-light); margin-bottom:8px; display:block; text-decoration:none;">Hi, {{ request.user }}</a>
                 <a href="{% url 'handleLogout' %}?next={{ request.get_full_path }}" class="nav-link" style="background:rgba(255,255,255,0.06);">Log Out</a>
             {% else %}
                 <a href="{% url 'handleLogin' %}?next={{ request.get_full_path }}" class="nav-link">Log In</a>

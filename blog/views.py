@@ -53,6 +53,7 @@ def blogPost(request,slug):
     """
     Renders the full post view for a specific article. Increments the view count
     if the user is opening it for the first time in their active session.
+    Also passes author details for the author info bar with follow button.
     """
     post=get_object_or_404(Post, slug=slug, draft=False)
     
@@ -64,15 +65,40 @@ def blogPost(request,slug):
         viewed_posts.append(post.sno)
         request.session["viewed_posts"] = viewed_posts
         request.session.modified = True
-        
-    return render(request,'blog/blogPost.html', {'post': post})
 
-def generate_unique_slug(model, base_text):
+    # Author details for the author info bar
+    from home.models import Follow
+    author_user = post.author_user
+    if not author_user and post.author:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        author_user = User.objects.filter(username=post.author).first() or User.objects.filter(name=post.author).first()
+
+    is_following_author = False
+    author_followers_count = 0
+    if author_user:
+        author_followers_count = Follow.objects.filter(followed=author_user).count()
+        if request.user.is_authenticated and request.user != author_user:
+            is_following_author = Follow.objects.filter(follower=request.user, followed=author_user).exists()
+
+    context = {
+        'post': post,
+        'author_user': author_user,
+        'is_following_author': is_following_author,
+        'author_followers_count': author_followers_count,
+    }
+    return render(request,'blog/blogPost.html', context)
+
+def generate_unique_slug(model, base_text, exclude_id=None):
     base_slug = slugify(base_text)
     slug = base_slug
     counter = 1
 
-    while model.objects.filter(slug=slug).exists():
+    queryset = model.objects.all()
+    if exclude_id:
+        queryset = queryset.exclude(pk=exclude_id)
+
+    while queryset.filter(slug=slug).exists():
         slug = f"{base_slug}-{counter}"
         counter += 1
 
@@ -110,22 +136,28 @@ def writeBlog(request):
                 content=sanitizer.sanitize_html(content)
                 content=sanitizer.normalize_links(content)
                 summary = generate_summary(content)
-                slug = generate_unique_slug(Post, title)
-                author=request.user.name
-                draft = request.POST.get('draftVal') == "true"
                 existedSlug=request.POST.get('slug','')
+                post = None
                 if existedSlug!="":
                     post=Post.objects.filter(slug=existedSlug).first()
+                
+                exclude_id = post.pk if post else None
+                slug = generate_unique_slug(Post, title, exclude_id=exclude_id)
+                author=request.user.name
+                author_user=request.user
+                draft = request.POST.get('draftVal') == "true"
+                if post:
                     post.title=title
                     post.category=category
                     post.content=content
                     post.summary=summary
                     post.author=author
+                    post.author_user=author_user
                     post.slug=slug
                     post.draft=draft
                     post.save()
                 else:
-                    post=Post(title=title,category=category,content=content,summary=summary,author=author,slug=slug,draft=draft)
+                    post=Post(title=title,category=category,content=content,summary=summary,author=author,author_user=author_user,slug=slug,draft=draft)
                     post.save()
                 if request.POST.get('is_autosave') == 'true':
                     return JsonResponse({'status': 'success', 'slug': post.slug})
