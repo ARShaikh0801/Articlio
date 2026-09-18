@@ -191,6 +191,7 @@ STATICFILES_DIRS=[
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 WHITENOISE_MAX_AGE = 31536000
+WHITENOISE_MANIFEST_STRICT = False
 
 
 # Default primary key field type
