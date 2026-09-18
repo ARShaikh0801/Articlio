@@ -11,4 +11,6 @@ npm run build:min
 export PATH="/opt/render/project/src/node_modules/.bin:$PATH"
 
 python manage.py collectstatic --no-input
+python manage.py migrate --no-input
+
 
