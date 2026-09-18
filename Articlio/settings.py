@@ -126,11 +126,12 @@ DATABASES = {
 }
 
 # Caches configuration (use Redis for shared production cache, LocMem for local dev)
-if not DEBUG:
+redis_url = os.environ.get("REDIS_URL")
+if not DEBUG and redis_url:
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/1"),
+            "LOCATION": redis_url,
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             }

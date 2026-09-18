@@ -74,14 +74,14 @@ class VisitorTrackingMiddleware:
             set_cookie = True
 
         cache_key = f"visitor_tracked_{visitor_id}"
-        if not cache.get(cache_key):
+        try:
             from home.models import Visitor
-            try:
+            if not cache.get(cache_key):
                 Visitor.objects.get_or_create(visitor_id=visitor_id)
                 cache.set(cache_key, True, timeout=86400)  # cache for 24 hours
-            except Exception as e:
-                # Fail gracefully if database or cache is temporarily down
-                print(f"Error tracking visitor: {e}")
+        except Exception as e:
+            # Fail gracefully if database, cache, or Redis is temporarily down
+            pass
 
         response = self.get_response(request)
         if set_cookie:
