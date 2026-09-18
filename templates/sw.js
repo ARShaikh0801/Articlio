@@ -1,4 +1,4 @@
-const CACHE_NAME = 'articlio-cache-v5';
+const CACHE_NAME = 'articlio-cache-v6';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -24,8 +24,9 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
 
-  // Bypass service worker for Google Analytics, Tag Manager, and Ads to prevent tracking/CSP fetch errors
+  // Bypass service worker for Cloudinary media, Google Analytics, Tag Manager, and Ads
   if (
+    url.hostname.includes('cloudinary.com') ||
     url.hostname.includes('google-analytics.com') || 
     url.hostname.includes('googletagmanager.com') ||
     url.hostname.includes('googleads') ||
