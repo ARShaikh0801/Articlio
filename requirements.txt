@@ -18,3 +18,5 @@ PyJWT
 cryptography
 pyjwt
 django-redis==5.4.0
+cloudinary
+django-cloudinary-storage
